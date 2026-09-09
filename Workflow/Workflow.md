@@ -63,4 +63,13 @@
 * Q30: 在这里面实现{指`JeiLinkBox`}，你写哪去了{`DebugGuiUtils`}
 * Q31: 你真的在第九格用上了`细节`同款按钮了吗？都是一个窗口怎么这里就不行。 你别管原生按钮能不能用，你在右上角给我声明一个按钮点击之后客户端发个一，我倒要看看是不是真的不行。
 * Q32: 上面的按钮能触发事件下面的不行根源在那里？不行就把这个按钮委托到给`CultureCategory`自己检测超过九个(下面的第九个按钮转成正常显示)触发事件，这总行了吧。
-* Q21: 你向前努力回忆一下，把遇到的坑点整理一份回执，不需要长文总结，尽可能多的把每条问题指明`类和方法的坑点`，简单列举出来，比如`谁过时了`应该`换什么方法再实现`。
+* Q33: 设计一个小回调或是参数，我们还是把`CultureCategory`外部的这些按钮和悬浮监听位置在JeiLinkBox/CultureLinkLayout里一起注册一下，哪怕只是参数，因为他们在逻辑上应该是一体的，只不过API没有提供接口。
+* Q34: 我还要怎么说，你为什么监听到细节去了，我要知道的是为什么CultureCategory打不开，现在全乱套了。 第九格是细节窗口，细节按钮坏了
+* Q34: 我说呢，你把事件绑错了，这个细节才是打开debug大窗口（DebugGuiUtils静态类）的，加号负责打开JEI大窗口（CultureVillagesCategory），绑对以后可能还打不开给CultureVillagesCategory窗口的开启相关上下文加入客户端聊天栏事件debug
+* Q35: 你听懂什么，第九格的事件是可以正常触发的，我要你去监听第九个的点击事件尝试打开CultureVillagesCategory
+* Q36: 我问你，打开窗口的事件你写在哪里了，给出对应的哪一行
+* Q37: 我擦你小子真行，给openJsonDumpScreen特化窗口扔到人家JeiLinkBox里当退化结果，你把退化结果改成客户端消息：安全输出`contextObject`的前几十个字符
+* Q38: 我去，走`CultureCategory`错构造方法了，根本没给jeiRuntime赋值，你说到底要那个构造方法，还是三参？
+* Q39: createRecipeExtras必须在BaseMillIngredientRenderer有声明，细节按钮的点击要调用`DebugGuiUtils#openJsonDumpScreen(Object)`事件
+* Q40: 你写什么，我给错了,createRecipeExtras必须在BaseMillCategory有声明，细节按钮的点击要调用`DebugGuiUtils#openJsonDumpScreen(Object)`事件
+* AI一直在尝试`第九格`打开`DebugGuiUtils.openJsonDumpScreen`，但是应该打开的是`CultureVillagesCategory`

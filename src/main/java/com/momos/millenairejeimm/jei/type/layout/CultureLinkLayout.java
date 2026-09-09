@@ -1,57 +1,82 @@
 package com.momos.millenairejeimm.jei.type.layout;
 
+import com.momos.millenairejeimm.jei.type.JeiLinkBox;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
-import mezz.jei.api.ingredients.IIngredientType;
-import mezz.jei.api.runtime.IIngredientManager;
-import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import org.millenaire.culture.Culture;
-import org.millenaire.culture.VillageType;
 
+import java.util.ArrayList;
 import java.util.List;
 
-// region 文化分类链接框布局
+// region 文化布局容器类定义
 /**
- * 封装文化关联内容的布局容器 {@link CultureLinkLayout}。
+ * 文化组合联动布局容器 {@link CultureLinkLayout}。
+ * 统一调度管理多个 {@link JeiLinkBox} 的垂直堆叠布局、槽位注册、渲染与输入响应注册。
  */
 public class CultureLinkLayout {
-    // [原注释保留] 关联村庄列表类型占位，后续补全 List<VillageType>
-    public final JeiLinkBox<VillageType> villageLinks;
+    private final List<JeiLinkBox<?>> boxes = new ArrayList<>();
+    private final int startX;
+    private final int startY;
+    private final int width;
+    private final int spacing;
 
-    public CultureLinkLayout(String title) {
-        villageLinks = new JeiLinkBox<>(title);
-    }
-
-    public CultureLinkLayout bindJei(IJeiRuntime jeiRuntime, IIngredientType<VillageType> villageType) {
-        this.villageLinks.useJeiMode(jeiRuntime, villageType);
-        return this;
-    }
-
-    public CultureLinkLayout bindJei(IIngredientManager ingredientManager, IIngredientType<VillageType> villageType) {
-        this.villageLinks.useJeiMode(ingredientManager, villageType);
-        return this;
-    }
-
-    public void setRecipe(IRecipeLayoutBuilder builder, List<VillageType> villageTypes, int x, int y) {
-        this.villageLinks.setRecipe(builder, villageTypes, x, y);
-    }
-
-    public void createRecipeExtras(IRecipeExtrasBuilder builder, Culture culture, int x, int y, int width) {
-        this.villageLinks.createRecipeExtras(builder, culture, x, y, width);
+    public CultureLinkLayout(int startX, int startY, int width, int spacing) {
+        this.startX = startX;
+        this.startY = startY;
+        this.width = width;
+        this.spacing = spacing;
     }
 
     /**
-     * [醒目新注释]
-     * 将第 9 格物理按钮的点击响应委托给底层 {@link JeiLinkBox#handlePlusButtonClick}。
+     * [醒目新注释] 链式添加一个子 {@link JeiLinkBox}。
      */
-    public boolean handlePlusButtonClick(Object contextObject, double mouseX, double mouseY, int x, int y) {
-        return this.villageLinks.handlePlusButtonClick(contextObject, mouseX, mouseY, x, y);
+    public CultureLinkLayout addBox(JeiLinkBox<?> box) {
+        this.boxes.add(box);
+        return this;
     }
 
-    public void render(GuiGraphics guiGraphics, Font font, int x, int y, int width, double mouseX, double mouseY) {
-        villageLinks.render(guiGraphics, font, x, y, width, mouseX, mouseY);
+    /**
+     * [醒目新注释] 为指定索引处的 {@link JeiLinkBox} 设置数据并在对应计算坐标下注册 JEI 槽位。
+     */
+    public <T> void setRecipeForBox(int boxIndex, IRecipeLayoutBuilder builder, List<T> targets) {
+        if (boxIndex >= 0 && boxIndex < boxes.size()) {
+            int currentY = calculateBoxY(boxIndex);
+            @SuppressWarnings("unchecked")
+            JeiLinkBox<T> box = (JeiLinkBox<T>) boxes.get(boxIndex);
+            box.setRecipe(builder, targets, startX, currentY);
+        }
+    }
+
+    /**
+     * [醒目新注释] 自动向 JEI 注册所有包含子项的物理输入监听器。
+     */
+    public void createRecipeExtras(IRecipeExtrasBuilder builder, Object recipeContext) {
+        int currentY = startY;
+        for (JeiLinkBox<?> box : boxes) {
+            box.registerInputHandler(builder, recipeContext, startX, currentY);
+            currentY += box.getBoxHeight() + spacing;
+            
+        }
+    }
+
+    /**
+     * [醒目新注释] 统一绘制整个布局包含的所有盒体背景与组件。
+     */
+    public void render(GuiGraphics guiGraphics, Font font, double mouseX, double mouseY) {
+        int currentY = startY;
+        for (JeiLinkBox<?> box : boxes) {
+            box.render(guiGraphics, font, startX, currentY, width, mouseX, mouseY);
+            currentY += box.getBoxHeight() + spacing;
+        }
+    }
+
+    private int calculateBoxY(int index) {
+        int currentY = startY;
+        for (int i = 0; i < index; i++) {
+            currentY += boxes.get(i).getBoxHeight() + spacing;
+        }
+        return currentY;
     }
 }
-// endregion
+// endregion 文化布局容器类定义

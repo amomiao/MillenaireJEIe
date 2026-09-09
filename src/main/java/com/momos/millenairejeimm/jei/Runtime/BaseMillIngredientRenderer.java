@@ -1,4 +1,4 @@
-package com.momos.millenairejeimm.jei.type;
+package com.momos.millenairejeimm.jei.Runtime;
 
 import mezz.jei.api.ingredients.IIngredientRenderer;
 import net.minecraft.client.Minecraft;

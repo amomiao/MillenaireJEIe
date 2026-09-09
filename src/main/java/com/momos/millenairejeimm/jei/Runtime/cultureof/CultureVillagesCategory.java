@@ -2,7 +2,7 @@ package com.momos.millenairejeimm.jei.Runtime.cultureof;
 
 import com.momos.millenairejeimm.MillenaireJeimm;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
-import com.momos.millenairejeimm.jei.type.BaseMillCategory;
+import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;

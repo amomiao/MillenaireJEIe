@@ -1,11 +1,17 @@
-package com.momos.millenairejeimm.jei.type;
+package com.momos.millenairejeimm.jei.Runtime;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import com.momos.millenairejeimm.debug.DebugGuiUtils;
 import mezz.jei.api.gui.drawable.IDrawable;
+import mezz.jei.api.gui.inputs.IJeiInputHandler;
+import mezz.jei.api.gui.inputs.IJeiUserInput;
+import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.helpers.IGuiHelper;
+import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.network.chat.Component;
 
 import java.util.Collections;
@@ -84,23 +90,39 @@ public abstract class BaseMillCategory<T> implements IRecipeCategory<T> {
     }
 // endregion 通用 UI 渲染与辅助组件
 
-    // 在 BaseMillCategory 中提供可选的 Inspector 属性生成钩子
-    /**为具体 Recipe 构造特定的 Inspector 行信息（若子类未重写则由 {@link DebugGuiUtils} 自动反射生成）。*/
+    /** 为具体 Recipe 构造特定的 Inspector 行信息（若子类未重写则由 {@link DebugGuiUtils} 自动反射生成）。*/
     protected List<Component> getCustomInspectorLines(T recipe) {
         return List.of();
     }
 
-    // region 交互逻辑统一处理
+    /// 重写 [#createRecipeExtras] 以替代废弃的 `handleInput`。
+    /// 使用具备区域定义 [ScreenRectangle] 的 [IJeiInputHandler] 与包含 [IJeiUserInput] 的点击方法。
+    // [醒目新注释] 详细文档注释：重写 JEI 控件扩展接口，用于注册输入监听处理器 {@link IJeiInputHandler}
+    /**
+     * 为配方分类注册额外的 JEI 控件与输入监听处理器。
+     *
+     * @param builder  配方控件构建器 {@link IRecipeExtrasBuilder}
+     * @param recipe   当前配方对象
+     * @param focuses  当前 JEI 焦点组 {@link IFocusGroup}
+     */
     @Override
-    @SuppressWarnings("removal")
-    public boolean handleInput(T recipe, double mouseX, double mouseY, InputConstants.Key input) {
-        if (input.getType() == InputConstants.Type.MOUSE && input.getValue() == 0) {
-            // [醒目新注释] 统一处理图标正下方按钮坐标 (3, 26) 的点击响应
-            if (DebugGuiUtils.handleDetailsButtonClick(recipe, mouseX, mouseY, 3, 26)) {
-                return true;
+    public void createRecipeExtras(IRecipeExtrasBuilder builder, T recipe, IFocusGroup focuses) {
+        builder.addInputHandler(new IJeiInputHandler() {
+            @Override
+            public ScreenRectangle getArea() {
+                return new ScreenRectangle(3, 26, 22, 10);
             }
-        }
-        return IRecipeCategory.super.handleInput(recipe, mouseX, mouseY, input);
+            @Override
+            public boolean handleInput(double mouseX, double mouseY, IJeiUserInput input) {
+                InputConstants.Key key = input.getKey();
+                if (key.getType() == InputConstants.Type.MOUSE && key.getValue() == 0) {
+                    // [醒目新注释] 统一处理图标正下方按钮坐标 (3, 26) 的点击响应，触发 JSON 调试信息转储
+                    if (DebugGuiUtils.handleDetailsButtonClick(recipe, mouseX, mouseY, 3, 26)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
     }
-// endregion 交互逻辑统一处理
 }
