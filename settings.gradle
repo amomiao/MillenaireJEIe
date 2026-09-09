@@ -1,0 +1,16 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+    }
+}
+
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
+includeBuild('../MillenaireJEI') {
+    dependencySubstitution {
+        // 自动将 Remote/Local Jar 依赖替换为本地 live 源码工程
+        substitute module('com.momos:millenairejeim') using project(':')
+    }
+}
