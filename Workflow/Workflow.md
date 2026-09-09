@@ -42,3 +42,9 @@
   * 若该方法返回了有效成分，JEI 会自动接管并打开配方/用途/添加书签（且能完美兼容玩家自定义的按键绑定）。
   * 若未实现该方法（默认返回 Optional.empty()），JEI 会判定当前鼠标悬停区域为“空白背景”，直接截断按键事件，导致事件根本不会下发到 handleInput 中。  
   * 必须重写 JEI 的 getIngredientUnderMouse 接口，以下是适配后的完整代码实现。
+* Q20: JeiLinkBox的上下小按钮失效了
+* Q21: 别编了，你要什么类的源码告诉我再写
+  * `mezz.jei.api.gui.inputs.IJeiInputHandler`、`mezz.jei.api.gui.widgets.IRecipeExtrasBuilder`、`getArea() 的返回类型`
+* Q22: 这下点了按钮光标可用性都不变了，你自己相关办法让JeiLinkBox在自己的区域里实现某个拓展显示吧，使用最稳妥的方案。
+* Q23: 现在是有多少列多少，有限区域在哪，哪怕整个滚动条呢，这三个类你有完全修改权限
+* Q21: 你回忆一下，把遇到的坑点整理一份回执，不需要长文总结，尽可能多的把每条问题指明`类和方法的坑点`，简单列举出来。

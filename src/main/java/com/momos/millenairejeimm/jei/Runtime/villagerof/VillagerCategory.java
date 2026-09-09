@@ -37,11 +37,6 @@ public class VillagerCategory extends BaseMillCategory<VillagerType> {
         return ItemStack.EMPTY;
     });
 
-    // [醒目新注释] (1) 村民关联生成村庄
-    private final JeiLinkBox<Object> villageLinks = new JeiLinkBox<>("生成村庄", 1);
-    // [醒目新注释] (2) 村民关联工作/居住建筑
-    private final JeiLinkBox<Object> buildingLinks = new JeiLinkBox<>("关联建筑", 1);
-
     public VillagerCategory(IGuiHelper guiHelper) {
         super(guiHelper, guiHelper.createDrawableItemStack(
                 new ItemStack(ItemHelper.resolve("millenaire:travel_book") != null ? ItemHelper.resolve("millenaire:travel_book") : Items.BOOK)));

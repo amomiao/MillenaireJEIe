@@ -36,13 +36,6 @@ public class BuildingCategory extends BaseMillCategory<BuildingPlanSet> {
         return ItemStack.EMPTY;
     });
 
-    // [醒目新注释] (1) 建筑关联所属村庄 (顺位 1，数量级 5，1 行)
-    private final JeiLinkBox<Object> villageTypeLinks = new JeiLinkBox<>("适用村庄类型", 1);
-    // [醒目新注释] (2) 建筑关联居住/工作村民 (顺位 2，数量级 5，1 行)
-    private final JeiLinkBox<Object> villagerLinks = new JeiLinkBox<>("居住/工作村民", 1);
-    // [醒目新注释] (3) 两级可翻页页签 (顺位 3，高层变体/低层升级消耗，数量级 5-20，2 行)
-    private final JeiLinkBox<Object> tabBox = new JeiLinkBox<>("[页签] 变体 / 升级总消耗", 2);
-
     public BuildingCategory(IGuiHelper guiHelper) {
         super(guiHelper, guiHelper.createDrawableItemStack(
                 new ItemStack(ItemHelper.resolve("minecraft:glass_bottle") != null ? ItemHelper.resolve("minecraft:glass_bottle") : Items.GLASS_BOTTLE)));

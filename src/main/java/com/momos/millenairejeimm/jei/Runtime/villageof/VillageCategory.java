@@ -35,9 +35,6 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
         return ItemStack.EMPTY;
     });
 
-    // 村庄内建筑
-    private final JeiLinkBox<Object> buildingLinks = new JeiLinkBox<>("村庄内建筑", 2);
-
     public VillageCategory(IGuiHelper guiHelper) {
         super(guiHelper, guiHelper.createDrawableItemStack(
                 new ItemStack(ItemHelper.resolve("millenaire:travel_book") != null ? ItemHelper.resolve("millenaire:travel_book") : Items.MAP)));

@@ -1,6 +1,5 @@
 package com.momos.millenairejeimm.jei.Runtime.cultureof;
 
-import com.mojang.blaze3d.platform.InputConstants;
 import com.momos.millenairejeimm.MillenaireJeimm;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.type.BaseMillCategory;
@@ -8,6 +7,7 @@ import com.momos.millenairejeimm.jei.type.MillIconOnlyRenderer;
 import com.momos.millenairejeimm.jei.type.layout.CultureLinkLayout;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
+import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
@@ -23,9 +23,12 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.millenaire.culture.Culture;
+import org.millenaire.culture.VillageType;
 import org.millenaire.item.ItemHelper;
 
-// region 类定义与构造函数
+import java.util.List;
+
+// region 文化分类面板类
 /**
  * 文化 {@link Culture} JEI 详情分类，继承自 {@link BaseMillCategory}。
  */
@@ -40,42 +43,44 @@ public class CultureCategory extends BaseMillCategory<Culture> {
         return ItemStack.EMPTY;
     });
 
-    // [原注释保留] 字段声明：改用在构造函数中通过 IIngredientManager 进行 JEI 绑定的 CultureLinkLayout[cite: 11]
+    // [原注释保留] 字段声明：改用在构造函数中通过 IIngredientManager 进行 JEI 绑定的 CultureLinkLayout
     private final CultureLinkLayout villageLayout;
 
-    /**
-     * [醒目新注释] 构造函数（全功能）：注入 {@link IJeiRuntime} 以绑定原生 R/U 键与鼠标左右键查找。
-     */
     public CultureCategory(IGuiHelper guiHelper, IJeiRuntime jeiRuntime) {
         super(guiHelper, guiHelper.createDrawableItemStack(
                 new ItemStack(ItemHelper.resolve("millenaire:village_norman") != null ? ItemHelper.resolve("millenaire:village_norman") : Items.MAP))
         );
-        this.villageLayout = new CultureLinkLayout("文化关联村庄", 2)
+        this.villageLayout = new CultureLinkLayout("文化关联村庄")
                 .bindJei(jeiRuntime, MillIngredientTypes.VILLAGE);
     }
 
-    /**
-     * [原注释保留] 构造函数：注入 {@link IIngredientManager}，将 {@link CultureLinkLayout} 绑定至 JEI 的 {@link MillIngredientTypes#VILLAGE}。[cite: 11]
-     */
     public CultureCategory(IGuiHelper guiHelper, IIngredientManager ingredientManager) {
         super(guiHelper, guiHelper.createDrawableItemStack(
                 new ItemStack(ItemHelper.resolve("millenaire:village_norman") != null ? ItemHelper.resolve("millenaire:village_norman") : Items.MAP))
         );
-        this.villageLayout = new CultureLinkLayout("文化关联村庄", 2)
+        this.villageLayout = new CultureLinkLayout("文化关联村庄")
                 .bindJei(ingredientManager, MillIngredientTypes.VILLAGE);
     }
 
     @Override public RecipeType<Culture> getRecipeType() {return RECIPE_TYPE;}
     @Override public Component getTitle() {return Component.translatable("gui.millenairejeim.category.culture_details");}
 
-    // region JEI 槽位与绘制实现
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, Culture recipe, IFocusGroup focuses) {
         if (recipe == null) return;
+
+        // 1. 注册文化主体图标槽位
         builder.addSlot(RecipeIngredientRole.OUTPUT, 6, 6)
                 .addIngredient(MillIngredientTypes.CULTURE, recipe)
                 .setCustomRenderer(MillIngredientTypes.CULTURE, ICON_RENDERER);
-        villageLayout.set(MillenaireJeimm.getVillageFormCulture(recipe));
+
+        // 2. [醒目新注释] 采用固定高度区域绑定：多余元素自动压入固定 16 槽位的轮播池中
+        List<VillageType> villages = MillenaireJeimm.getVillageFormCulture(recipe);
+        villageLayout.setRecipe(builder, villages, 2, 106);
+    }
+
+    @Override
+    public void createRecipeExtras(IRecipeExtrasBuilder builder, Culture recipe, IFocusGroup focuses) {
     }
 
     @Override
@@ -87,7 +92,7 @@ public class CultureCategory extends BaseMillCategory<Culture> {
 
         drawCommonHeader(guiGraphics, font, displayName, recipe.id().toString(), "文化主体", mouseX, mouseY);
 
-        // [原注释保留] 统一从 Y: 42 开始罗列[cite: 11]
+        // [原注释保留] 统一从 Y: 42 开始罗列
         drawLabelValue(guiGraphics, font, "原生语言", recipe.nativeLanguage() != null ? recipe.nativeLanguage() : "未设", 6, 42);
 
         int cropCount = recipe.knownCrops() != null ? recipe.knownCrops().size() : 0;
@@ -102,20 +107,7 @@ public class CultureCategory extends BaseMillCategory<Culture> {
         boolean isDefaultTexture = Culture.DEFAULT_PANEL_TEXTURE.equals(recipe.panelTexture());
         drawHoverableText(guiGraphics, font, "面板纹理", isDefaultTexture ? "默认" : recipe.panelTexture().toString(), 6, 92, mouseX, mouseY);
 
-        // [醒目新注释] 传入渲染位置与当前鼠标坐标，保证 Hover 高亮与 Tooltip 精确判定
-        villageLayout.render(guiGraphics, font, 2, 106, 172, mouseX, mouseY);
-    }
-
-    @Override
-    @SuppressWarnings("removal")
-    public boolean handleInput(Culture recipe, double mouseX, double mouseY, InputConstants.Key input) {
-        // [原注释保留] 输入事件托管：直接交给 Layout 判断并处理上下翻页点击[cite: 11]
-        // [醒目新注释] 自动解析输入事件：鼠标左/右键与键盘 R/U 键全量触发，无缝呼出配方/用途 GUI
-        if (villageLayout.handleInput(mouseX, mouseY, input)) {
-            return true;
-        }
-        return super.handleInput(recipe, mouseX, mouseY, input);
+        // 绘制 LinkBox 固定外框、标题及右侧微型滚动指示条
+        villageLayout.render(guiGraphics, font, 2, 106, 172);
     }
 }
-// endregion 类定义与构造函数
-// endregion JEI链接框原生RU触发组件修复
