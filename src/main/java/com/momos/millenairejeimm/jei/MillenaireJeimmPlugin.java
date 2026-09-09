@@ -20,6 +20,7 @@ import mezz.jei.api.registration.IModIngredientRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import mezz.jei.api.runtime.IIngredientManager;
+import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.resources.ResourceLocation;
 import org.millenaire.building.BuildingPlanSet;
 import org.millenaire.culture.Culture;
@@ -35,6 +36,7 @@ import java.util.Collection;
 @JeiPlugin
 public class MillenaireJeimmPlugin implements IModPlugin {
     public static final ResourceLocation PLUGIN_ID = ResourceLocation.fromNamespaceAndPath("millenairejeimm", "jei_plugin");
+    public static IJeiRuntime JeiRuntime;
 
     @Override
     public ResourceLocation getPluginUid() {
@@ -308,5 +310,10 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                     e.getMessage()
             );
         }
+    }
+
+    @Override
+    public void onRuntimeAvailable(IJeiRuntime runtime) {
+        JeiRuntime = runtime;
     }
 }

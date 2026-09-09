@@ -1,11 +1,13 @@
 package com.momos.millenairejeimm.jei.type.layout;
 
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.ingredients.IIngredientType;
 import mezz.jei.api.runtime.IIngredientManager;
 import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import org.millenaire.culture.Culture;
 import org.millenaire.culture.VillageType;
 
 import java.util.List;
@@ -36,7 +38,20 @@ public class CultureLinkLayout {
         this.villageLinks.setRecipe(builder, villageTypes, x, y);
     }
 
-    public void render(GuiGraphics guiGraphics, Font font, int x, int y, int width) {
-        villageLinks.render(guiGraphics, font, x, y, width);
+    public void createRecipeExtras(IRecipeExtrasBuilder builder, Culture culture, int x, int y, int width) {
+        this.villageLinks.createRecipeExtras(builder, culture, x, y, width);
+    }
+
+    /**
+     * [醒目新注释]
+     * 将第 9 格物理按钮的点击响应委托给底层 {@link JeiLinkBox#handlePlusButtonClick}。
+     */
+    public boolean handlePlusButtonClick(Object contextObject, double mouseX, double mouseY, int x, int y) {
+        return this.villageLinks.handlePlusButtonClick(contextObject, mouseX, mouseY, x, y);
+    }
+
+    public void render(GuiGraphics guiGraphics, Font font, int x, int y, int width, double mouseX, double mouseY) {
+        villageLinks.render(guiGraphics, font, x, y, width, mouseX, mouseY);
     }
 }
+// endregion

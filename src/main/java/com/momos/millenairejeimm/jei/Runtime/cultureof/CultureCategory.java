@@ -1,8 +1,10 @@
 package com.momos.millenairejeimm.jei.Runtime.cultureof;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.momos.millenairejeimm.MillenaireJeimm;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.type.BaseMillCategory;
+import com.momos.millenairejeimm.jei.type.DebugGuiUtils;
 import com.momos.millenairejeimm.jei.type.MillIconOnlyRenderer;
 import com.momos.millenairejeimm.jei.type.layout.CultureLinkLayout;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -28,9 +30,9 @@ import org.millenaire.item.ItemHelper;
 
 import java.util.List;
 
-// region 文化分类面板类
+// region 文化分类主面板类
 /**
- * 文化 {@link Culture} JEI 详情分类，继承自 {@link BaseMillCategory}。
+ * 文化 {@link Culture} JEI 详情主分类，继承自 {@link BaseMillCategory}。
  */
 public class CultureCategory extends BaseMillCategory<Culture> {
     public static final RecipeType<Culture> RECIPE_TYPE = RecipeType.create("millenaire", "culture_details", Culture.class);
@@ -74,13 +76,32 @@ public class CultureCategory extends BaseMillCategory<Culture> {
                 .addIngredient(MillIngredientTypes.CULTURE, recipe)
                 .setCustomRenderer(MillIngredientTypes.CULTURE, ICON_RENDERER);
 
-        // 2. [醒目新注释] 采用固定高度区域绑定：多余元素自动压入固定 16 槽位的轮播池中
+        // 2. 注册 LinkBox（前 8 个预览槽位）
         List<VillageType> villages = MillenaireJeimm.getVillageFormCulture(recipe);
         villageLayout.setRecipe(builder, villages, 2, 106);
     }
 
     @Override
     public void createRecipeExtras(IRecipeExtrasBuilder builder, Culture recipe, IFocusGroup focuses) {
+        // [醒目新注释] 为底层 villageLayout 绑定 Tooltip 悬浮提示框等 RecipeExtras 区域
+        if (villageLayout != null) {
+            villageLayout.createRecipeExtras(builder, recipe, 2, 106, 172);
+        }
+    }
+
+    /**
+     * [醒目新注释]
+     * 重写 {@link BaseMillCategory#handleInput}，直接在分类面板层统一截获鼠标左键事件。
+     * 拦截逻辑委托给 {@link CultureLinkLayout#handlePlusButtonClick} 处理。
+     */
+    @Override
+    public boolean handleInput(Culture recipe, double mouseX, double mouseY, InputConstants.Key input) {
+        if (input.getType() == InputConstants.Type.MOUSE && input.getValue() == 0) {
+            if (villageLayout != null && villageLayout.handlePlusButtonClick(recipe, mouseX, mouseY, 2, 106)) {
+                return true;
+            }
+        }
+        return super.handleInput(recipe, mouseX, mouseY, input);
     }
 
     @Override
@@ -107,7 +128,7 @@ public class CultureCategory extends BaseMillCategory<Culture> {
         boolean isDefaultTexture = Culture.DEFAULT_PANEL_TEXTURE.equals(recipe.panelTexture());
         drawHoverableText(guiGraphics, font, "面板纹理", isDefaultTexture ? "默认" : recipe.panelTexture().toString(), 6, 92, mouseX, mouseY);
 
-        // 绘制 LinkBox 固定外框、标题及右侧微型滚动指示条
-        villageLayout.render(guiGraphics, font, 2, 106, 172);
+        // 绘制底部统一背景及第九个加号按钮上方的 "+" 文本渲染
+        villageLayout.render(guiGraphics, font, 2, 106, 172, mouseX, mouseY);
     }
 }
