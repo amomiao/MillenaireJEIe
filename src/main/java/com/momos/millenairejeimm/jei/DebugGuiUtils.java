@@ -121,8 +121,8 @@ public class DebugGuiUtils {
         // 鼠标悬停显示 Tooltip 提示
         if (hovered) {
             List<Component> tooltip = List.of(
-                    Component.literal("§a🔍 点击打开全量 JSON Dump 深度诊断窗口"),
-                    Component.literal("§7支持大屏滚动查看与一键复制到剪贴板")
+                    Component.literal("§a🔍 点击打开 JSON / Inspector 深度诊断大窗口"),
+                    Component.literal("§7内置双页签展示，支持搜索预览与一键复制")
             );
             guiGraphics.renderComponentTooltip(font, tooltip, (int) mouseX, (int) mouseY);
         }
@@ -139,8 +139,24 @@ public class DebugGuiUtils {
      * @return 若成功触发点击则返回 true
      */
     public static boolean handleJsonButtonClick(Object recordObj, double mouseX, double mouseY, int btnX, int btnY) {
+        return handleJsonButtonClick(recordObj, List.of(), mouseX, mouseY, btnX, btnY);
+    }
+
+    // [醒目新注释] 重载 handleJsonButtonClick，支持将悬浮 Inspector 内容一同作为页签数据传入
+    /**
+     * 判定并处理 JSON 按钮点击事件，将对象与其悬浮 Inspector 属性内容一并送入大窗口。
+     *
+     * @param recordObj 数据对象
+     * @param debugLines 悬浮 Inspector 的 {@link Component} 列表
+     * @param mouseX 鼠标 X
+     * @param mouseY 鼠标 Y
+     * @param btnX 按钮 X
+     * @param btnY 按钮 Y
+     * @return 触发点击返回 true
+     */
+    public static boolean handleJsonButtonClick(Object recordObj, List<Component> debugLines, double mouseX, double mouseY, int btnX, int btnY) {
         if (isMouseOver(mouseX, mouseY, btnX, btnY, 26, 12)) {
-            openJsonDumpScreen(recordObj);
+            openJsonDumpScreen(recordObj, debugLines);
             return true;
         }
         return false;
@@ -152,6 +168,17 @@ public class DebugGuiUtils {
      * @param targetObj 待 Dump 的数据对象
      */
     public static void openJsonDumpScreen(Object targetObj) {
+        openJsonDumpScreen(targetObj, List.of());
+    }
+
+    // [醒目新注释] 重载 openJsonDumpScreen，接收并传递 Inspector 悬浮文本列表
+    /**
+     * 序列化对象并携带悬浮 Inspector 数据打开双页签预览窗口 {@link JsonDumpScreen}。
+     *
+     * @param targetObj 目标数据对象
+     * @param debugLines 悬浮属性行的 {@link Component} 列表
+     */
+    public static void openJsonDumpScreen(Object targetObj, List<Component> debugLines) {
         if (targetObj == null) return;
         String jsonText;
         try {
@@ -160,37 +187,64 @@ public class DebugGuiUtils {
             jsonText = "// JSON 序列化失败: " + e.getMessage();
         }
         String titleName = targetObj.getClass().getSimpleName();
-        Minecraft.getInstance().setScreen(new JsonDumpScreen(Component.literal("JSON Dump 视图 - " + titleName), jsonText));
+        Minecraft.getInstance().setScreen(new JsonDumpScreen(Component.literal("开发者深度诊断 - " + titleName), jsonText, debugLines));
     }
 // endregion 标题行快捷 Debug 按钮渲染与交互逻辑
 
 // region 全屏大窗口 JSON Dump 预览 Screen 控件
     /**
      * 全屏/大窗口 JSON Dump 视图控件 {@link JsonDumpScreen}，继承自原版 {@link Screen}。
-     * [醒目新注释] 重新接回底部操作按钮，并手动执行控件渲染，彻底规避 super.render() 导致的二次背景遮罩。
-     * [醒目新注释] 动态自适应屏幕分辨率，最大化利用屏幕空间（固定占据 88% 屏幕宽高）。
+     * [醒目新注释] 升级为双页签（JSON Dump 视图 / Inspector 属性视图），支持流式滚动与独立页签内容复制。
      */
     public static class JsonDumpScreen extends Screen {
 
         private final String rawJson;
+        // [醒目新注释] 新增 Inspector 原始文本列表
+        private final List<Component> debugLines;
+
         private List<String> jsonLines = new ArrayList<>();
+        private List<String> inspectorLines = new ArrayList<>();
+
+        /** [醒目新注释] 当前选中的页签：0 -> JSON 数据，1 -> Inspector 属性 */
+        private int activeTab = 0;
+
         private double scrollAmount = 0;
         private boolean copySuccessNotice = false;
         private long noticeTimestamp = 0;
 
-        // [醒目新注释] 显式保存按钮引用，便于在不调用 super.render() 的情况下手动渲染，彻底切断二次背景覆盖
+        // 按钮控件引用
         private Button copyButton;
         private Button closeButton;
 
+        // [醒目新注释] 新增页签切换控件引用
+        private Button tabJsonButton;
+        private Button tabInspectorButton;
+
+        // [醒目新注释] 新增滚动条拖拽状态标记
+        private boolean isDraggingScrollbar = false;
+
         /**
-         * 构造全屏 JSON 预览 Screen。
+         * 构造单页签 JSON 预览 Screen（兼容原有构造器）。
          *
          * @param title 窗口标题 {@link Component}
          * @param rawJson 格式化后的 JSON 字符串
          */
         public JsonDumpScreen(Component title, String rawJson) {
+            this(title, rawJson, List.of());
+        }
+
+        // [醒目新注释] 支持传入 debugLines 的全新构造器
+        /**
+         * 构造包含 JSON 结构与 Inspector 属性的双页签 Screen。
+         *
+         * @param title 窗口标题 {@link Component}
+         * @param rawJson 格式化后的 JSON 字符串
+         * @param debugLines Inspector 属性文本行列表
+         */
+        public JsonDumpScreen(Component title, String rawJson, List<Component> debugLines) {
             super(title);
             this.rawJson = rawJson;
+            this.debugLines = debugLines != null ? debugLines : List.of();
         }
 
         @Override
@@ -198,48 +252,75 @@ public class DebugGuiUtils {
             super.init();
             this.jsonLines = Arrays.asList(this.rawJson.split("\n"));
 
-            // [醒目新注释] 屏幕自适应尺寸计算：优先占用 88% 的屏幕空间，保证大屏下有极其充裕的展示面积
+            // [醒目新注释] 解析 Component 文本转为字符串展示行
+            this.inspectorLines = new ArrayList<>();
+            for (Component line : this.debugLines) {
+                this.inspectorLines.add(line.getString());
+            }
+
             int modalWidth = Math.max(280, (int) (this.width * 0.88));
             int modalHeight = Math.max(180, (int) (this.height * 0.88));
             int modalX = (this.width - modalWidth) / 2;
             int modalY = (this.height - modalHeight) / 2;
+
+            // [醒目新注释] 顶端右侧添加页签切换按钮
+            int tabY = modalY + 3;
+            this.tabJsonButton = Button.builder(Component.literal("JSON 结构"), btn -> {
+                this.activeTab = 0;
+                this.scrollAmount = 0;
+            }).bounds(modalX + modalWidth - 195, tabY, 75, 16).build();
+
+            this.tabInspectorButton = Button.builder(Component.literal("Inspector 属性"), btn -> {
+                this.activeTab = 1;
+                this.scrollAmount = 0;
+            }).bounds(modalX + modalWidth - 115, tabY, 85, 16).build();
 
             int btnWidth = 150;
             int btnHeight = 20;
             int btnY = modalY + modalHeight - 28;
 
-            // [醒目新注释] 绑定“复制 JSON 到剪贴板”按钮
-            this.copyButton = Button.builder(Component.literal("📋 复制 JSON 到剪贴板"), btn -> {
-                Minecraft.getInstance().keyboardHandler.setClipboard(this.rawJson);
+            // [醒目新注释] 点击复制时依据当前 Tab 复制对应的完整文本
+            this.copyButton = Button.builder(Component.literal("📋 复制当前视图到剪贴板"), btn -> {
+                String copyText = (this.activeTab == 0) ? this.rawJson : String.join("\n", this.inspectorLines);
+                Minecraft.getInstance().keyboardHandler.setClipboard(copyText);
                 this.copySuccessNotice = true;
                 this.noticeTimestamp = System.currentTimeMillis();
             }).bounds(modalX + (modalWidth / 2) - btnWidth - 10, btnY, btnWidth, btnHeight).build();
 
-            // [醒目新注释] 绑定“关闭”按钮
             this.closeButton = Button.builder(Component.literal("关闭 (ESC)"), btn -> {
                 this.onClose();
             }).bounds(modalX + (modalWidth / 2) + 10, btnY, 110, btnHeight).build();
 
-            // 注册到 Screen 内部监听链（用于处理鼠标点击响应）
+            this.addRenderableWidget(this.tabJsonButton);
+            this.addRenderableWidget(this.tabInspectorButton);
             this.addRenderableWidget(this.copyButton);
             this.addRenderableWidget(this.closeButton);
         }
 
+        // [醒目新注释] 根据当前选中的页签动态获取对应的文本行列表
+        private List<String> getCurrentLines() {
+            return (this.activeTab == 0) ? this.jsonLines : this.inspectorLines;
+        }
+
         @Override
         public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-            // [醒目新注释] 1. 仅在此处显式调用一次 renderBackground 绘制背景高斯模糊
+            // [醒目新注释] 动态禁用/高亮当前选中的 Tab 按钮外观
+            if (this.tabJsonButton != null) this.tabJsonButton.active = (this.activeTab != 0);
+            if (this.tabInspectorButton != null) this.tabInspectorButton.active = (this.activeTab != 1);
+
+            // 1. 背景高斯模糊 Pass
             this.renderBackground(guiGraphics, mouseX, mouseY, partialTick);
 
-            // [醒目新注释] 2. 强行截断并提交背景 Pass，确保模糊 Shader 执行完毕，绝不污染后续面板与文字
+            // 2. 提交 RenderPass 避开背景污染
             guiGraphics.flush();
 
-            // [醒目新注释] 3. 动态计算 88% 分辨率尺寸
+            // 3. 计算自适应尺寸
             int modalWidth = Math.max(280, (int) (this.width * 0.88));
             int modalHeight = Math.max(180, (int) (this.height * 0.88));
             int modalX = (this.width - modalWidth) / 2;
             int modalY = (this.height - modalHeight) / 2;
 
-            // 绘制主窗口暗色背景与边缘 1px 细线条
+            // 绘制主窗口背景与细边框
             guiGraphics.fill(modalX, modalY, modalX + modalWidth, modalY + modalHeight, 0xFA141414);
             guiGraphics.fill(modalX, modalY, modalX + modalWidth, modalY + 1, 0xFF444444);
             guiGraphics.fill(modalX, modalY, modalX + 1, modalY + modalHeight, 0xFF444444);
@@ -250,17 +331,20 @@ public class DebugGuiUtils {
             guiGraphics.fill(modalX + 1, modalY + 1, modalX + modalWidth - 1, modalY + 22, 0xFF222222);
             guiGraphics.drawString(this.font, this.title, modalX + 10, modalY + 7, 0x00FF00, true);
 
-            // [醒目新注释] 4. 动态剪裁区计算（底部预留 36px 避免文本穿透到按钮区域）
+            // 4. 计算文本区域边界
+            List<String> currentLines = getCurrentLines();
             int textTop = modalY + 28;
             int textBottom = modalY + modalHeight - 36;
             int lineHeight = 12;
             int visibleLines = (textBottom - textTop) / lineHeight;
+            int maxScroll = Math.max(0, currentLines.size() - visibleLines);
 
-            guiGraphics.enableScissor(modalX + 5, textTop, modalX + modalWidth - 5, textBottom);
+            // [醒目新注释] 剪裁区右侧留出 16px 给滚动条，避免文本挤占滚动条视觉区域
+            guiGraphics.enableScissor(modalX + 5, textTop, modalX + modalWidth - 16, textBottom);
 
             int startLine = (int) Math.floor(Math.max(0, this.scrollAmount));
-            for (int i = 0; i < visibleLines + 1 && (startLine + i) < this.jsonLines.size(); i++) {
-                String line = this.jsonLines.get(startLine + i);
+            for (int i = 0; i < visibleLines + 1 && (startLine + i) < currentLines.size(); i++) {
+                String line = currentLines.get(startLine + i);
                 int lineY = textTop + (i * lineHeight);
                 String lineNum = String.format("%3d | ", startLine + i + 1);
 
@@ -269,29 +353,104 @@ public class DebugGuiUtils {
 
             guiGraphics.disableScissor();
 
-            // 复制成功提示文本渲染
+            // [醒目新注释] 5. 绘制右侧自适应交互滚动条
+            if (maxScroll > 0) {
+                int trackX = modalX + modalWidth - 10;
+                int trackY = textTop;
+                int trackWidth = 4;
+                int trackHeight = textBottom - textTop;
+
+                // 绘制深色轨道槽
+                guiGraphics.fill(trackX, trackY, trackX + trackWidth, trackY + trackHeight, 0xFF222222);
+
+                // 根据可见行比例计算滑块动态高度
+                int thumbHeight = Math.max(16, (int) ((double) visibleLines / currentLines.size() * trackHeight));
+                int thumbY = trackY + (int) ((this.scrollAmount / maxScroll) * (trackHeight - thumbHeight));
+
+                // 判定鼠标悬停或拖拽时的亮色反馈
+                boolean hovered = mouseX >= trackX - 2 && mouseX <= trackX + trackWidth + 2 && mouseY >= trackY && mouseY <= trackY + trackHeight;
+                int thumbColor = (hovered || this.isDraggingScrollbar) ? 0xFFAAAAAA : 0xFF666666;
+
+                // 绘制滑块
+                guiGraphics.fill(trackX, thumbY, trackX + trackWidth, thumbY + thumbHeight, thumbColor);
+            }
+
+            // 复制成功提示
             if (this.copySuccessNotice) {
                 if (System.currentTimeMillis() - this.noticeTimestamp < 2000) {
-                    guiGraphics.drawString(this.font, Component.literal("§a✔ 已成功复制到剪贴板！"), modalX + modalWidth - 160, modalY + 7, 0x00FF00, true);
+                    guiGraphics.drawString(this.font, Component.literal("§a✔ 已成功复制当前视图！"), modalX + modalWidth - 170, modalY + 7, 0x00FF00, true);
                 } else {
                     this.copySuccessNotice = false;
                 }
             }
 
-            // [醒目新注释] 5. 手动渲染按钮！跳过 super.render()，彻底解决二次 renderBackground 导致的混浊覆膜
-            if (this.copyButton != null) {
-                this.copyButton.render(guiGraphics, mouseX, mouseY, partialTick);
+            // 6. 渲染包含页签在内的子控件
+            //super.render(guiGraphics, mouseX, mouseY, partialTick);
+        }
+
+        // [醒目新注释] 处理鼠标按下的拖拽起点判定
+        @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            int modalWidth = Math.max(280, (int) (this.width * 0.88));
+            int modalHeight = Math.max(180, (int) (this.height * 0.88));
+            int modalX = (this.width - modalWidth) / 2;
+            int modalY = (this.height - modalHeight) / 2;
+
+            int textTop = modalY + 28;
+            int textBottom = modalY + modalHeight - 36;
+            int trackX = modalX + modalWidth - 10;
+
+            if (button == 0 && mouseX >= trackX - 4 && mouseX <= trackX + 8 && mouseY >= textTop && mouseY <= textBottom) {
+                this.isDraggingScrollbar = true;
+                this.updateScrollFromMouseY(mouseY, modalY, modalHeight);
+                return true;
             }
-            if (this.closeButton != null) {
-                this.closeButton.render(guiGraphics, mouseX, mouseY, partialTick);
+            return super.mouseClicked(mouseX, mouseY, button);
+        }
+
+        // [醒目新注释] 处理鼠标按住移动（拖拽滑块）
+        @Override
+        public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+            if (this.isDraggingScrollbar) {
+                int modalHeight = Math.max(180, (int) (this.height * 0.88));
+                int modalY = (this.height - modalHeight) / 2;
+                this.updateScrollFromMouseY(mouseY, modalY, modalHeight);
+                return true;
             }
+            return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
+        }
+
+        // [醒目新注释] 释放鼠标时重置拖拽状态
+        @Override
+        public boolean mouseReleased(double mouseX, double mouseY, int button) {
+            if (button == 0) {
+                this.isDraggingScrollbar = false;
+            }
+            return super.mouseReleased(mouseX, mouseY, button);
+        }
+
+        // [醒目新注释] 计算鼠标 Y 坐标到逻辑滚动行数（scrollAmount）的映射关系
+        private void updateScrollFromMouseY(double mouseY, int modalY, int modalHeight) {
+            List<String> currentLines = getCurrentLines();
+            int textTop = modalY + 28;
+            int textBottom = modalY + modalHeight - 36;
+            int trackHeight = textBottom - textTop;
+            int visibleLines = trackHeight / 12;
+            int maxScroll = Math.max(0, currentLines.size() - visibleLines);
+
+            if (maxScroll <= 0) return;
+
+            int thumbHeight = Math.max(16, (int) ((double) visibleLines / currentLines.size() * trackHeight));
+            double relativeY = Math.min(Math.max(0, mouseY - textTop - (thumbHeight / 2.0)), trackHeight - thumbHeight);
+            this.scrollAmount = (relativeY / (trackHeight - thumbHeight)) * maxScroll;
         }
 
         @Override
         public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+            List<String> currentLines = getCurrentLines();
             int modalHeight = Math.max(180, (int) (this.height * 0.88));
             int visibleLines = (modalHeight - 64) / 12;
-            int maxScroll = Math.max(0, this.jsonLines.size() - visibleLines);
+            int maxScroll = Math.max(0, currentLines.size() - visibleLines);
 
             if (scrollY < 0) {
                 this.scrollAmount = Math.min(maxScroll, this.scrollAmount + 3);
