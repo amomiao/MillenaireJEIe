@@ -1,5 +1,6 @@
 package com.momos.millenairejeimm.jei.villagerof;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.momos.millenairejeimm.jei.DebugGuiUtils;
 import com.momos.millenairejeimm.jei.MillIconOnlyRenderer;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
@@ -25,8 +26,10 @@ import org.millenaire.item.ItemHelper;
 import java.util.ArrayList;
 import java.util.List;
 
+// region 类的定义与静态渲染器
 /**
  * 千年村庄村民类型 {@link VillagerType} 的 JEI 详情分类页面[cite: 12]。
+ * 结合 {@link DebugGuiUtils} 提供村民基础数值、战斗属性、行为标记、暗色 Inspector 终端与全量 JSON Dump 功能[cite: 12, 21]。
  */
 public class VillagerCategory implements IRecipeCategory<VillagerType> {
 
@@ -37,7 +40,7 @@ public class VillagerCategory implements IRecipeCategory<VillagerType> {
     private final IDrawable icon;
 
     /**
-     * 村民成分专用“仅图标”渲染器，解析 {@link VillagerType#icon()}。
+     * 村民成分专用“仅图标”渲染器，解析 {@link VillagerType#icon()}[cite: 21]。
      */
     private static final MillIconOnlyRenderer<VillagerType> ICON_RENDERER = new MillIconOnlyRenderer<>(recipe -> {
         if (recipe != null && recipe.icon() != null && !recipe.icon().isEmpty()) {
@@ -46,7 +49,9 @@ public class VillagerCategory implements IRecipeCategory<VillagerType> {
         }
         return ItemStack.EMPTY;
     });
+// endregion 类的定义与静态渲染器
 
+// region 构造函数与 JEI 分类初始化
     /**
      * 构建村民 JEI 分类页面[cite: 12]。
      *
@@ -54,7 +59,7 @@ public class VillagerCategory implements IRecipeCategory<VillagerType> {
      */
     public VillagerCategory(IGuiHelper guiHelper) {
         // [醒目新注释] 创建 160x110 像素底图用于展现村民的原名、战斗与行为标签等属性[cite: 12]
-        // [醒目新注释] 扩展页面尺寸至 160x140，提供开发者 Debug 控制台与全量属性悬浮 Inspector
+        // [醒目新注释] 扩展页面尺寸至 160x140，提供开发者 Debug 控制台与全量属性悬浮 Inspector[cite: 21]
         this.background = guiHelper.createBlankDrawable(160, 140);
 
         // [醒目新注释] 通过 ItemHelper 解析千年村庄旅行书物品 "millenaire:travel_book"；若未获取到则尝试解析 "norman_amulet" 或回退至原版书籍[cite: 12]
@@ -90,10 +95,12 @@ public class VillagerCategory implements IRecipeCategory<VillagerType> {
 
     @Override
     public int getHeight() {
-        // [醒目新注释] 高度同步调整为 140px
+        // [醒目新注释] 高度同步调整为 140px[cite: 21]
         return 140;
     }
+// endregion 构造函数与 JEI 分类初始化
 
+// region JEI 槽位与成分配置 (setRecipe)
     /**
      * 在 JEI 布局中设置成分与交互槽位[cite: 12]。
      *
@@ -111,7 +118,9 @@ public class VillagerCategory implements IRecipeCategory<VillagerType> {
                 .addIngredient(MillIngredientTypes.VILLAGER, recipe)
                 .setCustomRenderer(MillIngredientTypes.VILLAGER, ICON_RENDERER);
     }
+// endregion JEI 槽位与成分配置 (setRecipe)
 
+// region 面板渲染与 Inspector Tooltip 数据 Dump (draw)
     /**
      * 绘制村民类型 {@link VillagerType} 的详细参数（包含原生名称、文化、性别、血量、攻击力、雇佣价格及战斗行为标记等）[cite: 12]。
      *
@@ -133,6 +142,9 @@ public class VillagerCategory implements IRecipeCategory<VillagerType> {
         // 1. 渲染村民原名与显示名称[cite: 12]
         String displayName = recipe.nativeName() != null && !recipe.nativeName().isEmpty() ? recipe.nativeName() : recipe.id().getPath();
         guiGraphics.drawString(font, Component.literal("§l" + displayName), 28, 6, 0x111111, false);
+
+        // [醒目新注释] 绘制标题行右侧的极简 JSON Dump 开发者徽章按钮 (X: 128, Y: 6)[cite: 20, 21]
+        DebugGuiUtils.drawJsonDevButton(guiGraphics, font, 128, 6, mouseX, mouseY);
 
         // 2. 渲染文化与性别/年龄[cite: 12]
         String culture = recipe.culture() != null ? recipe.culture().getPath() : "未知文化";
@@ -177,7 +189,7 @@ public class VillagerCategory implements IRecipeCategory<VillagerType> {
             }
         }
 
-        // [醒目新注释] 绘制暗色 Debug 终端控制台 (Y: 78~132)，使用通用工具类 {@link DebugGuiUtils}
+        // [醒目新注释] 绘制暗色 Debug 终端控制台 (Y: 78~132)，使用通用工具类 {@link DebugGuiUtils}[cite: 21]
         DebugGuiUtils.drawDebugConsoleBackground(guiGraphics, 6, 78, 148, 56);
         guiGraphics.drawString(font, Component.literal("§a[VILLAGER DEV INSPECTOR]"), 10, 82, 0x00FF00, false);
 
@@ -187,9 +199,9 @@ public class VillagerCategory implements IRecipeCategory<VillagerType> {
 
         String weaponPath = recipe.defaultWeapon() != null ? recipe.defaultWeapon().getPath() : "无默认武器";
         guiGraphics.drawString(font, Component.literal("§7Weapon: §f" + weaponPath), 10, 104, 0xCCCCCC, false);
-        guiGraphics.drawString(font, Component.literal("§e💡 悬停此处查看村民全量数据 Dump"), 10, 118, 0xFFCC00, false);
+        guiGraphics.drawString(font, Component.literal("§e💡 悬停此处或点击上方 JSON 按钮"), 10, 118, 0xFFCC00, false);
 
-        // [醒目新注释] 构建全量字段悬浮 Hover Tooltip Inspector 浮窗
+        // [醒目新注释] 构建全量字段悬浮 Hover Tooltip Inspector 浮窗[cite: 21]
         List<Component> debugTooltip = new ArrayList<>();
         debugTooltip.add(Component.literal("§a=== VillagerType Record Field Inspector ==="));
         debugTooltip.add(Component.literal("§7Memory Record: §f" + recipe.getClass().getName()));
@@ -205,13 +217,13 @@ public class VillagerCategory implements IRecipeCategory<VillagerType> {
         debugTooltip.add(Component.literal("§7HiringCost / SpawnWeight: §f" + recipe.hiringCost() + " / " + recipe.spawnWeight()));
         debugTooltip.add(Component.literal("§7VillagerConfigKey: §f" + recipe.villagerConfigKey()));
 
-        // 名字模板表单 Dump
+        // 名字模板表单 Dump[cite: 21]
         debugTooltip.add(Component.literal("§e--- 姓名与后代配置 ---"));
         debugTooltip.add(Component.literal(" §7FirstNameList: §f" + recipe.firstNameList()));
         debugTooltip.add(Component.literal(" §7FamilyNameList: §f" + recipe.familyNameList()));
         debugTooltip.add(Component.literal(" §7Child Types (M/F): §f" + recipe.maleChild() + " / " + recipe.femaleChild() + " (HasChildren: " + recipe.hasChildren() + ")"));
 
-        // AI Goal 目标逻辑 Dump
+        // AI Goal 目标逻辑 Dump[cite: 21]
         if (recipe.goals() != null && !recipe.goals().isEmpty()) {
             debugTooltip.add(Component.literal("§b--- AI Goals 目标表 {@link VillagerType#goals()} ---"));
             for (ResourceLocation goal : recipe.goals()) {
@@ -219,7 +231,7 @@ public class VillagerCategory implements IRecipeCategory<VillagerType> {
             }
         }
 
-        // Tags 行为标记 Dump
+        // Tags 行为标记 Dump[cite: 21]
         if (recipe.tags() != null && !recipe.tags().isEmpty()) {
             debugTooltip.add(Component.literal("§d--- 行为 Tag 标记集 {@link VillagerType#tags()} ---"));
             for (String tag : recipe.tags()) {
@@ -227,7 +239,7 @@ public class VillagerCategory implements IRecipeCategory<VillagerType> {
             }
         }
 
-        // 服饰套件 ClothSet Dump
+        // 服饰套件 ClothSet Dump[cite: 21]
         if (recipe.clothes() != null && !recipe.clothes().isEmpty()) {
             debugTooltip.add(Component.literal("§a--- 服饰层 ClothSet Map {@link VillagerType#clothes()} ---"));
             recipe.clothes().forEach((key, clothSet) -> {
@@ -237,7 +249,7 @@ public class VillagerCategory implements IRecipeCategory<VillagerType> {
             });
         }
 
-        // 初始背包与异国商人库存 Dump
+        // 初始背包与异国商人库存 Dump[cite: 21]
         if (recipe.initialInventory() != null && !recipe.initialInventory().isEmpty()) {
             debugTooltip.add(Component.literal("§6--- 初始物品栏 {@link VillagerType#initialInventory()} ---"));
             recipe.initialInventory().forEach((itemRl, count) -> debugTooltip.add(Component.literal(" §7- §f" + itemRl + " x" + count)));
@@ -248,7 +260,7 @@ public class VillagerCategory implements IRecipeCategory<VillagerType> {
             recipe.foreignMerchantStock().forEach((itemRl, count) -> debugTooltip.add(Component.literal(" §7- §f" + itemRl + " x" + count)));
         }
 
-        // 解析后（Resolved）的依赖需求数据 Dump
+        // 解析后（Resolved）的依赖需求数据 Dump[cite: 21]
         debugTooltip.add(Component.literal("§c--- 已解析的物品需求关系 (Resolved Goods) ---"));
         if (recipe.resolvedRequiredGoods() != null) {
             debugTooltip.add(Component.literal(" §7RequiredGoods {@link VillagerType#resolvedRequiredGoods()}: §f" + recipe.resolvedRequiredGoods().size() + " 项"));
@@ -260,13 +272,37 @@ public class VillagerCategory implements IRecipeCategory<VillagerType> {
             debugTooltip.add(Component.literal(" §7CollectGoods {@link VillagerType#resolvedCollectGoods()}: §f" + recipe.resolvedCollectGoods().size() + " 项"));
         }
 
-        // 图鉴相关
+        // 图鉴相关[cite: 21]
         debugTooltip.add(Component.literal("§1--- 图鉴 TravelBook 属性 ---"));
         debugTooltip.add(Component.literal(" §7Display / MainCulture: §f" + recipe.travelBookDisplay() + " / " + recipe.travelBookMainCultureVillager()));
         debugTooltip.add(Component.literal(" §7Category: §f" + recipe.travelBookCategory()));
         debugTooltip.add(Component.literal(" §7MainHand / OffHand: §f" + recipe.travelBookHeldItem() + " / " + recipe.travelBookHeldItemOffHand()));
 
-        // 渲染悬浮提示框
+        // 渲染悬浮提示框[cite: 21]
         DebugGuiUtils.renderHoverInspector(font, guiGraphics, debugTooltip, mouseX, mouseY, 6, 78, 148, 56);
     }
+// endregion 面板渲染与 Inspector Tooltip 数据 Dump (draw)
+
+// region 用户交互与点击响应逻辑 (handleInput)
+    /**
+     * [醒目新注释] 拦截 JEI 输入事件，监听鼠标左键点击右上角 JSON 开发者按钮，弹窗呼出全量 JSON Dump 视图[cite: 20, 21]。
+     *
+     * @param recipe 当前渲染的 {@link VillagerType} 村民配方对象
+     * @param mouseX 鼠标当前相对 X 坐标
+     * @param mouseY 鼠标当前相对 Y 坐标
+     * @param input 点击或按键输入类型 {@link InputConstants.Key}
+     * @return 若该事件被捕获消费则返回 true
+     */
+    @Override
+    @SuppressWarnings("removal")
+    public boolean handleInput(VillagerType recipe, double mouseX, double mouseY, InputConstants.Key input) {
+        // [醒目新注释] 监听鼠标左键按下 (Type.MOUSE, Value: 0)[cite: 20, 21]
+        if (input.getType() == InputConstants.Type.MOUSE && input.getValue() == 0) {
+            if (DebugGuiUtils.handleJsonButtonClick(recipe, mouseX, mouseY, 128, 6)) {
+                return true;
+            }
+        }
+        return IRecipeCategory.super.handleInput(recipe, mouseX, mouseY, input);
+    }
+// endregion 用户交互与点击响应逻辑 (handleInput)
 }
