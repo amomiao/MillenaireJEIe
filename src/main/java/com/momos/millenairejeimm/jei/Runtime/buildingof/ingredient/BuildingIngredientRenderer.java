@@ -1,8 +1,8 @@
-package com.momos.millenairejeimm.jei.buildingof.ingredient;
+package com.momos.millenairejeimm.jei.Runtime.buildingof.ingredient;
 
 import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;
-import com.momos.millenairejeimm.jei.MillIngredientIconResolver;
-import com.momos.millenairejeimm.jei.base.BaseMillIngredientRenderer;
+import com.momos.millenairejeimm.jei.type.MillIngredientIconResolver;
+import com.momos.millenairejeimm.jei.type.BaseMillIngredientRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.TooltipFlag;
 import org.millenaire.building.BuildingPlanSet;

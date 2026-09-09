@@ -1,6 +1,6 @@
-package com.momos.millenairejeimm.jei.cultureof.ingredient;
+package com.momos.millenairejeimm.jei.Runtime.cultureof.ingredient;
 
-import com.momos.millenairejeimm.jei.base.BaseMillIngredientRenderer;
+import com.momos.millenairejeimm.jei.type.BaseMillIngredientRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.TooltipFlag;
 import org.millenaire.culture.Culture;

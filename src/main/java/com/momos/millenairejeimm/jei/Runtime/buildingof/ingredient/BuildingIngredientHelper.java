@@ -1,4 +1,4 @@
-package com.momos.millenairejeimm.jei.buildingof.ingredient;
+package com.momos.millenairejeimm.jei.Runtime.buildingof.ingredient;
 
 import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;

@@ -1,7 +1,7 @@
-package com.momos.millenairejeimm.jei.villagerof.ingredient;
+package com.momos.millenairejeimm.jei.Runtime.villagerof.ingredient;
 
 import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;
-import com.momos.millenairejeimm.jei.base.BaseMillIngredientRenderer;
+import com.momos.millenairejeimm.jei.type.BaseMillIngredientRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.TooltipFlag;
 import org.millenaire.culture.VillagerType;

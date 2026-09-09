@@ -1,6 +1,5 @@
-package com.momos.millenairejeimm.jei.base;
+package com.momos.millenairejeimm.jei.type;
 
-import com.momos.millenairejeimm.jei.MillIngredientIconResolver;
 import mezz.jei.api.ingredients.IIngredientRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;

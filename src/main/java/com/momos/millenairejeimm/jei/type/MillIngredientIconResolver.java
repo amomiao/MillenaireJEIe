@@ -1,4 +1,4 @@
-package com.momos.millenairejeimm.jei;
+package com.momos.millenairejeimm.jei.type;
 
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;

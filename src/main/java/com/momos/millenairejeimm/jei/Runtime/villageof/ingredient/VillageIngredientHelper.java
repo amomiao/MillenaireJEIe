@@ -1,4 +1,4 @@
-package com.momos.millenairejeimm.jei.villageof.ingredient;
+package com.momos.millenairejeimm.jei.Runtime.villageof.ingredient;
 
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import mezz.jei.api.ingredients.IIngredientHelper;

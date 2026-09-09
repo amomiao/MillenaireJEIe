@@ -1,4 +1,4 @@
-package com.momos.millenairejeimm.jei.villagerof.ingredient;
+package com.momos.millenairejeimm.jei.Runtime.villagerof.ingredient;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;

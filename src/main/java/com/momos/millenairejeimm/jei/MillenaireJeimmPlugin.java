@@ -2,23 +2,24 @@ package com.momos.millenairejeimm.jei;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeim.util.MMLog;
-import com.momos.millenairejeimm.jei.buildingof.BuildingCategory;
-import com.momos.millenairejeimm.jei.buildingof.ingredient.BuildingIngredientHelper;
-import com.momos.millenairejeimm.jei.buildingof.ingredient.BuildingIngredientRenderer;
-import com.momos.millenairejeimm.jei.cultureof.CultureCategory;
-import com.momos.millenairejeimm.jei.cultureof.ingredient.CultureIngredientHelper;
-import com.momos.millenairejeimm.jei.cultureof.ingredient.CultureIngredientRenderer;
-import com.momos.millenairejeimm.jei.villageof.VillageCategory;
-import com.momos.millenairejeimm.jei.villageof.ingredient.VillageIngredientHelper;
-import com.momos.millenairejeimm.jei.villageof.ingredient.VillageIngredientRenderer;
-import com.momos.millenairejeimm.jei.villagerof.VillagerCategory;
-import com.momos.millenairejeimm.jei.villagerof.ingredient.VillagerIngredientHelper;
-import com.momos.millenairejeimm.jei.villagerof.ingredient.VillagerIngredientRenderer;
+import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingCategory;
+import com.momos.millenairejeimm.jei.Runtime.buildingof.ingredient.BuildingIngredientHelper;
+import com.momos.millenairejeimm.jei.Runtime.buildingof.ingredient.BuildingIngredientRenderer;
+import com.momos.millenairejeimm.jei.Runtime.cultureof.CultureCategory;
+import com.momos.millenairejeimm.jei.Runtime.cultureof.ingredient.CultureIngredientHelper;
+import com.momos.millenairejeimm.jei.Runtime.cultureof.ingredient.CultureIngredientRenderer;
+import com.momos.millenairejeimm.jei.Runtime.villageof.VillageCategory;
+import com.momos.millenairejeimm.jei.Runtime.villageof.ingredient.VillageIngredientHelper;
+import com.momos.millenairejeimm.jei.Runtime.villageof.ingredient.VillageIngredientRenderer;
+import com.momos.millenairejeimm.jei.Runtime.villagerof.VillagerCategory;
+import com.momos.millenairejeimm.jei.Runtime.villagerof.ingredient.VillagerIngredientHelper;
+import com.momos.millenairejeimm.jei.Runtime.villagerof.ingredient.VillagerIngredientRenderer;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.registration.IModIngredientRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
+import mezz.jei.api.runtime.IIngredientManager;
 import net.minecraft.resources.ResourceLocation;
 import org.millenaire.building.BuildingPlanSet;
 import org.millenaire.culture.Culture;
@@ -158,9 +159,10 @@ public class MillenaireJeimmPlugin implements IModPlugin {
 
     @Override
     public void registerCategories(IRecipeCategoryRegistration registration) {
+        IIngredientManager ingredientManager = registration.getJeiHelpers().getIngredientManager();
         // [醒目新注释] 注册 VillageCategory 分类页面
         registration.addRecipeCategories(
-                new CultureCategory(registration.getJeiHelpers().getGuiHelper()),
+                new CultureCategory(registration.getJeiHelpers().getGuiHelper(),ingredientManager),
                 new BuildingCategory(registration.getJeiHelpers().getGuiHelper()),
                 new VillagerCategory(registration.getJeiHelpers().getGuiHelper()),
                 new VillageCategory(registration.getJeiHelpers().getGuiHelper())

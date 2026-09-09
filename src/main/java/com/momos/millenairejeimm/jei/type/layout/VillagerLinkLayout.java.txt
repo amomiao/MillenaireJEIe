@@ -1,0 +1,21 @@
+package com.momos.millenairejeimm.jei.type.layout;
+
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+
+// region 村民分类链接框布局
+public class VillagerLinkLayout {
+    // [声明缺少的参数对象] 关联文化、村庄与建筑列表占位
+    public final JeiLinkBox<Object> villageLinks = new JeiLinkBox<>("生成村庄", 1);
+    public final JeiLinkBox<Object> buildingLinks = new JeiLinkBox<>("关联建筑", 1);
+
+    public void render(GuiGraphics guiGraphics, Font font, int startY) {
+        int currentY = startY;
+        // 关联村庄
+        villageLinks.render(guiGraphics, font, 2, currentY, 172);
+        currentY += villageLinks.getBoxHeight() + 2;
+        // 关联建筑
+        buildingLinks.render(guiGraphics, font, 2, currentY, 172);
+    }
+}
+// endregion 村民分类链接框布局
