@@ -1,12 +1,15 @@
 package com.momos.millenairejeimm.jei.Runtime.villageof;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
+import com.momos.millenairejeimm.debug.JeiDiagnosticLogger;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.MillenaireJeimmPlugin;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
 import com.momos.millenairejeimm.jei.Runtime.JeiLinkLayout;
 import com.momos.millenairejeimm.jei.Runtime.MillIconOnlyRenderer;
 import com.momos.millenairejeimm.jei.Runtime.JeiLinkBox;
+import com.momos.millenairejeimm.jei.Runtime.villageof.link.VillageBuildingLink;
+import com.momos.millenairejeimm.jei.Runtime.villageof.link.VillageVillagerLink;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
@@ -54,29 +57,29 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
         // [醒目新注释] 1. 点击建筑 LinkBox "+": 发送 RecipeIngredientRole.RENDER_ONLY 焦点的 VILLAGE
         // [醒目新注释] 修复：改用 RENDER_ONLY 角色，作为 {@link VillageBuildingsCategory} 的独占特征码，
         // [醒目新注释] 彻底避开其他分类占用的 INPUT/CATALYST 角色，强行锁定单一页签弹窗与精准过滤。
+        // [醒目新注释] 改用专属路由类型 {@link VillageBuildingLink} 发送焦点，锁定 {@link VillageBuildingsCategory} 唯一分类
         this.buildingBox = new JeiLinkBox<BuildingPlanSet>("村庄包含建筑")
                 .useJeiMode(ingredientManager, MillIngredientTypes.BUILDING)
                 .setOnPlusClick((contextObject, items) -> {
                     if (MillenaireJeimmPlugin.JeiRuntime != null && contextObject instanceof VillageType village) {
-//                        var focus = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory()
-////                                .createFocus(RecipeIngredientRole.RENDER_ONLY, MillIngredientTypes.VILLAGE, village);
-////                        MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(focus);
-                        var focus = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory().createFocus(RecipeIngredientRole.INPUT, MillIngredientTypes.VILLAGE, village);
-                        MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().showTypes(List.of(
-                                VillageBuildingsCategory.RECIPE_TYPE // 精确指定要唤起的分类 RecipeType
-                        ));
+                        var link = new VillageBuildingLink(village);
+                        var focus = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory()
+                                .createFocus(RecipeIngredientRole.INPUT, MillIngredientTypes.VILLAGE_BUILDING_LINK, link);
+                        JeiDiagnosticLogger.logFocusTrigger("建筑Link点击", focus);
+                        MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(focus);
                     }
                 });
 
         // [醒目新注释] 2. 点击村民 LinkBox "+": 发送 RecipeIngredientRole.CATALYST 焦点的 VILLAGE
         // [醒目新注释] 独占匹配绑定了 CATALYST 角色隐形成分的全景村民分类 {@link VillageVillagersCategory}。
+        // [醒目新注释] 改用专属路由类型 {@link VillageVillagerLink} 发送焦点，锁定 {@link VillageVillagersCategory} 唯一分类
         this.villagerBox = new JeiLinkBox<VillagerType>("村庄出现村民")
                 .useJeiMode(ingredientManager, MillIngredientTypes.VILLAGER)
                 .setOnPlusClick((contextObject, items) -> {
                     if (MillenaireJeimmPlugin.JeiRuntime != null && contextObject instanceof VillageType village) {
+                        var link = new VillageVillagerLink(village);
                         var focus = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory()
-                                .createFocus(RecipeIngredientRole.CATALYST, MillIngredientTypes.VILLAGE, village);
-
+                                .createFocus(RecipeIngredientRole.INPUT, MillIngredientTypes.VILLAGE_VILLAGER_LINK, link);
                         MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(focus);
                     }
                 });

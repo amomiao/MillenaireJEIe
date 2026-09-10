@@ -10,6 +10,9 @@ import org.millenaire.culture.ModCultures;
 import org.millenaire.culture.VillageType;
 import org.millenaire.culture.VillagerType;
 
+import com.momos.millenairejeimm.jei.Runtime.villageof.link.VillageBuildingLink;
+import com.momos.millenairejeimm.jei.Runtime.villageof.link.VillageVillagerLink;
+
 /**
  * 千年百科 JEI 自定义成分类型 {@link IIngredientType} 与 {@link Codec} 编解码器注册表。
  */
@@ -18,6 +21,8 @@ public final class MillIngredientTypes {
     public static final IIngredientType<BuildingPlanSet> BUILDING = () -> BuildingPlanSet.class;
     public static final IIngredientType<VillagerType> VILLAGER = () -> VillagerType.class;
     public static final IIngredientType<VillageType> VILLAGE = () -> VillageType.class;
+    public static final IIngredientType<VillageBuildingLink> VILLAGE_BUILDING_LINK = () -> VillageBuildingLink.class;
+    public static final IIngredientType<VillageVillagerLink> VILLAGE_VILLAGER_LINK = () -> VillageVillagerLink.class;
 
     /** 文化 {@link Culture} 的 JEI 序列化编解码器 */
     public static final Codec<Culture> CULTURE_CODEC = ResourceLocation.CODEC.xmap(

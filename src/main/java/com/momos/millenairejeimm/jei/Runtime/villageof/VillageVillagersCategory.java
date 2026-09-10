@@ -3,6 +3,7 @@ package com.momos.millenairejeimm.jei.Runtime.villageof;
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
+import com.momos.millenairejeimm.jei.Runtime.villageof.link.VillageVillagerLink;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -56,11 +57,8 @@ public class VillageVillagersCategory extends BaseMillCategory<VillageType> {
     public void setRecipe(IRecipeLayoutBuilder builder, VillageType recipe, IFocusGroup focuses) {
         if (recipe == null) return;
 
-        // [醒目新注释] 隐形成分绑定：将主触发配方 {@link MillIngredientTypes#VILLAGE} 注册入 Focus 索引链
-        // [醒目新注释] 使 JEI 能响应以 {@link VillageType} 为 INPUT 焦点的跳转请求，准确呈现当前村庄的村民列表
-        // [醒目新注释] 修复：修改为 RecipeIngredientRole.CATALYST 角色注册隐形成分。
-        // [醒目新注释] 用于与 VillageBuildingsCategory(INPUT) 进行隔离，使 show(CATALYST focus) 能独占唤起村民全景分类并消除双页签。
-        builder.addInvisibleIngredients(RecipeIngredientRole.CATALYST).addIngredient(MillIngredientTypes.VILLAGE, recipe);
+        // builder.addInvisibleIngredients(RecipeIngredientRole.CATALYST).addIngredient(MillIngredientTypes.VILLAGE, recipe);
+        builder.addInvisibleIngredients(RecipeIngredientRole.INPUT).addIngredient(MillIngredientTypes.VILLAGE_VILLAGER_LINK, new VillageVillagerLink(recipe));
 
         List<VillagerType> villagers = MillenaireAPIHelper.getVillagerFormVillage(recipe);
         if (villagers == null || villagers.isEmpty()) return;

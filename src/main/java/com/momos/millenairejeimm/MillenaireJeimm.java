@@ -3,33 +3,30 @@ package com.momos.millenairejeimm;
 import com.momos.millenairejeimm.debug.DebugGuiUtils;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.MillenaireJeimmPlugin;
-import com.momos.millenairejeimm.jei.Runtime.BaseMillIngredientRenderer;
+import com.momos.millenairejeimm.jei.Runtime.*;
 import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingCategory;
 import com.momos.millenairejeimm.jei.Runtime.buildingof.ingredient.BuildingIngredientHelper;
 import com.momos.millenairejeimm.jei.Runtime.buildingof.ingredient.BuildingIngredientRenderer;
-import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
 import com.momos.millenairejeimm.jei.Runtime.cultureof.CultureCategory;
 import com.momos.millenairejeimm.jei.Runtime.cultureof.CultureVillagesCategory;
-import com.momos.millenairejeimm.jei.Runtime.JeiLinkBox;
-import com.momos.millenairejeimm.jei.Runtime.JeiLinkLayout;
 import com.momos.millenairejeimm.jei.Runtime.villageof.VillageBuildingsCategory;
 import com.momos.millenairejeimm.jei.Runtime.villageof.VillageCategory;
 import com.momos.millenairejeimm.jei.Runtime.villageof.VillageVillagersCategory;
-import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import com.momos.millenairejeimm.jei.Runtime.villageof.ingredient.VillageIngredientHelper;
+import com.momos.millenairejeimm.jei.Runtime.villageof.link.VillageBuildingLink;
+import com.momos.millenairejeimm.jei.Runtime.villageof.link.VillageBuildingLinkHelper;
+import com.momos.millenairejeimm.jei.Runtime.villageof.link.VillageVillagerLink;
+import com.momos.millenairejeimm.jei.Runtime.villageof.link.VillageVillagerLinkHelper;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.ingredients.IIngredientHelper;
 import mezz.jei.api.ingredients.IIngredientRenderer;
-import mezz.jei.api.ingredients.IIngredientType;
-import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import mezz.jei.api.runtime.IIngredientManager;
-import mezz.jei.api.runtime.IJeiRuntime;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import org.millenaire.building.BuildingPlanSet;
-import org.millenaire.culture.VillageType;
 
 @Mod(MillenaireJeimm.MODID)
 public class MillenaireJeimm {
@@ -81,7 +78,7 @@ public class MillenaireJeimm {
     /// 4.3.6 [VillageCategory#VillageCategory] => `if (MillenaireJeimmPlugin.JeiRuntime != null && contextObject instanceof VillageType village)` => 添加判断,保险逻辑通常不会空
     /// 4.3.7 `var focus = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory().createFocus(RecipeIngredientRole.RENDER_ONLY, MillIngredientTypes.VILLAGE, village);`
     /// 4.3.7.1 (var focus) 构筑一个检索焦点, 作用是跳转过去之后页面会默认转到`焦点对象`
-    /// [过时]4.3.7.2 (getJeiHelpers().getFocusFactory().createFocus(...)) 转到焦点构建的方法上
+    /// [冻结]4.3.7.2 (getJeiHelpers().getFocusFactory().createFocus(...)) 转到焦点构建的方法上 - 现在只有[CultureCategory]使用此流程,因为文化只关联了村庄
     /// 4.3.7.3 最重要的`.createFocus(RecipeIngredientRole.RENDER_ONLY, MillIngredientTypes.VILLAGE, village)`
     /// 4.3.7.3.1 [RecipeIngredientRole]是一个`枚举`,控制页签的流向,如果多次[JeiLinkBox#setOnPlusClick]声明时为两个`.createFocus`赋值了同一类型，那么就会唤起两组数据并且使得聚焦失败，超过4个值时逻辑垮塌(:D因为枚举只有四个值)
     /// 4.3.7.3.1 且这些值不是在这里作为自变量的，而是受制于对应的[VillageBuildingsCategory#setRecipe]中调用的`builder.addInvisibleIngredients(RecipeIngredientRole.RENDER_ONLY).addIngredient(MillIngredientTypes.VILLAGE, recipe);`
@@ -97,7 +94,14 @@ public class MillenaireJeimm {
     ///     builder.addInvisibleIngredients(RecipeIngredientRole.RENDER_ONLY).addIngredient([MillIngredientTypes#VILLAGE], recipe);
     ///     也就是把自己注册为了[MillIngredientTypes#VILLAGE]的查询结果
     ///     让他们与[MillIngredientTypes#VILLAGE]脱钩，在更高层隔离`查询作用域`，就能解决查询焦点的复杂情况
-    ///
+    /// 4.3.7.3b 声明流程
+    /// 4.3.7.3b.1 声明[VillageBuildingLink]和[VillageVillagerLink] 作为路由
+    /// 4.3.7.3b.2 声明[VillageBuildingLinkHelper]和[VillageVillagerLinkHelper],如同[VillageIngredientHelper]一样进行逻辑解释
+    /// 4.3.7.3b.3 确保[MillIngredientTypes]声明了静态对象
+    ///     public static final IIngredientType<VillageBuildingLink> VILLAGE_BUILDING_LINK = () -> VillageBuildingLink.class;
+    ///     public static final IIngredientType<VillageVillagerLink> VILLAGE_VILLAGER_LINK = () -> VillageVillagerLink.class;
+    /// 4.3.7.3b.4 [MillenaireJeimmPlugin#registerIngredients]中声明这个页面,注意全都在`Helper`之后的参数中填入[LinkRenderer]，所有的Link统统不进行渲染。
+    /// 4.3.7.4b 此时[4.3.7]`focus`的声明就可以随意设置`RecipeIngredientRole`而不出现重复页签、焦点失效了。
     /// 4.3.8 `MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(focus);` 传入焦点，调用`Jei运行时`，产生页面跳转。
     public MillenaireJeimm(IEventBus modEventBus, ModContainer modContainer) {
 

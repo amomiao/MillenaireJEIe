@@ -1,8 +1,10 @@
 package com.momos.millenairejeimm.jei.Runtime.villageof;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
+import com.momos.millenairejeimm.debug.JeiDiagnosticLogger;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
+import com.momos.millenairejeimm.jei.Runtime.villageof.link.VillageBuildingLink;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -47,9 +49,16 @@ public class VillageBuildingsCategory extends BaseMillCategory<VillageType> {
     public void setRecipe(IRecipeLayoutBuilder builder, VillageType recipe, IFocusGroup focuses) {
         if (recipe == null) return;
 
-        // [醒目新注释] 关键修复：隐形成分注册改为 RecipeIngredientRole.RENDER_ONLY 角色
-        // [醒目新注释] 与 VillageCategory(OUTPUT) 和 VillageVillagersCategory(CATALYST) 形成物理隔离，保证唤起时只有当前单一页签且正确过滤。
-        builder.addInvisibleIngredients(RecipeIngredientRole.RENDER_ONLY).addIngredient(MillIngredientTypes.VILLAGE, recipe);
+        var link = new VillageBuildingLink(recipe);
+        // [醒目新注释] 注入诊断监听：打印配方构建时隐形成分的绑定状况
+        JeiDiagnosticLogger.logCategoryBinding(
+                "VillageBuildingsCategory",
+                "INPUT",
+                MillIngredientTypes.VILLAGE_BUILDING_LINK,
+                link
+        );
+
+        builder.addInvisibleIngredients(RecipeIngredientRole.INPUT).addIngredient(MillIngredientTypes.VILLAGE_BUILDING_LINK, link);
 
         List<BuildingPlanSet> buildings = MillenaireAPIHelper.getBuildingFormVillage(recipe);
         if (buildings == null || buildings.isEmpty()) return;

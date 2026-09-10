@@ -2,6 +2,7 @@ package com.momos.millenairejeimm.jei;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeim.util.MMLog;
+import com.momos.millenairejeimm.jei.Runtime.LinkRenderer;
 import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingCategory;
 import com.momos.millenairejeimm.jei.Runtime.buildingof.ingredient.BuildingIngredientHelper;
 import com.momos.millenairejeimm.jei.Runtime.buildingof.ingredient.BuildingIngredientRenderer;
@@ -14,6 +15,7 @@ import com.momos.millenairejeimm.jei.Runtime.villageof.VillageCategory;
 import com.momos.millenairejeimm.jei.Runtime.villageof.VillageVillagersCategory;
 import com.momos.millenairejeimm.jei.Runtime.villageof.ingredient.VillageIngredientHelper;
 import com.momos.millenairejeimm.jei.Runtime.villageof.ingredient.VillageIngredientRenderer;
+import com.momos.millenairejeimm.jei.Runtime.villageof.link.*;
 import com.momos.millenairejeimm.jei.Runtime.villagerof.VillagerCategory;
 import com.momos.millenairejeimm.jei.Runtime.villagerof.ingredient.VillagerIngredientHelper;
 import com.momos.millenairejeimm.jei.Runtime.villagerof.ingredient.VillagerIngredientRenderer;
@@ -158,6 +160,46 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                     "注册村民成分阶段出现异常: {}",
                     "Exception during villager ingredient registration: {}",
                     "Exception lors de l'enregistrement de l'ingrédient de villageois: {}",
+                    e.getMessage()
+            );
+        }
+
+        // [醒目新注释] 5. 注册村庄-建筑全景分类专属路由 Payload 成分 (传入 Codec 解决 JEI 19.9.0+ 弃用报错)
+        try {
+            Collection<VillageType> villages = MillenaireAPIHelper.getAllVillageType().values();
+            Collection<VillageBuildingLink> buildingLinks = villages.stream().map(VillageBuildingLink::new).toList();
+            registration.register(
+                    MillIngredientTypes.VILLAGE_BUILDING_LINK,
+                    buildingLinks,
+                    new VillageBuildingLinkHelper(),
+                    new LinkRenderer<>(),
+                    VillageBuildingLink.CODEC
+            );
+        } catch (Exception e) {
+            MMLog.warn(
+                    "注册村庄-建筑路由成分阶段出现异常: {}",
+                    "Exception during village-building link ingredient registration: {}",
+                    "Exception lors de l'enregistrement du lien village-bâtiment: {}",
+                    e.getMessage()
+            );
+        }
+
+        // [醒目新注释] 6. 注册村庄-村民全景分类专属路由 Payload 成分 (传入 Codec 解决 JEI 19.9.0+ 弃用报错)
+        try {
+            Collection<VillageType> villages = MillenaireAPIHelper.getAllVillageType().values();
+            Collection<VillageVillagerLink> villagerLinks = villages.stream().map(VillageVillagerLink::new).toList();
+            registration.register(
+                    MillIngredientTypes.VILLAGE_VILLAGER_LINK,
+                    villagerLinks,
+                    new VillageVillagerLinkHelper(),
+                    new LinkRenderer<>(),
+                    VillageVillagerLink.CODEC
+            );
+        } catch (Exception e) {
+            MMLog.warn(
+                    "注册村庄-村民路由成分阶段出现异常: {}",
+                    "Exception during village-villager link ingredient registration: {}",
+                    "Exception lors de l'enregistrement du lien village-villageois: {}",
                     e.getMessage()
             );
         }
