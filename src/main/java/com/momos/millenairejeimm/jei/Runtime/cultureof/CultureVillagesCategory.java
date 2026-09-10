@@ -46,10 +46,6 @@ public class CultureVillagesCategory extends BaseMillCategory<Culture> {
      */
     private Component cachedDisplayNameComponent;
 
-    public CultureVillagesCategory(IGuiHelper guiHelper, IJeiRuntime jeiRuntime) {
-        super(guiHelper, guiHelper.createDrawableItemStack(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BOOK)));
-    }
-
     public CultureVillagesCategory(IGuiHelper guiHelper, IIngredientManager ingredientManager) {
         super(guiHelper, guiHelper.createDrawableItemStack(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BOOK)));
     }

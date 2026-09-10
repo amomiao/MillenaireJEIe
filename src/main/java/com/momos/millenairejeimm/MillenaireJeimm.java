@@ -1,6 +1,5 @@
 package com.momos.millenairejeimm;
 
-import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeimm.debug.DebugGuiUtils;
 import com.momos.millenairejeimm.jei.MillenaireJeimmPlugin;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillIngredientRenderer;
@@ -23,6 +22,7 @@ import net.neoforged.fml.common.Mod;
 public class MillenaireJeimm {
     public static final String MODID = "millenairejeimm";
 
+    /// 如果改动内容在`com.momos.millenairejeim`(比当前少一个`m`)那么要确保`替换前置jar`到最新版本
     /// 1.0 注册:JEI页面对象`要素`(Ingredient)
     /// 1.1 编写一个[BuildingIngredientHelper]继承[IIngredientHelper] 用来描述数据
     /// 1.2 编写一个[BuildingIngredientRenderer]继承[BaseMillIngredientRenderer]继承[IIngredientRenderer] 用来描述渲染

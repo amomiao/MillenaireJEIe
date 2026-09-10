@@ -48,12 +48,6 @@ public class CultureCategory extends BaseMillCategory<Culture> {
     private final CultureLinkLayout cultureLayout;
     private final JeiLinkBox<VillageType> villageBox;
 
-    // [醒目新注释] 第 9 格（细节/导航触发区）的准确点击响应边界
-    private static final int SLOT_9_X = 6;
-    private static final int SLOT_9_Y = 32;
-    private static final int SLOT_9_WIDTH = 48;
-    private static final int SLOT_9_HEIGHT = 14;
-
     public CultureCategory(IGuiHelper guiHelper, IIngredientManager ingredientManager) {
         super(guiHelper, guiHelper.createDrawableItemStack(
                 new ItemStack(ItemHelper.resolve("millenaire:village_norman") != null ? ItemHelper.resolve("millenaire:village_norman") : Items.MAP))

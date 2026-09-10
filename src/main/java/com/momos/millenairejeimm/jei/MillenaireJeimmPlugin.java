@@ -9,7 +9,9 @@ import com.momos.millenairejeimm.jei.Runtime.cultureof.CultureCategory;
 import com.momos.millenairejeimm.jei.Runtime.cultureof.CultureVillagesCategory;
 import com.momos.millenairejeimm.jei.Runtime.cultureof.ingredient.CultureIngredientHelper;
 import com.momos.millenairejeimm.jei.Runtime.cultureof.ingredient.CultureIngredientRenderer;
+import com.momos.millenairejeimm.jei.Runtime.villageof.VillageBuildingsCategory;
 import com.momos.millenairejeimm.jei.Runtime.villageof.VillageCategory;
+import com.momos.millenairejeimm.jei.Runtime.villageof.VillageVillagersCategory;
 import com.momos.millenairejeimm.jei.Runtime.villageof.ingredient.VillageIngredientHelper;
 import com.momos.millenairejeimm.jei.Runtime.villageof.ingredient.VillageIngredientRenderer;
 import com.momos.millenairejeimm.jei.Runtime.villagerof.VillagerCategory;
@@ -171,8 +173,12 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                 new CultureVillagesCategory(guiHelper,ingredientManager),
 
                 new BuildingCategory(guiHelper),
-                new VillagerCategory(guiHelper),
-                new VillageCategory(guiHelper)
+
+                new VillageCategory(guiHelper,ingredientManager),
+                new VillageBuildingsCategory(guiHelper,ingredientManager),
+                new VillageVillagersCategory(guiHelper,ingredientManager),
+
+                new VillagerCategory(guiHelper)
         );
         // [醒目新注释] 使用 {@link MMLog} 确认页签 Class 注册完成
         MMLog.info(
@@ -227,12 +233,11 @@ public class MillenaireJeimmPlugin implements IModPlugin {
 
         // 2. 村庄配方注册
         try {
-            Collection<VillageType> villages = MillenaireAPIHelper.getAllVillageType().values();
+            ArrayList<VillageType> villages = new ArrayList<>(MillenaireAPIHelper.getAllVillageType().values());
             if (!villages.isEmpty()) {
-                registration.addRecipes(
-                        VillageCategory.RECIPE_TYPE,
-                        new ArrayList<>(villages)
-                );
+                registration.addRecipes(VillageCategory.RECIPE_TYPE, villages);
+                registration.addRecipes(VillageBuildingsCategory.RECIPE_TYPE, villages);
+                registration.addRecipes(VillageVillagersCategory.RECIPE_TYPE, villages);
                 MMLog.info(
                         "已向 JEI 注入村庄配方，数量: {}",
                         "Injected village recipes to JEI, count: {}",

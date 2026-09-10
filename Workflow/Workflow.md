@@ -112,3 +112,17 @@
 * Q57: 为`VillageCategory`补充如`CultureVillagesCategory`的内容，村庄需要展示建筑与村民,
   * `MillenaireJeimm`中有帮助性内容
   * 数据源自`MillenaireAPIHelper#getBuildingFormVillage`和`MillenaireAPIHelper#getVillagerFormVillage`
+* Q58: 聚焦了但是只聚焦了一半，与之关联的四个页签出来了，但是比如点击`村庄的村民`的加号，默认指向了第一个文化页签
+* Q59: 应该指向的页签对象在这里面，你看看是不是简单的填错了对象
+  * 确实是传入 JEI 的 RecipeType 列表顺序或目标 Category 对象填错导致的。 
+  * 原因诊断 
+    * 当调用 JEI 的 IJeiRuntime.getRecipesGui().showTypes(List<RecipeType<?>> recipeTypes) 打开多页签全景视图时，JEI 的底层逻辑是默认激活并展示传入 List 中索引为 0（第 1 个）的 RecipeType。
+    * 如果各个 + 按钮在触发跳转时，传给 JEI 的都是同一个静态 List（例如 [文化, 建筑, 物品, 村民]），且 CULTURE_TYPE（文化页签）固定排在第 0 位，JEI 就会成功加载全部 4 个关联页签，但无论点哪个 + 号都必定默认停留于第 1 个文化页签。 
+  * 解决方案 
+    * 在 + 按钮的点击事件响应代码中，需要将该按钮真正对应的目标 RecipeType（如村民大窗口页签）调整到传入 List 的第 0 位（首位）。
+* Q60: 哦还没给你上下文
+* Q61: 额，原来另一个会话的你偷懒了，借用了别的模块的单元，声明村庄自己的LinkLayout
+* Q62: 别光顾着移植啊，把没有聚焦的bug修复了啊
+  * => `VillageCategory`构造方法中,告知`new JeiLinkBox`时调用`setOnPlusClick`指向`MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(List.of(focusInput, focusOutput));`
+* Q63: 页签就在新页面里你为什么就是聚焦不了呢？而且为什么有好几个页签，人家文化点出来就一个
+* Q64: 类都在你手里，你想怎么改怎么改
