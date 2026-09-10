@@ -6,8 +6,8 @@ import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.MillenaireJeimmPlugin;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
 import com.momos.millenairejeimm.jei.Runtime.MillIconOnlyRenderer;
-import com.momos.millenairejeimm.jei.type.layout.CultureLinkLayout;
-import com.momos.millenairejeimm.jei.type.JeiLinkBox;
+import com.momos.millenairejeimm.jei.Runtime.JeiLinkBox;
+import com.momos.millenairejeimm.jei.Runtime.JeiLinkLayout;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
@@ -28,6 +28,7 @@ import org.millenaire.culture.Culture;
 import org.millenaire.culture.VillageType;
 import org.millenaire.item.ItemHelper;
 
+
 import java.util.List;
 
 /**
@@ -45,7 +46,7 @@ public class CultureCategory extends BaseMillCategory<Culture> {
         return ItemStack.EMPTY;
     });
 
-    private final CultureLinkLayout cultureLayout;
+    private final JeiLinkLayout cultureLayout;
     private final JeiLinkBox<VillageType> villageBox;
 
     public CultureCategory(IGuiHelper guiHelper, IIngredientManager ingredientManager) {
@@ -65,7 +66,7 @@ public class CultureCategory extends BaseMillCategory<Culture> {
                     }
                 });
 
-        this.cultureLayout = new CultureLinkLayout(2, 106, 172, 4).addBox(villageBox);
+        this.cultureLayout = new JeiLinkLayout(2, 106, 172, 4).addBox(villageBox);
     }
 
     @Override public RecipeType<Culture> getRecipeType() { return RECIPE_TYPE; }

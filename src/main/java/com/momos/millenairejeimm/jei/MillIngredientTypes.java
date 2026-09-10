@@ -31,7 +31,6 @@ public final class MillIngredientTypes {
             VillageType::id
     );
 
-
     /** 建筑集 {@link BuildingPlanSet} 的 JEI 序列化编解码器 */
     public static final Codec<BuildingPlanSet> BUILDING_CODEC = Codec.STRING.xmap(
             id -> MillenaireAPIHelper.getAllBuildingPlanSets().get(id),

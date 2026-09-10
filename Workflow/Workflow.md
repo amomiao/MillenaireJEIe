@@ -217,3 +217,5 @@
     * deliver_resources_shop确实是送货
   * 搞错了是`collect_goods`字段介入运输
 * 结合现有的模块研究一下API
+* 为了突破 Role 只有 4 个的物理限制，同时完美保留“自动聚焦定位”的能力，最正统的做法是为不同的关联关系定义独立的 IIngredientType（或包装 Payload）。record 写在 plugin里，你改一下
+  * 尝试

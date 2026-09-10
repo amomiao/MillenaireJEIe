@@ -4,9 +4,9 @@ import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.MillenaireJeimmPlugin;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
+import com.momos.millenairejeimm.jei.Runtime.JeiLinkLayout;
 import com.momos.millenairejeimm.jei.Runtime.MillIconOnlyRenderer;
-import com.momos.millenairejeimm.jei.type.JeiLinkBox;
-import com.momos.millenairejeimm.jei.type.layout.VillageLinkLayout;
+import com.momos.millenairejeimm.jei.Runtime.JeiLinkBox;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
@@ -43,7 +43,7 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
         return ItemStack.EMPTY;
     });
 
-    private final VillageLinkLayout villageLayout;
+    private final JeiLinkLayout villageLayout;
     private final JeiLinkBox<BuildingPlanSet> buildingBox;
     private final JeiLinkBox<VillagerType> villagerBox;
 
@@ -58,10 +58,13 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
                 .useJeiMode(ingredientManager, MillIngredientTypes.BUILDING)
                 .setOnPlusClick((contextObject, items) -> {
                     if (MillenaireJeimmPlugin.JeiRuntime != null && contextObject instanceof VillageType village) {
-                        var focus = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory()
-                                .createFocus(RecipeIngredientRole.RENDER_ONLY, MillIngredientTypes.VILLAGE, village);
-
-                        MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(focus);
+//                        var focus = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory()
+////                                .createFocus(RecipeIngredientRole.RENDER_ONLY, MillIngredientTypes.VILLAGE, village);
+////                        MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(focus);
+                        var focus = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory().createFocus(RecipeIngredientRole.INPUT, MillIngredientTypes.VILLAGE, village);
+                        MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().showTypes(List.of(
+                                VillageBuildingsCategory.RECIPE_TYPE // 精确指定要唤起的分类 RecipeType
+                        ));
                     }
                 });
 
@@ -78,7 +81,7 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
                     }
                 });
 
-        this.villageLayout = new VillageLinkLayout(2, 115, 172, 4)
+        this.villageLayout = new JeiLinkLayout(2, 115, 172, 4)
                 .addBox(buildingBox)
                 .addBox(villagerBox);
     }

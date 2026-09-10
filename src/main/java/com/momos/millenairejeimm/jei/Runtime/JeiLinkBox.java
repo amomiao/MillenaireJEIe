@@ -1,4 +1,4 @@
-package com.momos.millenairejeimm.jei.type;
+package com.momos.millenairejeimm.jei.Runtime;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -71,15 +71,12 @@ public class JeiLinkBox<T> {
         return this;
     }
 
-    public JeiLinkBox<T> useJeiMode(IJeiRuntime jeiRuntime, IIngredientType<T> ingredientType) {
-        return useJeiMode(jeiRuntime.getIngredientManager(), ingredientType);
-    }
-
     public JeiLinkBox<T> useJeiMode(IIngredientManager ingredientManager, IIngredientType<T> ingredientType) {
         this.boundIngredientType = ingredientType;
         this.boundRenderer = ingredientManager.getIngredientRenderer(ingredientType);
         return this;
     }
+    
 // endregion 通用槽位组件与回调接口
 
 // region JEI 数据与事件注册
