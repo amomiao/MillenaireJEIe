@@ -116,17 +116,32 @@ public class JeiLinkBox<T> {
         int startY = y + 15;
         int plusX = startX + (PREVIEW_SLOTS * SLOT_SIZE);
 
+        // [醒目新注释] 委托调用专门处理第 9 格（加号按钮）点击事件的方法
+        registerPlusButtonInputHandler(builder, contextObject, plusX, startY);
+    }
+
+    /**
+     * 独立注册第 9 格（加号按钮）物理点击事件的监听器。
+     * [醒目新注释] 抽取为独立方法，便于二次扩展或重写第 9 格的响应逻辑。
+     *
+     * @param builder       JEI 配方额外组件构建器 {@link IRecipeExtrasBuilder}
+     * @param contextObject 当前配方上下文对象
+     * @param plusX         加号按钮（第 9 格）在像素网格中的物理 X 轴起始坐标
+     * @param plusY         加号按钮（第 9 格）在像素网格中的物理 Y 轴起始坐标
+     */
+    public void registerPlusButtonInputHandler(IRecipeExtrasBuilder builder, Object contextObject, int plusX, int plusY) {
         builder.addInputHandler(new IJeiInputHandler() {
             @Override
             public ScreenRectangle getArea() {
-                return new ScreenRectangle(plusX, startY, 18, 18);
+                return new ScreenRectangle(plusX, plusY, 18, 18);
             }
-
             @Override
             public boolean handleInput(double mouseX, double mouseY, IJeiUserInput input) {
                 InputConstants.Key key = input.getKey();
                 if (key.getType() == InputConstants.Type.MOUSE && key.getValue() == 0) {
-                    executeClickAction(contextObject);
+                    if(!input.isSimulate()) {
+                        executeClickAction(contextObject);
+                    }
                     return true;
                 }
                 return false;
@@ -134,6 +149,12 @@ public class JeiLinkBox<T> {
         });
     }
 
+    /**
+     * 执行加号按钮被点击后的具体响应逻辑。
+     * [醒目新注释] 优先触发 {@link #customClickListener}，未配置时向客户端聊天框输出简易测试文本。
+     *
+     * @param contextObject 当前上下文对象
+     */
     private void executeClickAction(Object contextObject) {
         if (this.customClickListener != null) {
             this.customClickListener.onClick(contextObject, targetList);
@@ -141,13 +162,8 @@ public class JeiLinkBox<T> {
             // [醒目新注释] 移除原 DebugGuiUtils 大窗口弹窗，改为通过 {@link LocalPlayer#displayClientMessage} 向客户端发送安全截取后的文本预览
             LocalPlayer player = Minecraft.getInstance().player;
             if (player != null) {
-                String contextStr = (contextObject != null) ? contextObject.toString() : "null";
-                int maxLen = Math.min(contextStr.length(), 40);
-                String safePreview = contextStr.substring(0, maxLen) + (contextStr.length() > 40 ? "..." : "");
-                player.displayClientMessage(
-                        Component.literal("§e[" + title + " 降级输出] §fContext: §7" + safePreview + " §a(包含 " + targetList.size() + " 项数据)"),
-                        false
-                );
+                // [醒目新注释] 测试向：直接调用 {@link LocalPlayer#displayClientMessage(Component, boolean)}，使用 {@link Component#literal(String)} 发送 "1"
+                player.displayClientMessage(Component.literal("1"), false);
             }
         }
     }

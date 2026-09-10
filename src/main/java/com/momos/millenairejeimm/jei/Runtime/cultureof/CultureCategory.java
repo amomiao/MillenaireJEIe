@@ -1,9 +1,7 @@
 // region 文化分类主面板类
 package com.momos.millenairejeimm.jei.Runtime.cultureof;
 
-import com.mojang.blaze3d.platform.InputConstants;
-import com.momos.millenairejeimm.MillenaireJeimm;
-import com.momos.millenairejeimm.debug.DebugGuiUtils;
+import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.MillenaireJeimmPlugin;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
@@ -12,8 +10,6 @@ import com.momos.millenairejeimm.jei.type.layout.CultureLinkLayout;
 import com.momos.millenairejeimm.jei.type.JeiLinkBox;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
-import mezz.jei.api.gui.inputs.IJeiInputHandler;
-import mezz.jei.api.gui.inputs.IJeiUserInput;
 import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
@@ -23,7 +19,6 @@ import mezz.jei.api.runtime.IIngredientManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -63,7 +58,19 @@ public class CultureCategory extends BaseMillCategory<Culture> {
         super(guiHelper, guiHelper.createDrawableItemStack(
                 new ItemStack(ItemHelper.resolve("millenaire:village_norman") != null ? ItemHelper.resolve("millenaire:village_norman") : Items.MAP))
         );
-        this.villageBox = new JeiLinkBox<VillageType>("文化关联村庄").useJeiMode(ingredientManager, MillIngredientTypes.VILLAGE);
+
+        // [醒目新注释] 在构造函数中链式调用 {@link JeiLinkBox#setOnPlusClick}，引入 try-catch 拦截与 JEI 内部深层状态检测
+        this.villageBox = new JeiLinkBox<VillageType>("文化关联村庄")
+                .useJeiMode(ingredientManager, MillIngredientTypes.VILLAGE)
+                .setOnPlusClick((contextObject, items) -> {
+                    if (MillenaireJeimmPlugin.JeiRuntime != null && contextObject instanceof Culture culture) {
+                        // [醒目新注释] 构建目标 Culture 的输入焦点
+                        var focus = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory().createFocus(RecipeIngredientRole.INPUT, MillIngredientTypes.CULTURE, culture);
+                        // [醒目新注释] 触发焦点查询，JEI 会自动切换至 CultureVillagesCategory 并精确定位到对应的文化页
+                        MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(focus);
+                    }
+                });
+
         this.cultureLayout = new CultureLinkLayout(2, 106, 172, 4).addBox(villageBox);
     }
 
@@ -78,7 +85,7 @@ public class CultureCategory extends BaseMillCategory<Culture> {
                 .addIngredient(MillIngredientTypes.CULTURE, recipe)
                 .setCustomRenderer(MillIngredientTypes.CULTURE, ICON_RENDERER);
 
-        List<VillageType> villages = MillenaireJeimm.getVillageFormCulture(recipe);
+        List<VillageType> villages = MillenaireAPIHelper.getVillageFormCulture(recipe);
         cultureLayout.setRecipeForBox(0, builder, villages);
     }
 
@@ -93,36 +100,6 @@ public class CultureCategory extends BaseMillCategory<Culture> {
     @Override
     public void createRecipeExtras(IRecipeExtrasBuilder builder, Culture recipe, IFocusGroup focuses) {
         super.createRecipeExtras(builder, recipe, focuses);
-        // [醒目新注释] 监听第 9 格（细节）的点击事件，触发 DebugGuiUtils#openJsonDumpScreen
-        builder.addInputHandler(new IJeiInputHandler() {
-            @Override
-            public ScreenRectangle getArea() {
-                return new ScreenRectangle(SLOT_9_X, SLOT_9_Y, SLOT_9_WIDTH, SLOT_9_HEIGHT);
-            }
-            @Override
-            public boolean handleInput(double mouseX, double mouseY, IJeiUserInput input) {
-                if (mouseX < SLOT_9_X || mouseX > SLOT_9_X + SLOT_9_WIDTH ||
-                        mouseY < SLOT_9_Y || mouseY > SLOT_9_Y + SLOT_9_HEIGHT) {
-                    return false;
-                }
-                InputConstants.Key key = input.getKey();
-                if (key.getType() == InputConstants.Type.MOUSE && key.getValue() == 0) {
-                    // [醒目新注释] 细节按钮点击修正：直接调用 {@link DebugGuiUtils#openJsonDumpScreen(Object)} 打开 Dump 调试界面
-                    // [醒目新注释] 修正：不再打开 Dump 界面，改为向 JEI Runtime 提交 Focus 焦点，打开 {@link CultureVillagesCategory} 全景大窗口
-                    if (MillenaireJeimmPlugin.JeiRuntime != null) {
-                        var focus = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory().createFocus(
-                                RecipeIngredientRole.INPUT,
-                                MillIngredientTypes.CULTURE,
-                                recipe
-                        );
-                        MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(focus);
-                        return true;
-                    }
-                    return true;
-                }
-                return false;
-            }
-        });
         if (cultureLayout != null) {
             cultureLayout.createRecipeExtras(builder, recipe);
         }

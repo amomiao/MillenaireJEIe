@@ -73,3 +73,42 @@
 * Q39: createRecipeExtras必须在BaseMillIngredientRenderer有声明，细节按钮的点击要调用`DebugGuiUtils#openJsonDumpScreen(Object)`事件
 * Q40: 你写什么，我给错了,createRecipeExtras必须在BaseMillCategory有声明，细节按钮的点击要调用`DebugGuiUtils#openJsonDumpScreen(Object)`事件
 * AI一直在尝试`第九格`打开`DebugGuiUtils.openJsonDumpScreen`，但是应该打开的是`CultureVillagesCategory`
+* Q41: 在`registerInputHandler`单独声明一个监听第九格被点击事件方法 
+* Q42: 你加一个被点击客户端输出1给我看看
+* Q43: 我说怎么找不到哪里注册事件，我让你加事件监听是让外部传入的，this.villageBox = new JeiLinkBox的时候注册一个第九格监听输出123456
+* Q44: 点击按钮没反应，并且下面的dispalyClientMessage也没反应，方法里增加多个displayClientMessage全路径测试看看到底是为什么
+  ```java
+  LocalPlayer player = Minecraft.getInstance().player;
+      if (player != null) {
+        player.displayClientMessage(Component.literal("123456"), false);
+  }
+  ```
+* Q45: 增加颗粒度
+  * JEI 没有找到名为 millenaire:culture_villages_full 的 Category 注册记录。
+* 我草
+* Q46: 页面展开了回收debug吧，但是还有问题，新的页面没有进入聚焦到对应对象的页签上
+* Q47: 重写的createRecipeExtras调用了super为什么父类中的按钮事件还是不触发了
+  * 子类 Handler 强行截断了事件传播（Event Interception）
+  * 代码残余，删除无用代码即可
+* Q48: super在上为什么不是上拦下而是下拦上？
+  * super.createRecipeExtras(...) 控制的是注册顺序（谁先加入事件列表），而 GUI 框架在处理事件分发时，采用的是“后进先出 / 后者居上”（LIFO / Z-Index 优先）的触发机制。
+* Q49: 还是点不开DebugGuiUtils#openJsonDumpScreen调用的窗口，严查
+  * JEI 输入事件与客户端 GUI 主线程切换的调度冲突 以及 忽略了 JEI 的模拟预测阶段 (input.isSimulated())
+* Q50: 又想害我，使用if (key.getType() == InputConstants.Type.MOUSE && key.getValue() == 0)和input.isSimulate()，并且我输出1也不会给我退化成默认打开那个窗口。
+* 没救了换对话
+* Q51: BaseMillCategory#createRecipeExtras中的按钮没有触发DebugGuiUtils#openJsonDumpScreen(Object)的窗口，但是CultureCategory#createRecipeExtras注册的成功调用了
+  * JEI 的 IRecipeExtrasBuilder#addInputHandler 中，IJeiInputHandler#getArea() 已经向 JEI 注册了配方相对坐标范围 new ScreenRectangle(3, 26, 22, 10)，
+  * JEI 内部会自动进行点击碰撞检测，只有点击命中该区域时，JEI 才会调用 handleInput 方法。
+  * 但 JEI 传入 handleInput(double mouseX, double mouseY, ...) 的 mouseX 与 mouseY 参数是屏幕绝对坐标（例如 X=480.0, Y=320.0）。 
+  * BaseMillCategory 中的二次判断恒为 false
+  * DebugGuiUtils.isMouseOver(mouseX, mouseY, 3, 26, ...) 进行二次校验。
+  * 这里拿屏幕绝对坐标（如 480）去和配方相对坐标（3 至 25）做比较，导致条件判定恒为 false，使得 DebugGuiUtils#openJsonDumpScreen 永远不会被触发。
+  * 只需移除 BaseMillCategory#createRecipeExtras 中冗余且坐标系不匹配的 DebugGuiUtils.isMouseOver 判断即可
+* Q52: 尝试实现`关联查询`内容
+* Q53: [MillenaireAPIHelper#MappingVillagerBuilding]和[filterByResourceLocation]怎么没用？其中[filterByResourceLocation]为了封装可以进行一定修改
+* Q54: 把这段内容`// endregion 物品与货币系统 API`和`// region 交易` API之间
+* Q55: 你改我API名了？
+* Q56: 无罪释放
+* Q57: 为`VillageCategory`补充如`CultureVillagesCategory`的内容，村庄需要展示建筑与村民,
+  * `MillenaireJeimm`中有帮助性内容
+  * 数据源自`MillenaireAPIHelper#getBuildingFormVillage`和`MillenaireAPIHelper#getVillagerFormVillage`

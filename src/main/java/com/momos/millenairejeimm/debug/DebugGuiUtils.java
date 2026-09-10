@@ -53,23 +53,19 @@ public class DebugGuiUtils {
     // [醒目新注释] 重载 handleDetailsButtonClick，支持自动生成 Inspector 数据或接收自定义 debugLines
     /**
      * 处理"细节"按钮的鼠标点击响应，自动提取 Inspector 属性并打开 {@link JsonDumpScreen} 界面。
+     * [醒目新注释] 修复按钮碰撞检测判定，使用 {@link DebugGuiUtils#isMouseOver} 统一边界规则。
+     *
+     * @param targetObject 目标调试对象
+     * @param customDebugLines 自定义 Inspector 调试文本
+     * @param mouseX 当前鼠标 X 坐标
+     * @param mouseY 当前鼠标 Y 坐标
+     * @param btnX 按钮起始 X 坐标
+     * @param btnY 按钮起始 Y 坐标
+     * @return 是否成功命中按钮区域
      */
-    public static boolean handleDetailsButtonClick(Object targetObject, double mouseX, double mouseY, int btnX, int btnY) {
-        return handleDetailsButtonClick(targetObject, List.of(), mouseX, mouseY, btnX, btnY);
-    }
-
-    // [醒目新注释] 支持传入自定义 Inspector 行的 handleDetailsButtonClick 重载
     public static boolean handleDetailsButtonClick(Object targetObject, List<Component> customDebugLines, double mouseX, double mouseY, int btnX, int btnY) {
-        if (mouseX >= btnX && mouseX <= btnX + BUTTON_WIDTH && mouseY >= btnY && mouseY <= btnY + BUTTON_HEIGHT) {
+        if (isMouseOver(mouseX, mouseY, btnX, btnY, BUTTON_WIDTH, BUTTON_HEIGHT)) {
             openJsonDumpScreen(targetObject, customDebugLines);
-            return true;
-        }
-        return false;
-    }
-
-    public static boolean handleJsonButtonClick(Object recordObj, List<Component> debugLines, double mouseX, double mouseY, int btnX, int btnY) {
-        if (isMouseOver(mouseX, mouseY, btnX, btnY, 26, 12)) {
-            openJsonDumpScreen(recordObj, debugLines);
             return true;
         }
         return false;
@@ -80,12 +76,20 @@ public class DebugGuiUtils {
     }
 
     // [醒目新注释] 若未传入 customDebugLines，自动通过反射/RecordComponent 构建完整的 Inspector 属性行
+    /**
+     * 打开 {@link JsonDumpScreen} 调试大窗口。
+     * [醒目新注释] 关键修复：通过 {@link net.minecraft.client.Minecraft#execute(Runnable)} 异步提交至客户端下一帧主线程，防止 JEI 事件循环冲突。
+     *
+     * @param targetObj 目标调试对象
+     * @param debugLines 自定义 Inspector 属性行
+     */
     public static void openJsonDumpScreen(Object targetObj, List<Component> debugLines) {
         if (targetObj == null) return;
         String jsonText;
         try {
             jsonText = GSON.toJson(targetObj);
-        } catch (Exception e) {
+        } catch (Throwable e) {
+            // [醒目新注释] 改为捕获 Throwable，防止对象图循环引用抛出 StackOverflowError 导致主线程直接中断
             jsonText = "// JSON 序列化失败: " + e.getMessage();
         }
 
@@ -94,7 +98,11 @@ public class DebugGuiUtils {
                 : buildDefaultInspectorLines(targetObj);
 
         String titleName = targetObj.getClass().getSimpleName();
-        Minecraft.getInstance().setScreen(new JsonDumpScreen(Component.literal("开发者深度诊断 - " + titleName), jsonText, finalDebugLines));
+        // [醒目新注释] 使用 Minecraft#execute 将打开窗口动作延后至主线程当前渲染帧结束后安全执行
+        String finalJsonText = jsonText;
+        Minecraft.getInstance().execute(() -> {
+            Minecraft.getInstance().setScreen(new JsonDumpScreen(Component.literal("开发者深度诊断 - " + titleName), finalJsonText, finalDebugLines));
+        });
     }
 
     // [醒目新注释] 新增通用 Inspector 属性构建方法，自动解析 Java Record 与常规 Class 的所有字段

@@ -1,5 +1,6 @@
 package com.momos.millenairejeimm.jei.Runtime.cultureof;
 
+import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeimm.MillenaireJeimm;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
@@ -33,6 +34,18 @@ public class CultureVillagesCategory extends BaseMillCategory<Culture> {
     private static final int ROWS = 5;
     private static final int PAGE_SIZE = COLUMNS * ROWS;
 
+    /**
+     * [醒目新注释]
+     * 缓存上一次绘制的 {@link Culture} 对象，用于判断当前帧是否切换了配方。
+     */
+    private Culture lastRecipe;
+
+    /**
+     * [醒目新注释]
+     * 缓存已构造好的文化名称文本 {@link Component}，规避渲染循环中的垃圾分配。
+     */
+    private Component cachedDisplayNameComponent;
+
     public CultureVillagesCategory(IGuiHelper guiHelper, IJeiRuntime jeiRuntime) {
         super(guiHelper, guiHelper.createDrawableItemStack(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BOOK)));
     }
@@ -48,7 +61,11 @@ public class CultureVillagesCategory extends BaseMillCategory<Culture> {
     public void setRecipe(IRecipeLayoutBuilder builder, Culture recipe, IFocusGroup focuses) {
         if (recipe == null) return;
 
-        List<VillageType> villages = MillenaireJeimm.getVillageFormCulture(recipe);
+        // [醒目新注释] 正确的 JEI 隐形成分注册方式：使用 {@link IRecipeLayoutBuilder#addInvisibleIngredients} 获得 {@link IIngredientAcceptor}
+        // [醒目新注释] 这会将 {@link Culture} 注册入 Focus 索引链，使 JEI 能够聚焦定位，但不会在 GUI 上创建或渲染任何槽位
+        builder.addInvisibleIngredients(RecipeIngredientRole.INPUT).addIngredient(MillIngredientTypes.CULTURE, recipe);
+
+        List<VillageType> villages = MillenaireAPIHelper.getVillageFormCulture(recipe);
         if (villages == null || villages.isEmpty()) return;
 
         int startX = 14;
@@ -71,11 +88,24 @@ public class CultureVillagesCategory extends BaseMillCategory<Culture> {
         if (recipe == null) return;
         Font font = Minecraft.getInstance().font;
 
-        String displayName = recipe.displayName() != null ? recipe.displayName() : recipe.id().getPath();
-        guiGraphics.drawString(font, "§1所属文化: §f" + displayName, 14, 8, 0x000000, false);
+        /**
+         * [醒目新注释]
+         * 优化：仅在配方示例更改时重新生成 {@link Component}，消除帧循环中的字符串拼接与对象创建开销。
+         */
+        if (recipe != this.lastRecipe) {
+            this.lastRecipe = recipe;
+            String displayName = recipe.displayName() != null ? recipe.displayName() : recipe.id().getPath();
+            this.cachedDisplayNameComponent = Component.literal("§1所属文化: §f" + displayName);
+        }
 
-        List<VillageType> villages = MillenaireJeimm.getVillageFormCulture(recipe);
-        int total = villages != null ? villages.size() : 0;
+        guiGraphics.drawString(font, this.cachedDisplayNameComponent, 14, 8, 0x000000, false);
+
+        /**
+         * [醒目新注释]
+         * 优化：通过 {@link IRecipeSlotsView#getSlotViews()} 直接获取当前已添加的槽位数量，
+         * 避免每帧重复调用 {@link MillenaireAPIHelper#getVillageFormCulture(Culture)} 或 {@link MillenaireJeimm#getVillageFormCulture(Culture)}。
+         */
+        int total = recipeSlotsView.getSlotViews().size();
 
         int startX = 14;
         int startY = 24;

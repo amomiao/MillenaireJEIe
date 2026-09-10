@@ -56,7 +56,6 @@ public class CultureLinkLayout {
         for (JeiLinkBox<?> box : boxes) {
             box.registerInputHandler(builder, recipeContext, startX, currentY);
             currentY += box.getBoxHeight() + spacing;
-            
         }
     }
 

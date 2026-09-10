@@ -6,6 +6,7 @@ import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingCategory;
 import com.momos.millenairejeimm.jei.Runtime.buildingof.ingredient.BuildingIngredientHelper;
 import com.momos.millenairejeimm.jei.Runtime.buildingof.ingredient.BuildingIngredientRenderer;
 import com.momos.millenairejeimm.jei.Runtime.cultureof.CultureCategory;
+import com.momos.millenairejeimm.jei.Runtime.cultureof.CultureVillagesCategory;
 import com.momos.millenairejeimm.jei.Runtime.cultureof.ingredient.CultureIngredientHelper;
 import com.momos.millenairejeimm.jei.Runtime.cultureof.ingredient.CultureIngredientRenderer;
 import com.momos.millenairejeimm.jei.Runtime.villageof.VillageCategory;
@@ -16,6 +17,7 @@ import com.momos.millenairejeimm.jei.Runtime.villagerof.ingredient.VillagerIngre
 import com.momos.millenairejeimm.jei.Runtime.villagerof.ingredient.VillagerIngredientRenderer;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
+import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.registration.IModIngredientRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
@@ -161,13 +163,16 @@ public class MillenaireJeimmPlugin implements IModPlugin {
 
     @Override
     public void registerCategories(IRecipeCategoryRegistration registration) {
+        IGuiHelper guiHelper = registration.getJeiHelpers().getGuiHelper();
         IIngredientManager ingredientManager = registration.getJeiHelpers().getIngredientManager();
         // [醒目新注释] 注册 VillageCategory 分类页面
         registration.addRecipeCategories(
-                new CultureCategory(registration.getJeiHelpers().getGuiHelper(), ingredientManager),
-                new BuildingCategory(registration.getJeiHelpers().getGuiHelper()),
-                new VillagerCategory(registration.getJeiHelpers().getGuiHelper()),
-                new VillageCategory(registration.getJeiHelpers().getGuiHelper())
+                new CultureCategory(guiHelper, ingredientManager),
+                new CultureVillagesCategory(guiHelper,ingredientManager),
+
+                new BuildingCategory(guiHelper),
+                new VillagerCategory(guiHelper),
+                new VillageCategory(guiHelper)
         );
         // [醒目新注释] 使用 {@link MMLog} 确认页签 Class 注册完成
         MMLog.info(
@@ -193,12 +198,10 @@ public class MillenaireJeimmPlugin implements IModPlugin {
 
         // 1. 文化配方注册
         try {
-            Collection<Culture> cultures = MillenaireAPIHelper.getAllCultureType().values();
+            ArrayList<Culture> cultures = new ArrayList<>(MillenaireAPIHelper.getAllCultureType().values());
             if (!cultures.isEmpty()) {
-                registration.addRecipes(
-                        CultureCategory.RECIPE_TYPE,
-                        new ArrayList<>(cultures)
-                );
+                registration.addRecipes(CultureCategory.RECIPE_TYPE, new ArrayList<>(cultures));
+                registration.addRecipes(CultureVillagesCategory.RECIPE_TYPE, cultures);
                 MMLog.info(
                         "已向 JEI 注入文化配方，数量: {}",
                         "Injected culture recipes to JEI, count: {}",
@@ -220,6 +223,7 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                     e.getMessage()
             );
         }
+
 
         // 2. 村庄配方注册
         try {

@@ -116,9 +116,8 @@ public abstract class BaseMillCategory<T> implements IRecipeCategory<T> {
             public boolean handleInput(double mouseX, double mouseY, IJeiUserInput input) {
                 InputConstants.Key key = input.getKey();
                 if (key.getType() == InputConstants.Type.MOUSE && key.getValue() == 0) {
-                    // [醒目新注释] 统一处理图标正下方按钮坐标 (3, 26) 的点击响应，触发 JSON 调试信息转储
-                    if (DebugGuiUtils.handleDetailsButtonClick(recipe, mouseX, mouseY, 3, 26)) {
-                        return true;
+                    if (!input.isSimulate()) {
+                        DebugGuiUtils.openJsonDumpScreen(recipe, getCustomInspectorLines(recipe));
                     }
                 }
                 return false;
