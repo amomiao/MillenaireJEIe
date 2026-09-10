@@ -33,16 +33,7 @@ public class VillageBuildingsCategory extends BaseMillCategory<VillageType> {
     private static final int ROWS = 5;
     private static final int PAGE_SIZE = COLUMNS * ROWS;
 
-    /**
-     * [醒目新注释]
-     * 缓存上一次绘制的 {@link VillageType} 对象，用于判断当前帧是否切换了配方。
-     */
     private VillageType lastRecipe;
-
-    /**
-     * [醒目新注释]
-     * 缓存已构造好的村庄名称文本 {@link Component}，规避渲染循环中的内存分配。
-     */
     private Component cachedDisplayNameComponent;
 
     public VillageBuildingsCategory(IGuiHelper guiHelper, IIngredientManager ingredientManager) {
@@ -56,10 +47,9 @@ public class VillageBuildingsCategory extends BaseMillCategory<VillageType> {
     public void setRecipe(IRecipeLayoutBuilder builder, VillageType recipe, IFocusGroup focuses) {
         if (recipe == null) return;
 
-        // [醒目新注释] 跨 Category 焦点跳转的关键：将 {@link MillIngredientTypes#VILLAGE} 注册为隐形成分
-        // [醒目新注释] 使 {@link mezz.jei.api.runtime.IRecipesGui#show} 能识别 {@link RecipeIngredientRole#INPUT} 类型的村庄焦点并精准定位
-        // [醒目新注释] 保持使用 RecipeIngredientRole.INPUT 角色，形成与 VillageVillagersCategory(CATALYST) 的差异化识别。
-        builder.addInvisibleIngredients(RecipeIngredientRole.INPUT).addIngredient(MillIngredientTypes.VILLAGE, recipe);
+        // [醒目新注释] 关键修复：隐形成分注册改为 RecipeIngredientRole.RENDER_ONLY 角色
+        // [醒目新注释] 与 VillageCategory(OUTPUT) 和 VillageVillagersCategory(CATALYST) 形成物理隔离，保证唤起时只有当前单一页签且正确过滤。
+        builder.addInvisibleIngredients(RecipeIngredientRole.RENDER_ONLY).addIngredient(MillIngredientTypes.VILLAGE, recipe);
 
         List<BuildingPlanSet> buildings = MillenaireAPIHelper.getBuildingFormVillage(recipe);
         if (buildings == null || buildings.isEmpty()) return;
@@ -84,10 +74,6 @@ public class VillageBuildingsCategory extends BaseMillCategory<VillageType> {
         if (recipe == null) return;
         Font font = Minecraft.getInstance().font;
 
-        /**
-         * [醒目新注释]
-         * 优化：仅在配方切换时重新生成 {@link Component} 缓存。
-         */
         if (recipe != this.lastRecipe) {
             this.lastRecipe = recipe;
             this.cachedDisplayNameComponent = Component.literal("§1所属村庄: §f" + recipe.name());

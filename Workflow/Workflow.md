@@ -200,4 +200,20 @@
     * 建筑全景（VillageBuildingsCategory）：使用 RecipeIngredientRole.INPUT 角色的 VILLAGE 隐形成分。
     * 村民全景（VillageVillagersCategory）：使用 RecipeIngredientRole.CATALYST 角色的 VILLAGE 隐形成分。
     * 主面板跳转（VillageCategory）：点击建筑加号时发送 INPUT 焦点；点击村民加号时发送 CATALYST 焦点。
-* Q73:`VillageVillagersCategory`现在是正确的，单页签、过滤掉了其他对象；`VillageBuildingsCategory`现在是半对的，三个页签(文化、文化关联村庄、村庄包含建筑)，但都对非关联对象进行了正确的过滤，现在你需要做的是事情是：让`VillageBuildingsCategory`被唤起后只有单页签(Category)
+* Q73: `VillageVillagersCategory`现在是正确的，单页签、过滤掉了其他对象；`VillageBuildingsCategory`现在是半对的，三个页签(文化、文化关联村庄、村庄包含建筑)，但都对非关联对象进行了正确的过滤，现在你需要做的是事情是：让`VillageBuildingsCategory`被唤起后只有单页签(Category)
+* Q74: 唉页签多了一个，过滤也失效了，又得我下场review了吗，最后给你一次机会
+* Q75: 我只要一个村庄建筑页签你在干什么
+  * 抱歉是我绕远了。不需要修改任何文化相关代码，直接利用 JEI 的 RecipeIngredientRole.RENDER_ONLY 角色给 VillageBuildingsCategory 做物理隔离即可。
+  * 隔离原理  JEI 的 VILLAGE 隐形成分角色重新划定为三方绝对互斥：
+  * 村庄详情（VillageCategory）：OUTPUT 角色。
+  * 村民全景（VillageVillagersCategory）：CATALYST 角色。
+  * 建筑全景（VillageBuildingsCategory）：RENDER_ONLY 角色。
+  * 由于全局没有任何其他 Category 将 VILLAGE 设为 RENDER_ONLY，发送该焦点时 JEI 只会精准命中 VillageBuildingsCategory 这唯一一个页签，且过滤 100% 正确。
+* 修好了，可以少做功了
+// 新目标 Village
+* 村民属性里有没有显式的承接bring_back_home_goods的成员
+  * [VillagerType#bringBackHomeGoods]返回的是`List<String>`,实际运行中这个参数绑定了一个可能需要的对象:会把小屋的{什么}材料带到市政厅
+  * 这两个Goal可能与之有关:"millenaire:deliver_resources_shop","millenaire:get_resources_for_shops",
+    * deliver_resources_shop确实是送货
+  * 搞错了是`collect_goods`字段介入运输
+* 结合现有的模块研究一下API

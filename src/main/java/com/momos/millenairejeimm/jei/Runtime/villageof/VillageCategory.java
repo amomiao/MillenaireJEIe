@@ -51,23 +51,22 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
         super(guiHelper, guiHelper.createDrawableItemStack(
                 new ItemStack(ItemHelper.resolve("millenaire:travel_book") != null ? ItemHelper.resolve("millenaire:travel_book") : Items.MAP)));
 
-        // [醒目新注释] 1. 点击建筑 LinkBox "+": 使用 CATALYST 避开当前 VillageCategory，结合 BUILDING 焦点排除村民全景窗口，实现单页签高亮
-        // [醒目新注释] 修复：改用与 CultureCategory 一致的单一焦点范式。使用 RecipeIngredientRole.INPUT 角色的 MillIngredientTypes.VILLAGE 焦点，
-        // [醒目新注释] 精准且唯一匹配绑定了 INPUT 角色村庄隐形成分的全景建筑分类 {@link VillageBuildingsCategory}。
+        // [醒目新注释] 1. 点击建筑 LinkBox "+": 发送 RecipeIngredientRole.RENDER_ONLY 焦点的 VILLAGE
+        // [醒目新注释] 修复：改用 RENDER_ONLY 角色，作为 {@link VillageBuildingsCategory} 的独占特征码，
+        // [醒目新注释] 彻底避开其他分类占用的 INPUT/CATALYST 角色，强行锁定单一页签弹窗与精准过滤。
         this.buildingBox = new JeiLinkBox<BuildingPlanSet>("村庄包含建筑")
                 .useJeiMode(ingredientManager, MillIngredientTypes.BUILDING)
                 .setOnPlusClick((contextObject, items) -> {
                     if (MillenaireJeimmPlugin.JeiRuntime != null && contextObject instanceof VillageType village) {
                         var focus = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory()
-                                .createFocus(RecipeIngredientRole.INPUT, MillIngredientTypes.VILLAGE, village);
+                                .createFocus(RecipeIngredientRole.RENDER_ONLY, MillIngredientTypes.VILLAGE, village);
 
                         MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(focus);
                     }
                 });
 
-        // [醒目新注释] 2. 点击村民 LinkBox "+": 使用 CATALYST + VILLAGER 组合 Focus，精准跳转并聚焦 VillageVillagersCategory 中的对应村庄
-        // [醒目新注释] 修复：使用 RecipeIngredientRole.CATALYST 角色的 MillIngredientTypes.VILLAGE 焦点，
-        // [醒目新注释] 精准匹配绑定了 CATALYST 角色村庄隐形成分的全景村民分类 {@link VillageVillagersCategory}，排除其余分类，实现单页签高亮与精确定位。
+        // [醒目新注释] 2. 点击村民 LinkBox "+": 发送 RecipeIngredientRole.CATALYST 焦点的 VILLAGE
+        // [醒目新注释] 独占匹配绑定了 CATALYST 角色隐形成分的全景村民分类 {@link VillageVillagersCategory}。
         this.villagerBox = new JeiLinkBox<VillagerType>("村庄出现村民")
                 .useJeiMode(ingredientManager, MillIngredientTypes.VILLAGER)
                 .setOnPlusClick((contextObject, items) -> {
@@ -90,7 +89,6 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, VillageType recipe, IFocusGroup focuses) {
         if (recipe == null) return;
-        // [醒目新注释] 严禁修改：村庄图标保持 OUTPUT 角色注册
         builder.addSlot(RecipeIngredientRole.OUTPUT, 6, 6)
                 .addIngredient(MillIngredientTypes.VILLAGE, recipe)
                 .setCustomRenderer(MillIngredientTypes.VILLAGE, ICON_RENDERER);
