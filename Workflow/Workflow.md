@@ -5,6 +5,57 @@
 * `CultureIngredientHelper` `CultureIngredientRenderer`
 * `VillagerIngredientHelper` `VillagerIngredientRenderer`
 * `MillenaireJeimmPlugin`
+# 重要记录
+* 注解`@SuppressWarnings("removal")`可以屏蔽
+  1. [IRecipeCategory#handleInput]被`JEI 19.x+废弃移除`
+    * 替代方案是同类成员`default void createRecipeExtras(IRecipeExtrasBuilder builder, T recipe, IFocusGroup focuses)`
+    * 通过[IRecipeExtrasBuilder#addInputHandler]`void addInputHandler(IJeiInputHandler var1)`向配方面板挂载声明式的`IJeiInputHandler`
+      ```java
+      /// 重写 [#createRecipeExtras] 以替代废弃的 `handleInput`。
+      /// 使用具备区域定义 [ScreenRectangle] 的 [IJeiInputHandler] 与包含 [IJeiUserInput] 的点击方法。
+      @Override
+      public void createRecipeExtras(IRecipeExtrasBuilder builder, T recipe, IFocusGroup focuses) {
+          builder.addInputHandler(new IJeiInputHandler() {
+              @Override
+              public ScreenRectangle getArea() { return new ScreenRectangle(3, 26, 22, 10);}
+              @Override
+              public boolean handleInput(double mouseX, double mouseY, IJeiUserInput input) {
+                  InputConstants.Key key = input.getKey();
+                  if (key.getType() == InputConstants.Type.MOUSE && key.getValue() == 0) {
+                      // 统一处理图标正下方按钮坐标 (3, 26) 的点击响应
+                      if (DebugGuiUtils.handleDetailsButtonClick(recipe, mouseX, mouseY, 3, 26)) {
+                          return true;
+                      }
+                  }
+                  return false;
+              }
+          });
+      }
+      ```
+  2. [IRecipeExtrasBuilder#addTooltip]已被取缔
+    * 由组件化的 IRecipeWidget 统一管理，或者交由 UI 渲染阶段的 GuiGraphics 原生处理
+    * 最轻量且不依赖额外的 IRecipeWidget 封装的方式是：移除 createRecipeExtras 中的 addTooltip 注册，直接在 render 方法的悬浮判断中通过 guiGraphics.renderComponentTooltip 绘制 Tooltip。
+      ```text
+       boolean isHovered = mouseX >= plusX && mouseX <= plusX + 18 && mouseY >= startY && mouseY <= startY + 18;
+       // JEI 19+ 替代方案：在 render 阶段判断悬浮并使用原生 GuiGraphics 绘制 Component 悬浮提示
+       if (isHovered) {
+           guiGraphics.renderComponentTooltip(
+                   font,
+                   List.of(
+                           Component.literal("§a查看全部/深度诊断 (" + totalSize + " 个)"),
+                           Component.literal("§7单击以打开 JSON 诊断大窗口")
+                   ),
+                   (int) mouseX,
+                   (int) mouseY
+           );
+       }
+      ```
+  3. [IJeiRuntime#getFocusFactory] 没有`方法`
+    * 应该是[IJeiHelpers#getFocusFactory]即`IJeiRuntime#getJeiHelpers#getFocusFactory`
+  4. [IJeiRuntime#getRecipeManager#getRecipeCategory#ifPresent] 不能`ifPresent`,返回值错误
+    * 直接对`IJeiRuntime#getRecipeManager#getRecipeCategory`的`返回值`判断`!=null`
+  5. [IRecipeLayoutBuilder#addSlot#addIngredient#setInvisible] 没有方法
+    * 被`IRecipeLayoutBuilder#addInvisibleIngredients`的`addIngredient`取缔
 # 开始
 * Q1: 给文化生成一个对应页面(对应类)
 * 得到`CultureCategory`，修改
@@ -126,3 +177,27 @@
   * => `VillageCategory`构造方法中,告知`new JeiLinkBox`时调用`setOnPlusClick`指向`MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(List.of(focusInput, focusOutput));`
 * Q63: 页签就在新页面里你为什么就是聚焦不了呢？而且为什么有好几个页签，人家文化点出来就一个
 * Q64: 类都在你手里，你想怎么改怎么改
+  * 解决方案
+  * 无需修改两个全景大窗口类（它们内部通过 addInvisibleIngredients 注册的 INPUT 槽位已经完全正确），只需要修正 VillageCategory.java 中的点击事件：
+  * 点击“村庄包含建筑”时，直接使用列表中的第一个 BUILDING (INPUT) 发起 Focus；点击“村庄出现村民”时，使用第一个 VILLAGER (INPUT) 发起 Focus。 
+  * 这样 JEI 只能匹配到对应的唯一全景分类，顶上有且仅有 1 个页签，且直接高亮当前村庄。
+* Q65: 多个页签聚焦点击+对应的页签难吗？
+* Q66: 村民的事件调用错了，打开的是村庄自己的这个窗口
+* Q67: 页签聚焦了，但是又聚焦不到页签里的对象了，output不能删，你解决一下，整体结构可以改
+  * 此前点击 + 后“页签能切过去，但页面里的对象取消了高亮/聚焦”的根本原因是：调用 recipesGui.showTypes(...) 会直接清空 JEI 刚刚建立的 Focus 检索状态。showTypes 仅用于无过滤的分类展示，它覆盖掉了对象的筛选上下文。  为了在绝对保留 VillageCategory 中 VillageType 的 OUTPUT 槽位前提下，同时实现 “直接切到目标全景大窗口” + “精准高亮当前村庄对象” + “顶栏只有一个目标页签”，架构层面的最佳解法是利用 CATALYST（催化剂）角色协同检索。
+  * VillageCategory (保持 OUTPUT 不变)：村庄图标槽位继续保留 RecipeIngredientRole.OUTPUT。  点击 + 发起 Focus 时，使用 RecipeIngredientRole.CATALYST 角色标记当前 VillageType。由于 VillageCategory 本身没注册 CATALYST 槽位，JEI 会自动排除当前页面，不再原地跳回。  结合 VILLAGER / BUILDING 的 INPUT 焦点，精准剔除另一个不相干的全景大窗口，使顶部页签数量降为 1 个。  全景大窗口（VillageVillagersCategory & VillageBuildingsCategory）：将 addInvisibleIngredients 扩充为包含 INPUT, OUTPUT, CATALYST 全角色。无论外部以何种 Focus 角色传入，JEI 都能成功匹配并高亮锁定对应的村庄对象。 
+* Q68: 没生效，但是别慌我有一份生效了的文件，大概可以借鉴
+* Q69: 你再去修改一下VillageBuildingsCategory和VillageVillagersCategory看看你是真会了吗
+* Q70: 全乱套了怎么办，不仅没解决问题原本修好的单页签现在也变成双页签了
+* Q71: 我去你在改什么，Culture是好是，我给你代码是让你参照着去修改VillageBuildingsCategory、VillageVillagersCategory、VillageCategory体系下对象的
+* 这个对话也毁了，next
+* Q72: VillageCategory系列代码存在layout事件触发后页签有两个，且既没有对焦到正确的页签，页签里也是全部的内容问题。 而CultureCategory没有这些问题是正常的，你修复一下，一定记住是修改VillageCategory系列，CultureCategory系列是好的，你只读的。
+  * 问题出在 JEI 焦点（Focus）角色匹配机制 与 隐形成分（Invisible Ingredients）注册 上：
+    * 双页签与错位原因：原代码中 VillageBuildingsCategory 和 VillageVillagersCategory 都将 MillIngredientTypes.VILLAGE 注册为了 RecipeIngredientRole.INPUT 隐形成分。同时在 VillageCategory 中点击加号时，构造了包含多重角色的焦点组（CATALYST 角色村庄 + INPUT 角色建筑/村民），导致 JEI 检索失配，无法唯一排除另一个分类，从而同时弹出了两个页签。
+    * 内容未过滤/对焦失败原因：由于 CATALYST 焦点的村庄与全景类中注册的 INPUT 隐形成分角色不匹配，JEI 无法将配方正确锁定在当前 VillageType 上，导致过滤失效而展示了全部村庄内容。
+  * 修复方案
+    * 参考 CultureCategory 的做法，通过为两个全景窗口分配独占的隐形成分 Role 来进行隔离：
+    * 建筑全景（VillageBuildingsCategory）：使用 RecipeIngredientRole.INPUT 角色的 VILLAGE 隐形成分。
+    * 村民全景（VillageVillagersCategory）：使用 RecipeIngredientRole.CATALYST 角色的 VILLAGE 隐形成分。
+    * 主面板跳转（VillageCategory）：点击建筑加号时发送 INPUT 焦点；点击村民加号时发送 CATALYST 焦点。
+* Q73:`VillageVillagersCategory`现在是正确的，单页签、过滤掉了其他对象；`VillageBuildingsCategory`现在是半对的，三个页签(文化、文化关联村庄、村庄包含建筑)，但都对非关联对象进行了正确的过滤，现在你需要做的是事情是：让`VillageBuildingsCategory`被唤起后只有单页签(Category)

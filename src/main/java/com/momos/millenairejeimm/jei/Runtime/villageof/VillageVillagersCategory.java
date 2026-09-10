@@ -10,11 +10,12 @@ import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.runtime.IIngredientManager;
-import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.millenaire.culture.VillageType;
 import org.millenaire.culture.VillagerType;
 
@@ -22,7 +23,7 @@ import java.util.List;
 
 // region 村庄关联村民全景大窗口面板类
 /**
- * 点击村庄村民 LinkBox "+" 后唤起的全景大窗口 JEI 分类 {@link VillageVillagersCategory}。
+ * 展示村庄类型 {@link VillageType} 包含的所有村民职业/类型 {@link VillagerType} 的 JEI 全景大窗口分类。
  */
 public class VillageVillagersCategory extends BaseMillCategory<VillageType> {
     public static final RecipeType<VillageType> RECIPE_TYPE = RecipeType.create("millenaire", "village_villagers_full", VillageType.class);
@@ -32,27 +33,35 @@ public class VillageVillagersCategory extends BaseMillCategory<VillageType> {
     private static final int ROWS = 5;
     private static final int PAGE_SIZE = COLUMNS * ROWS;
 
-    /** 缓存上一次绘制的 {@link VillageType} 对象，用于判断当前帧是否切换了配方。 */
+    /**
+     * [醒目新注释]
+     * 缓存上一次绘制的 {@link VillageType} 对象，用于判断当前帧是否切换了配方。
+     */
     private VillageType lastRecipe;
 
-    /** 缓存已构造好的村庄名称文本 {@link Component}，规避渲染循环中的垃圾分配。 */
+    /**
+     * [醒目新注释]
+     * 缓存已构造好的村庄名称文本 {@link Component}，规避渲染循环中的分配开销。
+     */
     private Component cachedDisplayNameComponent;
 
     public VillageVillagersCategory(IGuiHelper guiHelper, IIngredientManager ingredientManager) {
-        super(guiHelper, guiHelper.createDrawableItemStack(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BOOK)));
+        super(guiHelper, guiHelper.createDrawableItemStack(new ItemStack(Items.PLAYER_HEAD)));
     }
 
     @Override public RecipeType<VillageType> getRecipeType() { return RECIPE_TYPE; }
-    @Override public Component getTitle() { return Component.literal("村庄出现村民 (全景大窗口)"); }
+    @Override public Component getTitle() { return Component.literal("村庄居住村民 (全景大窗口)"); }
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, VillageType recipe, IFocusGroup focuses) {
         if (recipe == null) return;
 
-        // [醒目新注释] 注册隐形焦点成分，使 JEI 能依据 Focus 定位村庄配方
-        builder.addInvisibleIngredients(RecipeIngredientRole.INPUT).addIngredient(MillIngredientTypes.VILLAGE, recipe);
+        // [醒目新注释] 隐形成分绑定：将主触发配方 {@link MillIngredientTypes#VILLAGE} 注册入 Focus 索引链
+        // [醒目新注释] 使 JEI 能响应以 {@link VillageType} 为 INPUT 焦点的跳转请求，准确呈现当前村庄的村民列表
+        // [醒目新注释] 修复：修改为 RecipeIngredientRole.CATALYST 角色注册隐形成分。
+        // [醒目新注释] 用于与 VillageBuildingsCategory(INPUT) 进行隔离，使 show(CATALYST focus) 能独占唤起村民全景分类并消除双页签。
+        builder.addInvisibleIngredients(RecipeIngredientRole.CATALYST).addIngredient(MillIngredientTypes.VILLAGE, recipe);
 
-        // [醒目新注释] 调用 {@link MillenaireAPIHelper#getVillagerFormVillage} 获取该村庄可能出现的所有村民
         List<VillagerType> villagers = MillenaireAPIHelper.getVillagerFormVillage(recipe);
         if (villagers == null || villagers.isEmpty()) return;
 
@@ -76,10 +85,13 @@ public class VillageVillagersCategory extends BaseMillCategory<VillageType> {
         if (recipe == null) return;
         Font font = Minecraft.getInstance().font;
 
+        /**
+         * [醒目新注释]
+         * 优化：配方变化时才重构 {@link Component}，减少 GUI 绘制帧率开销。
+         */
         if (recipe != this.lastRecipe) {
             this.lastRecipe = recipe;
-            String displayName = recipe.name() != null ? recipe.name() : recipe.id().getPath();
-            this.cachedDisplayNameComponent = Component.literal("§1所属村庄: §f" + displayName);
+            this.cachedDisplayNameComponent = Component.literal("§1所属村庄: §f" + recipe.name());
         }
 
         guiGraphics.drawString(font, this.cachedDisplayNameComponent, 14, 8, 0x000000, false);
@@ -104,3 +116,4 @@ public class VillageVillagersCategory extends BaseMillCategory<VillageType> {
         }
     }
 }
+// endregion 村庄关联村民全景大窗口面板类

@@ -10,11 +10,12 @@ import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.runtime.IIngredientManager;
-import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.millenaire.building.BuildingPlanSet;
 import org.millenaire.culture.VillageType;
 
@@ -22,7 +23,7 @@ import java.util.List;
 
 // region 村庄关联建筑全景大窗口面板类
 /**
- * 点击村庄建筑 LinkBox "+" 后唤起的全景大窗口 JEI 分类 {@link VillageBuildingsCategory}。
+ * 展示村庄类型 {@link VillageType} 包含的所有建筑 {@link BuildingPlanSet} 的 JEI 全景大窗口分类。
  */
 public class VillageBuildingsCategory extends BaseMillCategory<VillageType> {
     public static final RecipeType<VillageType> RECIPE_TYPE = RecipeType.create("millenaire", "village_buildings_full", VillageType.class);
@@ -32,14 +33,20 @@ public class VillageBuildingsCategory extends BaseMillCategory<VillageType> {
     private static final int ROWS = 5;
     private static final int PAGE_SIZE = COLUMNS * ROWS;
 
-    /** 缓存上一次绘制的 {@link VillageType} 对象，用于判断当前帧是否切换了配方。 */
+    /**
+     * [醒目新注释]
+     * 缓存上一次绘制的 {@link VillageType} 对象，用于判断当前帧是否切换了配方。
+     */
     private VillageType lastRecipe;
 
-    /** 缓存已构造好的村庄名称文本 {@link Component}，规避渲染循环中的垃圾分配。 */
+    /**
+     * [醒目新注释]
+     * 缓存已构造好的村庄名称文本 {@link Component}，规避渲染循环中的内存分配。
+     */
     private Component cachedDisplayNameComponent;
 
     public VillageBuildingsCategory(IGuiHelper guiHelper, IIngredientManager ingredientManager) {
-        super(guiHelper, guiHelper.createDrawableItemStack(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BOOK)));
+        super(guiHelper, guiHelper.createDrawableItemStack(new ItemStack(Items.BRICKS)));
     }
 
     @Override public RecipeType<VillageType> getRecipeType() { return RECIPE_TYPE; }
@@ -49,10 +56,11 @@ public class VillageBuildingsCategory extends BaseMillCategory<VillageType> {
     public void setRecipe(IRecipeLayoutBuilder builder, VillageType recipe, IFocusGroup focuses) {
         if (recipe == null) return;
 
-        // [醒目新注释] 注册隐形焦点成分，使 JEI 能依据 Focus 定位村庄配方
+        // [醒目新注释] 跨 Category 焦点跳转的关键：将 {@link MillIngredientTypes#VILLAGE} 注册为隐形成分
+        // [醒目新注释] 使 {@link mezz.jei.api.runtime.IRecipesGui#show} 能识别 {@link RecipeIngredientRole#INPUT} 类型的村庄焦点并精准定位
+        // [醒目新注释] 保持使用 RecipeIngredientRole.INPUT 角色，形成与 VillageVillagersCategory(CATALYST) 的差异化识别。
         builder.addInvisibleIngredients(RecipeIngredientRole.INPUT).addIngredient(MillIngredientTypes.VILLAGE, recipe);
 
-        // [醒目新注释] 调用 {@link MillenaireAPIHelper#getBuildingFormVillage} 获取该村庄的所有包含建筑
         List<BuildingPlanSet> buildings = MillenaireAPIHelper.getBuildingFormVillage(recipe);
         if (buildings == null || buildings.isEmpty()) return;
 
@@ -76,10 +84,13 @@ public class VillageBuildingsCategory extends BaseMillCategory<VillageType> {
         if (recipe == null) return;
         Font font = Minecraft.getInstance().font;
 
+        /**
+         * [醒目新注释]
+         * 优化：仅在配方切换时重新生成 {@link Component} 缓存。
+         */
         if (recipe != this.lastRecipe) {
             this.lastRecipe = recipe;
-            String displayName = recipe.name() != null ? recipe.name() : recipe.id().getPath();
-            this.cachedDisplayNameComponent = Component.literal("§1所属村庄: §f" + displayName);
+            this.cachedDisplayNameComponent = Component.literal("§1所属村庄: §f" + recipe.name());
         }
 
         guiGraphics.drawString(font, this.cachedDisplayNameComponent, 14, 8, 0x000000, false);
