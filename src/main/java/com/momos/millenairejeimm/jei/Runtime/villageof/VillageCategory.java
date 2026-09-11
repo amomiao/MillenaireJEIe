@@ -58,13 +58,9 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
                 .useJeiMode(ingredientManager, MillIngredientTypes.BUILDING)
                 .setOnPlusClick((contextObject, items) -> {
                     if (MillenaireJeimmPlugin.JeiRuntime != null && contextObject instanceof VillageType village) {
-//                        var focus = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory()
-////                                .createFocus(RecipeIngredientRole.RENDER_ONLY, MillIngredientTypes.VILLAGE, village);
-////                        MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(focus);
-                        var focus = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory().createFocus(RecipeIngredientRole.INPUT, MillIngredientTypes.VILLAGE, village);
-                        MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().showTypes(List.of(
-                                VillageBuildingsCategory.RECIPE_TYPE // 精确指定要唤起的分类 RecipeType
-                        ));
+                        var focus = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory()
+                                .createFocus(RecipeIngredientRole.INPUT, MillIngredientTypes.VILLAGE, village);
+                        MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(focus);
                     }
                 });
 
@@ -75,7 +71,7 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
                 .setOnPlusClick((contextObject, items) -> {
                     if (MillenaireJeimmPlugin.JeiRuntime != null && contextObject instanceof VillageType village) {
                         var focus = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory()
-                                .createFocus(RecipeIngredientRole.CATALYST, MillIngredientTypes.VILLAGE, village);
+                                .createFocus(RecipeIngredientRole.INPUT, MillIngredientTypes.VILLAGE, village);
 
                         MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(focus);
                     }

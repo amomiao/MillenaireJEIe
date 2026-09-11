@@ -211,11 +211,19 @@
   * 由于全局没有任何其他 Category 将 VILLAGE 设为 RENDER_ONLY，发送该焦点时 JEI 只会精准命中 VillageBuildingsCategory 这唯一一个页签，且过滤 100% 正确。
 * 修好了，可以少做功了
 // 新目标 Village
-* 村民属性里有没有显式的承接bring_back_home_goods的成员
+* Q76:村民属性里有没有显式的承接bring_back_home_goods的成员
   * [VillagerType#bringBackHomeGoods]返回的是`List<String>`,实际运行中这个参数绑定了一个可能需要的对象:会把小屋的{什么}材料带到市政厅
   * 这两个Goal可能与之有关:"millenaire:deliver_resources_shop","millenaire:get_resources_for_shops",
     * deliver_resources_shop确实是送货
   * 搞错了是`collect_goods`字段介入运输
 * 结合现有的模块研究一下API
-* 为了突破 Role 只有 4 个的物理限制，同时完美保留“自动聚焦定位”的能力，最正统的做法是为不同的关联关系定义独立的 IIngredientType（或包装 Payload）。record 写在 plugin里，你改一下
-  * 尝试
+* Q77: 为了突破 Role 只有 4 个的物理限制，同时完美保留“自动聚焦定位”的能力，最正统的做法是为不同的关联关系定义独立的 IIngredientType（或包装 Payload）。record 写在 plugin里，你改一下
+  * 彻底失败了，抛弃整个分支
+* Q78: 回到页签问题上，除了我说的两条解决方案，还有什么办法能解决 var focus = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory().createFocus(RecipeIngredientRole.RENDER_ONLY, MillIngredientTypes.VILLAGE, village); 的缺点。
+  * 为[RecipeIngredientRole]注入更多的值，逻辑上最简单但是可用性难以保证;
+  * 接受多`页签`(Categor)的现实，{[RecipeIngredientRole#INPUT]+`多页签`(Categor)+`正确过滤`}是最接近完美方案的情况，他只缺少一个页签跳转，哪怕是进行一次`模拟鼠标点击`也比注入好得多;
+  1. 从 IIngredientType 上做文章。JEI 允许你注册任意数量的自定义 Ingredient 类型 —— 不可行因为会对一个对象反复声明，就是把`建筑`描述为多个`村庄.建筑`
+  2. `.showTypes(List.of(targetType));` —— `指定show`以后可以再过滤吗？AI调用了好几次`此API`没有进行过`指定show`+`过滤`可实现性存疑，但能实现的话是一种解决方案
+  3. JEI 的 Subtype（子类型） 机制, 类似于“带 NBT 的物品”或“带不同 Mode 的工具”，你可以让 Village 对象在 JEI 视角下附带不同的子类型 Key —— 检索带NBT标签的特殊对象？很有可为，是方法(1)的可接受版本
+  4. 顺应 JEI 的多 Tab 设计 —— 还有投降派，本质上是我的方案(2)
+* 使用标签方案，先做一下前置工作，现在完全有必要把所有的引用关系保存下来，在前置模组里声明一个数据库类(拆解MillenaireAPIHelper并放置在同级目录，但是方法调用本身还是Helper负责)，在合适的时机进行一次初始化(或懒加载)

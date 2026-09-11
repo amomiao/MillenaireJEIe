@@ -47,9 +47,7 @@ public class VillageBuildingsCategory extends BaseMillCategory<VillageType> {
     public void setRecipe(IRecipeLayoutBuilder builder, VillageType recipe, IFocusGroup focuses) {
         if (recipe == null) return;
 
-        // [醒目新注释] 关键修复：隐形成分注册改为 RecipeIngredientRole.RENDER_ONLY 角色
-        // [醒目新注释] 与 VillageCategory(OUTPUT) 和 VillageVillagersCategory(CATALYST) 形成物理隔离，保证唤起时只有当前单一页签且正确过滤。
-        builder.addInvisibleIngredients(RecipeIngredientRole.RENDER_ONLY).addIngredient(MillIngredientTypes.VILLAGE, recipe);
+        builder.addInvisibleIngredients(RecipeIngredientRole.INPUT).addIngredient(MillIngredientTypes.VILLAGE, recipe);
 
         List<BuildingPlanSet> buildings = MillenaireAPIHelper.getBuildingFormVillage(recipe);
         if (buildings == null || buildings.isEmpty()) return;

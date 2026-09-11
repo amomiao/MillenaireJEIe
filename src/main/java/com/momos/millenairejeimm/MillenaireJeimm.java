@@ -59,7 +59,7 @@ public class MillenaireJeimm {
     /// 3.2 事件触发后会展开`页签`(Category)[CultureVillagesCategory]，注意这个页签也必须在[MillenaireJeimmPlugin#registerCategories]和[MillenaireJeimmPlugin#registerRecipes]中声明
     /// ================
     /// 4.0 一级页签到二级页签的逻辑
-    /// [过时] ~~4.1~~ 构建一个`LinkLayout`为`页签`(Categor)封装一份渲染对象: 审阅[JeiLinkLayout]没什么难点
+    /// [过时] ~~4.1~~ 构建一个`LinkLayout`为`页签`(Categor)封装一份渲染对象: 审阅[CultureLinkLayout]没什么难点
     /// 4.1 受限于固定的宽度，[JeiLinkBox#PREVIEW_SLOTS]是常量=8，他在[JeiLinkBox#setRecipe]中声明了八个`JEI格`;
     /// 4.1.1 第九个格子不是`JEI格`，仅在[JeiLinkBox#registerPlusButtonInputHandler]中声明了他的位置，这样做的原因是`原生的单元格`对`事件的处理`更加强大,可以支持`任意的点击事件`;
     /// 4.1.2 [JeiLinkBox#render]中使用了文字渲染了一个`"§a+"`
@@ -68,7 +68,7 @@ public class MillenaireJeimm {
     /// 4.1.3.2 点击正常会触发[JeiLinkBox#customClickListener],这个变量由外部调用,回到[3.1.6.1]
     /// 4.1.3.3 退化逻辑是`点击输出'1'`
     /// 4.2 [JeiLinkLayout]与[JeiLinkBox]的使用方法:为Layout传入Box,管理布局
-    /// [过时] 现有[CultureLinkLayout]这样的单独实现被整体封装[JeiLinkLayout],通过`变长参数`实现多态,但与旧的实现方式无语义差异
+    /// (更新) 现有[JeiLinkLayout]这样的单独实现被整体封装[JeiLinkLayout],通过`变长参数`实现多态,但与旧的实现方式无语义差异
     /// (更新) [JeiLinkLayout]增加一个设定，渲染时长度为0不渲染(默认)，`bool`[JeiLinkLayout#hideEmptyBoxes]控制此行为
     /// 4.3 [JeiLinkBox]的声明,以[VillageCategory#VillageCategory]为例
     /// 4.3.1 构造参数[IGuiHelper]`guiHelper`,JEI的GUI绘图工具
@@ -83,21 +83,29 @@ public class MillenaireJeimm {
     /// 4.3.7.1 (var focus) 构筑一个检索焦点, 作用是跳转过去之后页面会默认转到`焦点对象`
     /// [过时]4.3.7.2 (getJeiHelpers().getFocusFactory().createFocus(...)) 转到焦点构建的方法上
     /// 4.3.7.3 最重要的`.createFocus(RecipeIngredientRole.RENDER_ONLY, MillIngredientTypes.VILLAGE, village)`
-    /// 4.3.7.3.1 [RecipeIngredientRole]是一个`枚举`,控制页签的流向,如果多次[JeiLinkBox#setOnPlusClick]声明时为两个`.createFocus`赋值了同一类型，那么就会唤起两组数据并且使得聚焦失败，超过4个值时逻辑垮塌(:D因为枚举只有四个值)
+    /// 4.3.7.3.1 [RecipeIngredientRole]是一个`枚举`,控制`页签`(Categor)的流向,如果多次[JeiLinkBox#setOnPlusClick]声明时为两个`.createFocus`赋值了同一类型，那么就会唤起两组数据并且使得聚焦失败，超过4个值时逻辑垮塌(:D因为枚举只有四个值)
     /// 4.3.7.3.1 且这些值不是在这里作为自变量的，而是受制于对应的[VillageBuildingsCategory#setRecipe]中调用的`builder.addInvisibleIngredients(RecipeIngredientRole.RENDER_ONLY).addIngredient(MillIngredientTypes.VILLAGE, recipe);`
-    /// 4.3.7.3.1.1 [RecipeIngredientRole#INPUT] 以U的方式检索对象
-    /// 4.3.7.3.1.2 [RecipeIngredientRole#OUTPUT] 以R的方式检索对象
-    /// 4.3.7.3.1.3 [RecipeIngredientRole#CATALYST] 以用法(工作台/熔炉/...)的方式检索对象
-    /// 4.3.7.3.1.4 [RecipeIngredientRole#RENDER_ONLY] 以只渲染的方式检索就行
-    /// 4.3.7.3.2 [MillIngredientTypes#VILLAGE] 告知页面准备为`VILLAGE`下的所有JEI`要素`(Ingredient)提供列举(就是页签内有很多页可以翻)
+    /// 4.3.7.3.1.1 [RecipeIngredientRole#INPUT] 以R(左键)的方式检索对象,解释对象的来源
+    /// 4.3.7.3.1.2 [RecipeIngredientRole#OUTPUT] 以U(右键)的方式检索对象,解释对象的用法
+    /// 4.3.7.3.1.3 [RecipeIngredientRole#CATALYST] 以(不消耗的催化剂)的方式检索对象
+    ///             仅在代码调用时会单独出现`CATALYST`的页签，运行时作为U(右键)的第二种输出对象;
+    ///             用法很少，大部分JEI`要素`(Ingredient)根本不会用到此`Role`，所以这个类型可以在代码调用中当`空页`用;
+    ///             [用例:AE2-陨石罗盘(U)定位到(培育赛特斯石英:母岩+罗盘)]
+    /// 4.3.7.3.1.4 [RecipeIngredientRole#RENDER_ONLY] 以只渲染的方式检索
+    ///             仅在代码调用时会单独出现`RENDER_ONLY`的页签，运行时作为U(右键)的第二种输出对象;
+    ///             用法很少，大部分JEI`要素`(Ingredient)根本不会用到此`Role`，所以这个类型可以在代码调用中当`空页`用;
+    ///             [用例:AE2-充能器(U)定位到(石英水晶=>充能石英水晶)下的(木制曲柄)-(10 turns or 1600AE)]
+    /// 4.3.7.3.2 [MillIngredientTypes#VILLAGE] 告知页面准备为`VILLAGE`下的所有JEI`要素`(Ingredient)提供列举(就是`页签`(Categor)内有很多页可以翻)
     /// 4.3.7.3.3 (village) 参数3位于参数2的集合里时, 页面会自己翻页到`参数3`的所在页面
-    /// (更新)4.3.7.2b 优化`.createFocus`: 难以为继的根本原因是
+    /// [失败]4.3.7.2b 优化`.createFocus`: 难以为继的根本原因是
     /// 4.3.7.2b.1 如[VillageCategory]:希望展示的两个子页面[VillageBuildingsCategory#setRecipe]和[VillageVillagersCategory#setRecipe]都调用了
     ///     builder.addInvisibleIngredients(RecipeIngredientRole.CATALYST).addIngredient([MillIngredientTypes#VILLAGE], recipe);
     ///     builder.addInvisibleIngredients(RecipeIngredientRole.RENDER_ONLY).addIngredient([MillIngredientTypes#VILLAGE], recipe);
     ///     也就是把自己注册为了[MillIngredientTypes#VILLAGE]的查询结果
     ///     让他们与[MillIngredientTypes#VILLAGE]脱钩，在更高层隔离`查询作用域`，就能解决查询焦点的复杂情况
-    ///
+    /// (更新)4.3.7.2c 重新梳理了一下[RecipeIngredientRole]的运行逻辑[4.3.7.3.1]
+    /// 4.3.7.2c.1 首先是为[RecipeIngredientRole]注入更多的值，逻辑上最简单但是可用性难以保证;
+    /// 4.3.7.2c.2 其次是接受多`页签`(Categor)的现实，{[RecipeIngredientRole#INPUT]+`多页签`(Categor)+`正确过滤`}是最接近完美方案的情况，他只缺少一个页签跳转，哪怕是进行一次`模拟鼠标点击`也比注入好得多;
     /// 4.3.8 `MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(focus);` 传入焦点，调用`Jei运行时`，产生页面跳转。
     public MillenaireJeimm(IEventBus modEventBus, ModContainer modContainer) {
 
