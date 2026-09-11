@@ -19,6 +19,7 @@ import net.minecraft.world.item.Items;
 import org.millenaire.culture.VillageType;
 import org.millenaire.culture.VillagerType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 // region 村庄关联村民全景大窗口面板类
@@ -52,14 +53,34 @@ public class VillageVillagersCategory extends BaseMillCategory<VillageType> {
     @Override public RecipeType<VillageType> getRecipeType() { return RECIPE_TYPE; }
     @Override public Component getTitle() { return Component.literal("村庄居住村民 (全景大窗口)"); }
 
+    // [醒目新注释] 将隐形成分修改为 CATALYST 角色，形成全景村民分类的独占类型区分
+    /**
+     * 设置全景村民分类的 JEI 槽位布局与隐形成分。
+     *
+     * @param builder JEI 配方布局构建器 {@link IRecipeLayoutBuilder}
+     * @param recipe 当前村庄类型对象 {@link VillageType}
+     * @param focuses 当前 JEI 焦点组 {@link IFocusGroup}
+     */
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, VillageType recipe, IFocusGroup focuses) {
         if (recipe == null) return;
 
-        builder.addInvisibleIngredients(RecipeIngredientRole.INPUT).addIngredient(MillIngredientTypes.VILLAGE, recipe);
+        // [醒目新注释] 注册 CATALYST 隐形成分，响应来自 VillageCategory 村民 LinkBox 的专项点击
+        builder.addInvisibleIngredients(RecipeIngredientRole.CATALYST).addIngredient(MillIngredientTypes.VILLAGE, recipe);
 
         List<VillagerType> villagers = MillenaireAPIHelper.getVillagerFormVillage(recipe);
         if (villagers == null || villagers.isEmpty()) return;
+
+        // [醒目新注释] 根据当前焦点过滤/重排，置顶被选中的村民
+        if (focuses != null && !focuses.isEmpty()) {
+            List<VillagerType> focusedVillagers = focuses.getFocuses(MillIngredientTypes.VILLAGER)
+                    .map(f -> f.getTypedValue().getIngredient())
+                    .toList();
+            if (!focusedVillagers.isEmpty()) {
+                villagers = new ArrayList<>(villagers);
+                villagers.sort((a, b) -> Boolean.compare(focusedVillagers.contains(b), focusedVillagers.contains(a)));
+            }
+        }
 
         int startX = 14;
         int startY = 24;

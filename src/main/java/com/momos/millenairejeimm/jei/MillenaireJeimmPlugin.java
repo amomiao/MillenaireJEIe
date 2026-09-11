@@ -172,7 +172,7 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                 new CultureCategory(guiHelper, ingredientManager),
                 new CultureVillagesCategory(guiHelper,ingredientManager),
 
-                new BuildingCategory(guiHelper),
+                new BuildingCategory(guiHelper,ingredientManager),
 
                 new VillageCategory(guiHelper,ingredientManager),
                 new VillageBuildingsCategory(guiHelper,ingredientManager),

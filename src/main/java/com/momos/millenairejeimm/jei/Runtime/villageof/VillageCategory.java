@@ -27,6 +27,7 @@ import org.millenaire.culture.VillageType;
 import org.millenaire.culture.VillagerType;
 import org.millenaire.item.ItemHelper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 // region 类定义与构造函数
@@ -58,8 +59,9 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
                 .useJeiMode(ingredientManager, MillIngredientTypes.BUILDING)
                 .setOnPlusClick((contextObject, items) -> {
                     if (MillenaireJeimmPlugin.JeiRuntime != null && contextObject instanceof VillageType village) {
+                        // [醒目新注释] 锁定发送 RENDER_ONLY 焦点的 VILLAGE 隐形成分
                         var focus = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory()
-                                .createFocus(RecipeIngredientRole.INPUT, MillIngredientTypes.VILLAGE, village);
+                                .createFocus(RecipeIngredientRole.RENDER_ONLY, MillIngredientTypes.VILLAGE, village);
                         MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(focus);
                     }
                 });
@@ -70,8 +72,9 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
                 .useJeiMode(ingredientManager, MillIngredientTypes.VILLAGER)
                 .setOnPlusClick((contextObject, items) -> {
                     if (MillenaireJeimmPlugin.JeiRuntime != null && contextObject instanceof VillageType village) {
+                        // [醒目新注释] 锁定发送 CATALYST 焦点的 VILLAGE 隐形成分
                         var focus = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory()
-                                .createFocus(RecipeIngredientRole.INPUT, MillIngredientTypes.VILLAGE, village);
+                                .createFocus(RecipeIngredientRole.CATALYST, MillIngredientTypes.VILLAGE, village);
 
                         MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(focus);
                     }
@@ -85,6 +88,14 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
     @Override public RecipeType<VillageType> getRecipeType() { return RECIPE_TYPE; }
     @Override public Component getTitle() { return Component.translatable("gui.millenairejeimm.category.village_details"); }
 
+    // [醒目新注释] 结合当前 JEI Focus 组对 LinkBox 内建筑与村民排序进行过滤置顶
+    /**
+     * 设置村庄详情分类的 JEI 槽位与 LinkBox 内容。
+     *
+     * @param builder JEI 配方布局构建器 {@link IRecipeLayoutBuilder}
+     * @param recipe 当前村庄类型 {@link VillageType}
+     * @param focuses 当前 JEI 焦点组 {@link IFocusGroup}
+     */
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, VillageType recipe, IFocusGroup focuses) {
         if (recipe == null) return;
@@ -94,6 +105,29 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
 
         List<BuildingPlanSet> buildings = MillenaireAPIHelper.getBuildingFormVillage(recipe);
         List<VillagerType> villagers = MillenaireAPIHelper.getVillagerFormVillage(recipe);
+
+        // [醒目新注释] 如果存在反查焦点（如玩家点击特定 Building 或 Villager），将其优先排序至前排
+        if (focuses != null && !focuses.isEmpty()) {
+            if (buildings != null && !buildings.isEmpty()) {
+                List<BuildingPlanSet> focusedBuildings = focuses.getFocuses(MillIngredientTypes.BUILDING)
+                        .map(f -> f.getTypedValue().getIngredient())
+                        .toList();
+                if (!focusedBuildings.isEmpty()) {
+                    buildings = new ArrayList<>(buildings);
+                    buildings.sort((a, b) -> Boolean.compare(focusedBuildings.contains(b), focusedBuildings.contains(a)));
+                }
+            }
+
+            if (villagers != null && !villagers.isEmpty()) {
+                List<VillagerType> focusedVillagers = focuses.getFocuses(MillIngredientTypes.VILLAGER)
+                        .map(f -> f.getTypedValue().getIngredient())
+                        .toList();
+                if (!focusedVillagers.isEmpty()) {
+                    villagers = new ArrayList<>(villagers);
+                    villagers.sort((a, b) -> Boolean.compare(focusedVillagers.contains(b), focusedVillagers.contains(a)));
+                }
+            }
+        }
 
         if (villageLayout != null) {
             villageLayout.setRecipeForBox(0, builder, buildings);

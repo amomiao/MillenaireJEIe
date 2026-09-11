@@ -163,6 +163,7 @@
 * Q57: 为`VillageCategory`补充如`CultureVillagesCategory`的内容，村庄需要展示建筑与村民,
   * `MillenaireJeimm`中有帮助性内容
   * 数据源自`MillenaireAPIHelper#getBuildingFormVillage`和`MillenaireAPIHelper#getVillagerFormVillage`
+// 页签调用Bug流程起点
 * Q58: 聚焦了但是只聚焦了一半，与之关联的四个页签出来了，但是比如点击`村庄的村民`的加号，默认指向了第一个文化页签
 * Q59: 应该指向的页签对象在这里面，你看看是不是简单的填错了对象
   * 确实是传入 JEI 的 RecipeType 列表顺序或目标 Category 对象填错导致的。 
@@ -232,3 +233,10 @@
 * Q82: 只添加方法，不要产生破坏性内容
 * Q83: 还需要处理`XXIngredientRenderer`，重构这些给予的类，进行功能实现和用户友好功能添加
 * Q84: Renderer里把所有关联tag都输出出来，不用对开F3+H的省略内容
+* Q85: 现在有标签了，再回到VillageCategory进行过滤调用
+//- 页签调用Bug流程重点
+// 为建筑绘制`LinkBox`，他的特殊性在于要走Item渲染流程，不确定Item的数量超过一组会不会有制造大的障碍，能通过(原生支持/文本绘制)实现就不难。
+* 暂不考虑为设计到的建筑材料去注入标签，有Bug以后再说吧，反正是有解决方案了
+* Q86: 为建筑绘制`LinkBox`，他的特殊性在于要走Item渲染流程，不确定Item的数量超过一组会不会有制造大的障碍，能通过(原生支持/文本绘制)实现就不难。查阅源码留下声明资源用量的接口，暂时为其随便赋值一些道具。
+  * 建筑的`LinkBox`包括`村庄(Ingredient)`、`村民(Ingredient)`、`升级用量(Item)`
+* 87: 没有声明对应的二级窗口，但是二级窗口本质上就是一个文本然后列出内容，可以封成一个通用窗口吗？不行就算了声明三个新窗口。
