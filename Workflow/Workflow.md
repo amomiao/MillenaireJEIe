@@ -325,3 +325,14 @@
 * Q109: 根据文字及文件要求，生成最终的VillagerCategory及其二级页面：VillagerVillageCategory/VillagerBuildingCategory/VillagerBringBackHomeCategory/VillagerCollectCategory/VillagerRequiredCategory，并将代码补充进MillenaireJeimmPlugin。
 * Q110: 参照这些二级页签重构五个VillagerXXXCategory页签，你现在为这五个套用了一级页签的格式，这不对。
   * 我说registerCategories里构造方法没有要求ingredientManager
+//- 功能完成
+* 现在开始修Bug
+  * 1.建筑书签每次进入游戏会消失,且只有建筑书签有这个问题，但好像有一个报告
+    * 日志显示 JEI 在从 bookmarks.json 读取建筑书签 "seljuk:toolsmith" 时抛出了 NullPointerException: ingredient must not be null。这是由于 BUILDING_CODEC 在反序列化建筑对象失败时返回了 null 结果，导致 JEI 校验崩溃并丢弃了整份书签配置。
+    * `MillIngredientTypes`的问题
+    * 查阅`BuildingPlanSetLoader`解决
+      * `MillenaireAPIHelper#getAllBuildingPlanSets` 返回的是 Map<ResourceLocation, BuildingPlanSet>，
+      * 但在之前的 BUILDING_CODEC 里一直直接拿着 String 去调用 Map.get(Object)。
+      * 由于 Java 中 String 和 ResourceLocation 类型不同，Map.get 比较 equals 时必定永远返回 null！  
+      * 修改 MillIngredientTypes.java 中的 BUILDING_CODEC，将传入的 String 正确解析/转换为 ResourceLocation 后再进行 Map 查询
+  * 2.通过全局页签查看的方式，查看一个页签的所有对象时，CultureCategory、VillageCategory、BuildingCategory、VillagerCategory，这四个一级页签里的Layout框架不会得到更新，且内容会更新导致有一定错乱、闪烁，Layout错误的作为了内容载体。

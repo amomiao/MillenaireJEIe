@@ -2,7 +2,6 @@ package com.momos.millenairejeimm.jei.Runtime.villageof;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
-import com.momos.millenairejeimm.jei.MillenaireJeimmPlugin;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
 import com.momos.millenairejeimm.jei.Runtime.JeiLinkLayout;
 import com.momos.millenairejeimm.jei.Runtime.MillIconOnlyRenderer;
@@ -30,10 +29,6 @@ import org.millenaire.item.ItemHelper;
 import java.util.ArrayList;
 import java.util.List;
 
-// region 类定义与构造函数
-/**
- * 村庄类型 {@link VillageType} JEI 详情分类，继承自 {@link BaseMillCategory}。
- */
 public class VillageCategory extends BaseMillCategory<VillageType> {
     public static final RecipeType<VillageType> RECIPE_TYPE = RecipeType.create("millenaire", "village_details", VillageType.class);
     private static final MillIconOnlyRenderer<VillageType> ICON_RENDERER = new MillIconOnlyRenderer<>(recipe -> {
@@ -62,14 +57,45 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
     @Override public RecipeType<VillageType> getRecipeType() { return RECIPE_TYPE; }
     @Override public Component getTitle() { return Component.translatable("gui.millenairejeimm.category.village_details"); }
 
-    // [醒目新注释] 结合当前 JEI Focus 组对 LinkBox 内建筑与村民排序进行过滤置顶
+    // [醒目新注释] 提取村庄布局数据同步逻辑，包含焦点组排序计算
     /**
-     * 设置村庄详情分类的 JEI 槽位与 LinkBox 内容。
+     * 根据当前 {@link VillageType} 配方及焦点强行同步刷新 {@link #villageLayout} 数据。
      *
-     * @param builder JEI 配方布局构建器 {@link IRecipeLayoutBuilder}
-     * @param recipe 当前村庄类型 {@link VillageType}
+     * @param recipe  当前村庄类型配方对象 {@link VillageType}
      * @param focuses 当前 JEI 焦点组 {@link IFocusGroup}
      */
+    private void updateLayoutData(VillageType recipe, IFocusGroup focuses) {
+        if (villageLayout == null || recipe == null) return;
+
+        List<BuildingPlanSet> buildings = MillenaireAPIHelper.getBuildingFormVillage(recipe);
+        List<VillagerType> villagers = MillenaireAPIHelper.getVillagerFormVillage(recipe);
+
+        if (focuses != null && !focuses.isEmpty()) {
+            if (buildings != null && !buildings.isEmpty()) {
+                List<BuildingPlanSet> focusedBuildings = focuses.getFocuses(MillIngredientTypes.BUILDING)
+                        .map(f -> f.getTypedValue().getIngredient())
+                        .toList();
+                if (!focusedBuildings.isEmpty()) {
+                    buildings = new ArrayList<>(buildings);
+                    buildings.sort((a, b) -> Boolean.compare(focusedBuildings.contains(b), focusedBuildings.contains(a)));
+                }
+            }
+
+            if (villagers != null && !villagers.isEmpty()) {
+                List<VillagerType> focusedVillagers = focuses.getFocuses(MillIngredientTypes.VILLAGER)
+                        .map(f -> f.getTypedValue().getIngredient())
+                        .toList();
+                if (!focusedVillagers.isEmpty()) {
+                    villagers = new ArrayList<>(villagers);
+                    villagers.sort((a, b) -> Boolean.compare(focusedVillagers.contains(b), focusedVillagers.contains(a)));
+                }
+            }
+        }
+
+        villageLayout.setBoxData(0, buildings);
+        villageLayout.setBoxData(1, villagers);
+    }
+
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, VillageType recipe, IFocusGroup focuses) {
         if (recipe == null) return;
@@ -80,7 +106,6 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
         List<BuildingPlanSet> buildings = MillenaireAPIHelper.getBuildingFormVillage(recipe);
         List<VillagerType> villagers = MillenaireAPIHelper.getVillagerFormVillage(recipe);
 
-        // [醒目新注释] 如果存在反查焦点（如玩家点击特定 Building 或 Villager），将其优先排序至前排
         if (focuses != null && !focuses.isEmpty()) {
             if (buildings != null && !buildings.isEmpty()) {
                 List<BuildingPlanSet> focusedBuildings = focuses.getFocuses(MillIngredientTypes.BUILDING)
@@ -105,6 +130,7 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
 
         if (villageLayout != null) {
             villageLayout.Clear();
+            updateLayoutData(recipe, focuses);
             villageLayout.setRecipeForBox(0, builder, buildings);
             villageLayout.setRecipeForBox(1, builder, villagers);
         }
@@ -113,7 +139,11 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
     @Override
     public void createRecipeExtras(IRecipeExtrasBuilder builder, VillageType recipe, IFocusGroup focuses) {
         super.createRecipeExtras(builder, recipe, focuses);
-        if (villageLayout != null) villageLayout.createRecipeExtras(builder, recipe);
+        if (villageLayout != null) {
+            // [醒目新注释] 注册额外拦截器前同步数据
+            updateLayoutData(recipe, focuses);
+            villageLayout.createRecipeExtras(builder, recipe);
+        }
     }
 
     @Override
@@ -141,6 +171,10 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
         drawHoverableText(guiGraphics, font, "防御属性", defenseText, 6, 92, mouseX, mouseY);
         drawLabelValue(guiGraphics, font, "控制规则", recipe.playerControlled() ? "§d玩家控制" : "§8自主发展", 6, 102);
 
-        if (villageLayout != null) villageLayout.render(guiGraphics, font, mouseX, mouseY);
+        // [醒目新注释] 渲染前按当前配方强行同步数据，防止多配方平铺时渲染错位
+        if (villageLayout != null) {
+            updateLayoutData(recipe, null);
+            villageLayout.render(guiGraphics, font, mouseX, mouseY);
+        }
     }
 }

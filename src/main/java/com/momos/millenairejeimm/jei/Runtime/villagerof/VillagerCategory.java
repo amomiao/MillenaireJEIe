@@ -28,9 +28,6 @@ import org.millenaire.item.ItemHelper;
 
 import java.util.List;
 
-/**
- * 村民类型 {@link VillagerType} JEI 主分类，继承自 {@link BaseMillCategory}。
- */
 public class VillagerCategory extends BaseMillCategory<VillagerType> {
 
     public static final RecipeType<VillagerType> RECIPE_TYPE = RecipeType.create("millenaire", "villager_details", VillagerType.class);
@@ -43,7 +40,6 @@ public class VillagerCategory extends BaseMillCategory<VillagerType> {
         return ItemStack.EMPTY;
     });
 
-    // [醒目新注释] 关联布局与村民相关的 5 个 LinkBox 组件定义
     private final JeiLinkLayout villagerLayout;
     private final JeiLinkBox<VillageType> villageBox;
     private final JeiLinkBox<BuildingPlanSet> buildingBox;
@@ -51,28 +47,16 @@ public class VillagerCategory extends BaseMillCategory<VillagerType> {
     private final JeiLinkBox<ItemStack> collectBox;
     private final JeiLinkBox<ItemStack> requiredBox;
 
-    /**
-     * [醒目新注释] 构造函数升级：引入 {@link IIngredientManager} 以支持原生 LinkBox 动态联动
-     *
-     * @param guiHelper JEI GUI 辅助接口 {@link IGuiHelper}
-     * @param ingredientManager JEI 成分管理器 {@link IIngredientManager}
-     */
     public VillagerCategory(IGuiHelper guiHelper, IIngredientManager ingredientManager) {
         super(guiHelper, guiHelper.createDrawableItemStack(
                 new ItemStack(ItemHelper.resolve("millenaire:travel_book") != null ? ItemHelper.resolve("millenaire:travel_book") : Items.BOOK)));
 
-        // [醒目新注释] 1. 生成/居住村庄 LinkBox (Ingredient: VILLAGE)
         this.villageBox = new JeiLinkBox<VillageType>("居住村庄").useJeiMode(ingredientManager, MillIngredientTypes.VILLAGE);
-        // [醒目新注释] 2. 关联工作/居住建筑 LinkBox (Ingredient: BUILDING)
         this.buildingBox = new JeiLinkBox<BuildingPlanSet>("工作与居住建筑").useJeiMode(ingredientManager, MillIngredientTypes.BUILDING);
-        // [醒目新注释] 3. 产物带回建筑 LinkBox
         this.bringBackHomeBox = new JeiLinkBox<ItemStack>("带回建筑物资");
-        // [醒目新注释] 4. 上交中心白名单 LinkBox
         this.collectBox = new JeiLinkBox<ItemStack>("上交中心白名单");
-        // [醒目新注释] 5. 职业专属需求 LinkBox
         this.requiredBox = new JeiLinkBox<ItemStack>("职业专属需求");
 
-        // [醒目新注释] 初始化链接布局，起点坐标 Y: 105，总宽度: 172，项间距: 4
         this.villagerLayout = new JeiLinkLayout(2, 105, 172, 4)
                 .addBox(villageBox)
                 .addBox(buildingBox)
@@ -91,6 +75,42 @@ public class VillagerCategory extends BaseMillCategory<VillagerType> {
         return Component.translatable("gui.millenairejeim.category.villager_details");
     }
 
+    // [醒目新注释] 提取村民布局数据同步方法，避免单例 Category 跨配方渲染错位
+    /**
+     * 根据当前 {@link VillagerType} 配方强行同步刷新 {@link #villagerLayout} 内部数据。
+     *
+     * @param recipe 当前村民类型配方对象 {@link VillagerType}
+     */
+    private void updateLayoutData(VillagerType recipe) {
+        if (villagerLayout == null || recipe == null) return;
+
+        List<VillageType> villages = MillenaireAPIHelper.getVillageFormVillager(recipe);
+        List<BuildingPlanSet> buildings = MillenaireAPIHelper.getBuildingFormVillager(recipe);
+
+        List<ItemStack> bringBackHomeItems = recipe.resolvedBringBackHomeGoods().stream()
+                .filter(item -> item != null && item != Items.AIR)
+                .map(ItemStack::new)
+                .toList();
+
+        List<ItemStack> collectItems = recipe.resolvedCollectGoods().stream()
+                .map(ItemHelper::resolve)
+                .filter(item -> item != null && item != Items.AIR)
+                .map(ItemStack::new)
+                .toList();
+
+        List<ItemStack> requiredItems = recipe.requiredGoods().isEmpty() ? List.of() :
+                recipe.resolvedRequiredGoods().entrySet().stream()
+                        .filter(entry -> entry.getKey() != null && entry.getKey() != Items.AIR)
+                        .map(entry -> new ItemStack(entry.getKey(), entry.getValue()))
+                        .toList();
+
+        villagerLayout.setBoxData(0, villages);
+        villagerLayout.setBoxData(1, buildings);
+        villagerLayout.setBoxData(2, bringBackHomeItems);
+        villagerLayout.setBoxData(3, collectItems);
+        villagerLayout.setBoxData(4, requiredItems);
+    }
+
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, VillagerType recipe, IFocusGroup focuses) {
         if (recipe == null) return;
@@ -98,23 +118,9 @@ public class VillagerCategory extends BaseMillCategory<VillagerType> {
                 .addIngredient(MillIngredientTypes.VILLAGER, recipe)
                 .setCustomRenderer(MillIngredientTypes.VILLAGER, ICON_RENDERER);
 
-        // [醒目新注释] 调试输出：在客户端聊天栏向玩家打印 VillagerType 的 8 个相关数据结构 API 内容
-        if (Minecraft.getInstance().player != null) {
-            var player = Minecraft.getInstance().player;
-            player.sendSystemMessage(Component.literal("§e=== VillagerType 调试数据: " + recipe.id() + " ==="));
-            player.sendSystemMessage(Component.literal("§b1. id(): §r" + recipe.id()));
-            player.sendSystemMessage(Component.literal("§b2. culture(): §r" + recipe.culture()));
-            player.sendSystemMessage(Component.literal("§b3. bringBackHomeGoods(): §r" + recipe.bringBackHomeGoods()));
-            player.sendSystemMessage(Component.literal("§b4. resolvedBringBackHomeGoods(): §r" + recipe.resolvedBringBackHomeGoods()));
-            player.sendSystemMessage(Component.literal("§b5. collectGoods(): §r" + recipe.collectGoods()));
-            player.sendSystemMessage(Component.literal("§b6. resolvedCollectGoods(): §r" + recipe.resolvedCollectGoods()));
-            player.sendSystemMessage(Component.literal("§b7. requiredGoods(): §r" + recipe.requiredGoods()));
-            player.sendSystemMessage(Component.literal("§b8. resolvedRequiredGoods(): §r" + recipe.resolvedRequiredGoods()));
-        }
-
-        // [醒目新注释] 绑定动态联动 LinkBox 数据，遵守调查报告，使用安全 resolved 系列 API
         if (villagerLayout != null) {
             villagerLayout.Clear();
+            updateLayoutData(recipe);
 
             List<VillageType> villages = MillenaireAPIHelper.getVillageFormVillager(recipe);
             List<BuildingPlanSet> buildings = MillenaireAPIHelper.getBuildingFormVillager(recipe);
@@ -130,7 +136,6 @@ public class VillagerCategory extends BaseMillCategory<VillagerType> {
                     .map(ItemStack::new)
                     .toList();
 
-            // [醒目新注释] 根据调查报告，以 requiredGoods().isEmpty() 作为前置过滤器剔除全局通用饮食库
             List<ItemStack> requiredItems = recipe.requiredGoods().isEmpty() ? List.of() :
                     recipe.resolvedRequiredGoods().entrySet().stream()
                             .filter(entry -> entry.getKey() != null && entry.getKey() != Items.AIR)
@@ -151,6 +156,8 @@ public class VillagerCategory extends BaseMillCategory<VillagerType> {
     public void createRecipeExtras(IRecipeExtrasBuilder builder, VillagerType recipe, IFocusGroup focuses) {
         super.createRecipeExtras(builder, recipe, focuses);
         if (villagerLayout != null) {
+            // [醒目新注释] 注册 Extras 前同步数据
+            updateLayoutData(recipe);
             villagerLayout.createRecipeExtras(builder, recipe);
         }
     }
@@ -183,7 +190,9 @@ public class VillagerCategory extends BaseMillCategory<VillagerType> {
 
         drawHoverableText(guiGraphics, font, "特性标记", flagsStr, 6, 92, mouseX, mouseY);
 
+        // [醒目新注释] 渲染前强行按当前配方同步 Layout 状态
         if (villagerLayout != null) {
+            updateLayoutData(recipe);
             villagerLayout.render(guiGraphics, font, mouseX, mouseY);
         }
     }

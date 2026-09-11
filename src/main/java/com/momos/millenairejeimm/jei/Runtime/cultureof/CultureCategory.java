@@ -1,9 +1,7 @@
-// region 文化分类主面板类
 package com.momos.millenairejeimm.jei.Runtime.cultureof;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
-import com.momos.millenairejeimm.jei.MillenaireJeimmPlugin;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
 import com.momos.millenairejeimm.jei.Runtime.MillIconOnlyRenderer;
 import com.momos.millenairejeimm.jei.Runtime.JeiLinkBox;
@@ -27,7 +25,6 @@ import net.minecraft.world.item.Items;
 import org.millenaire.culture.Culture;
 import org.millenaire.culture.VillageType;
 import org.millenaire.item.ItemHelper;
-
 
 import java.util.List;
 
@@ -54,13 +51,25 @@ public class CultureCategory extends BaseMillCategory<Culture> {
                 new ItemStack(ItemHelper.resolve("millenaire:village_norman") != null ? ItemHelper.resolve("millenaire:village_norman") : Items.MAP))
         );
 
-        // [醒目新注释] 在构造函数中链式调用 {@link JeiLinkBox#setOnPlusClick}，引入 try-catch 拦截与 JEI 内部深层状态检测
         this.villageBox = new JeiLinkBox<VillageType>("文化关联村庄").useJeiMode(ingredientManager, MillIngredientTypes.VILLAGE);
         this.cultureLayout = new JeiLinkLayout(2, 106, 172, 4).addBox(villageBox);
     }
 
     @Override public RecipeType<Culture> getRecipeType() { return RECIPE_TYPE; }
     @Override public Component getTitle() { return Component.translatable("gui.millenairejeim.category.culture_details"); }
+
+    // [醒目新注释] 提取布局同步私有方法，保证跨配方渲染/注册 Extras 时强行将 Layout 刷新至当前配方
+    /**
+     * 同步当前 {@link Culture} 配方数据至 {@link #cultureLayout}。
+     *
+     * @param recipe 当前文化配方对象 {@link Culture}
+     */
+    private void updateLayoutData(Culture recipe) {
+        if (cultureLayout != null && recipe != null) {
+            List<VillageType> villages = MillenaireAPIHelper.getVillageFormCulture(recipe);
+            cultureLayout.setBoxData(0, villages);
+        }
+    }
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, Culture recipe, IFocusGroup focuses) {
@@ -70,22 +79,18 @@ public class CultureCategory extends BaseMillCategory<Culture> {
                 .addIngredient(MillIngredientTypes.CULTURE, recipe)
                 .setCustomRenderer(MillIngredientTypes.CULTURE, ICON_RENDERER);
 
+        // [醒目新注释] 注册槽位前同步刷新 Layout
+        updateLayoutData(recipe);
         List<VillageType> villages = MillenaireAPIHelper.getVillageFormCulture(recipe);
         cultureLayout.setRecipeForBox(0, builder, villages);
     }
 
-    // [醒目新注释] 重写 {@link BaseMillCategory#createRecipeExtras} 方法，构建细节按钮与关联控件的点击响应
-    /**
-     * 为 {@link Culture} 界面附加交互控件，监听细节按钮并唤起 {@link CultureVillagesCategory} 全景大窗口。
-     *
-     * @param builder 配方额外组件构建器 {@link IRecipeExtrasBuilder}
-     * @param recipe  当前展示的文化配方对象 {@link Culture}
-     * @param focuses 当前配方的焦点组 {@link IFocusGroup}
-     */
     @Override
     public void createRecipeExtras(IRecipeExtrasBuilder builder, Culture recipe, IFocusGroup focuses) {
         super.createRecipeExtras(builder, recipe, focuses);
         if (cultureLayout != null) {
+            // [醒目新注释] 在注册额外交互区前按当前配方刷新 Layout 状态，保证输入拦截范围精准计算
+            updateLayoutData(recipe);
             cultureLayout.createRecipeExtras(builder, recipe);
         }
     }
@@ -113,10 +118,10 @@ public class CultureCategory extends BaseMillCategory<Culture> {
         boolean isDefaultTexture = Culture.DEFAULT_PANEL_TEXTURE.equals(recipe.panelTexture());
         drawHoverableText(guiGraphics, font, "面板纹理", isDefaultTexture ? "默认" : recipe.panelTexture().toString(), 6, 92, mouseX, mouseY);
 
+        // [醒目新注释] 彻底移除原代码中的 cultureLayout.Clear() 清空操作，并在渲染前对当前配方强行同步数据
         if (cultureLayout != null) {
-            cultureLayout.Clear();
+            updateLayoutData(recipe);
             cultureLayout.render(guiGraphics, font, mouseX, mouseY);
         }
     }
 }
-// endregion 文化分类主面板类

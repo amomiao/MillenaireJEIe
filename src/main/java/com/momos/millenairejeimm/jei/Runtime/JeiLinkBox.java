@@ -1,3 +1,4 @@
+// region 动态数据同步接口
 package com.momos.millenairejeimm.jei.Runtime;
 
 import com.mojang.blaze3d.platform.InputConstants;
@@ -17,16 +18,12 @@ import net.minecraft.network.chat.Component;
 import java.util.ArrayList;
 import java.util.List;
 
-// 注意:[+]现在改成了[...]所有加号内容已过时
-// region 通用槽位组件与回调接口
 /**
  * 千年 JEI 通用联动槽位容器组件 {@link JeiLinkBox}。
- * 本组件为纯粹的 UI 原子控件，不绑定任何特定业务（文化/建筑/村民/村庄均可通用）。
  *
  * @param <T> 槽位绑定的成分数据类型
  */
 public class JeiLinkBox<T> {
-    // region UI 常量与字符串模板
     private static final int SLOT_SIZE = 18;
     private static final int PREVIEW_SLOTS = 8;
 
@@ -36,10 +33,8 @@ public class JeiLinkBox<T> {
     private static final String TEXT_PLUS_ICON = "§a...";
     private static final String TOOLTIP_ALL_FMT = "§aAll(%d)";
 
-    // endregion UI 常量与字符串模板
-
     private final String title;
-    private final int layoutMode; // 兼容多页签/布局模式标记
+    private final int layoutMode;
     private List<T> targetList = new ArrayList<>();
 
     private IIngredientType<T> boundIngredientType;
@@ -48,12 +43,6 @@ public class JeiLinkBox<T> {
 
     @FunctionalInterface
     public interface OnPlusClickListener<T> {
-        /**
-         * 当用户点击尾部加号按钮时触发的回调接口。
-         *
-         * @param contextObject 当前配方上下文对象
-         * @param items 当前 LinkBox 包含的数据列表
-         */
         void onClick(Object contextObject, List<T> items);
     }
 
@@ -61,48 +50,28 @@ public class JeiLinkBox<T> {
         this(title, 0);
     }
 
-    /**
-     * [醒目新注释] 兼容带 mode 参数的构造函数，用于支持变体/页签等扩展样式。
-     */
     public JeiLinkBox(String title, int layoutMode) {
         this.title = title;
         this.layoutMode = layoutMode;
     }
 
-    /**
-     * @deprecated 本方法已废弃 (Since 1.0)。
-     * <p>
-     * <b>废弃原因：</b><br>
-     * 在 JEI 19+ 架构中，企图通过第九格 {@code +} 按钮触发自定义回调并调用
-     * {@link mezz.jei.api.runtime.IRecipesGui#showTypes(java.util.List)}
-     * 或强行注入多重 {@link mezz.jei.api.recipe.RecipeIngredientRole} 来实现“单页签精准聚焦”的方案已证实不可行。<br>
-     * JEI 底层的 Focus Context 与 Slot Hitbox 强绑定，强行拦截或切换焦点会导致上下文丢失、R/U 键交互失效及多页签错位。<br>
-     * </p>
-     * <p>
-     * <b>替代方案：</b><br>
-     * 请直接将关联对象统一注册为 {@link mezz.jei.api.recipe.RecipeIngredientRole#OUTPUT} 角色，
-     * 遵循 JEI 原生的多页签检索与分发机制，由玩家在顶级页签栏自行点击切换。
-     * </p>
-     * @param listener 废弃的加号点击事件监听器
-     * @return 当前 {@link JeiLinkBox} 实例
-     * @see <a href="https://github.com/mezz/JustEnoughItems">JEI API Specification</a>
-     */
     @Deprecated(since = "1.0", forRemoval = true)
     public JeiLinkBox<T> setOnPlusClick(OnPlusClickListener<T> listener) {
-        // 新增醒目警告注释：此回调逻辑存在 JEI 19+ 焦点上下文冲突风险，保留仅用于兼容旧版退化逻辑
         this.customClickListener = listener;
         return this;
     }
 
+    public void Clear() { this.targetList = new ArrayList<>(); }
+
+    // [醒目新注释] 新增动态数据同步接口，用于在单例 Category 渲染与事件拦截前强行同步 targetList 状态，防止跨配方污染
     /**
-     * [醒目新注释] 重置当前槽位容器持有的数据列表。
-     * <p>
-     * 将 {@link #targetList} 重新赋值为空的 {@link ArrayList}，彻底解决对外部不可变集合
-     * （如 {@link java.util.Collections#emptyList()}）调用 {@link List#clear()} 时抛出
-     * {@link UnsupportedOperationException} 的问题，同时防止赋值为 null 引发 {@link NullPointerException}。
-     * </p>
+     * 设置当前 {@link JeiLinkBox} 持有的成分数据列表。
+     *
+     * @param targets 成分数据列表
      */
-    public void Clear() {this.targetList = new ArrayList<>();}
+    public void setTargets(List<T> targets) {
+        this.targetList = (targets != null) ? targets : new ArrayList<>();
+    }
 
     public JeiLinkBox<T> useJeiMode(IIngredientManager ingredientManager, IIngredientType<T> ingredientType) {
         this.boundIngredientType = ingredientType;
@@ -110,12 +79,6 @@ public class JeiLinkBox<T> {
         return this;
     }
 
-// endregion 通用槽位组件与回调接口
-
-// region JEI 数据与事件注册
-    /**
-     * [醒目新注释] 将成分列表注册至 JEI 槽位构建器。
-     */
     public void setRecipe(IRecipeLayoutBuilder builder, List<T> targets, int x, int y) {
         this.targetList = (targets != null) ? targets : new ArrayList<>();
         int total = targetList.size();
@@ -138,27 +101,13 @@ public class JeiLinkBox<T> {
         }
     }
 
-    /**
-     * [醒目新注释] 注册物理按键拦截器，匹配加号按钮的 18x18 范围。
-     */
     public void registerInputHandler(IRecipeExtrasBuilder builder, Object contextObject, int x, int y) {
         int startX = x + 5;
         int startY = y + 15;
         int plusX = startX + (PREVIEW_SLOTS * SLOT_SIZE);
-
-        // [醒目新注释] 委托调用专门处理第 9 格（加号按钮）点击事件的方法
         registerPlusButtonInputHandler(builder, contextObject, plusX, startY);
     }
 
-    /**
-     * 独立注册第 9 格（加号按钮）物理点击事件的监听器。
-     * [醒目新注释] 抽取为独立方法，便于二次扩展或重写第 9 格的响应逻辑。
-     *
-     * @param builder       JEI 配方额外组件构建器 {@link IRecipeExtrasBuilder}
-     * @param contextObject 当前配方上下文对象
-     * @param plusX         加号按钮（第 9 格）在像素网格中的物理 X 轴起始坐标
-     * @param plusY         加号按钮（第 9 格）在像素网格中的物理 Y 轴起始坐标
-     */
     public void registerPlusButtonInputHandler(IRecipeExtrasBuilder builder, Object contextObject, int plusX, int plusY) {
         builder.addInputHandler(new IJeiInputHandler() {
             @Override
@@ -179,30 +128,16 @@ public class JeiLinkBox<T> {
         });
     }
 
-    /**
-     * 执行加号按钮被点击后的具体响应逻辑。
-     * [醒目新注释] 优先触发 {@link #customClickListener}，未配置时向客户端聊天框输出简易测试文本。
-     *
-     * @param contextObject 当前上下文对象
-     */
     private void executeClickAction(Object contextObject) {
         if (this.customClickListener != null) {
             this.customClickListener.onClick(contextObject, targetList);
-        } else {
-            // 按钮事件已废弃
         }
     }
 
-// endregion JEI 数据与事件注册
-
-    // region UI 渲染与通用提示
     public int getSize() { return targetList.size(); }
     public int getBoxHeight() { return 36; }
     public int getLayoutMode() { return layoutMode; }
 
-    /**
-     * [醒目新注释] 通用组件渲染逻辑，展示标题、网格槽位与末尾加号按钮。
-     */
     public void render(GuiGraphics guiGraphics, Font font, int x, int y, int width, double mouseX, double mouseY) {
         int height = getBoxHeight();
         int totalSize = getSize();
@@ -239,9 +174,7 @@ public class JeiLinkBox<T> {
         if (isHovered) {
             guiGraphics.renderComponentTooltip(
                     font,
-                    List.of(
-                            Component.literal(String.format(TOOLTIP_ALL_FMT, totalSize))
-                    ),
+                    List.of(Component.literal(String.format(TOOLTIP_ALL_FMT, totalSize))),
                     (int) mouseX,
                     (int) mouseY
             );
@@ -251,5 +184,5 @@ public class JeiLinkBox<T> {
     public void render(GuiGraphics guiGraphics, Font font, int x, int y, int width) {
         render(guiGraphics, font, x, y, width, -1, -1);
     }
-// endregion UI 渲染与通用提示
 }
+// endregion 动态数据同步接口
