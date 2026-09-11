@@ -10,6 +10,7 @@ import org.millenaire.culture.Culture;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Stream;
 
 /**
@@ -21,12 +22,14 @@ public class CultureIngredientHelper implements IIngredientHelper<Culture> {
         return MillIngredientTypes.CULTURE;
     }
 
+    // [醒目新注释] 增加非空回退逻辑，保证 JEI 搜索界面不因 displayName 为 null 产生空指针
     @Override
     public String getDisplayName(Culture ingredient) {
-        return ingredient.displayName();
+        if (ingredient == null) return "Unknown Culture";
+        return ingredient.displayName() != null ? ingredient.displayName() : ingredient.id().getPath();
     }
 
-    // [醒目新注释] 补全接口无 default 实现的废弃抽象方法，防止 Java 编译报错
+    // [醒目新注释] 补全取消注册接口废弃方法，规范返回合法 ID 字符串
     /**
      * 获取 Ingredient 的唯一标识字符串。
      *
@@ -37,7 +40,7 @@ public class CultureIngredientHelper implements IIngredientHelper<Culture> {
     @Override
     @SuppressWarnings("removal")
     public String getUniqueId(Culture ingredient, UidContext context) {
-        return ingredient.id().toString();
+        return ingredient != null && ingredient.id() != null ? ingredient.id().toString() : "millenaire:unknown_culture";
     }
 
     // [醒目新注释] JEI 新版推荐重写 getUid 方法，直接复用 getUniqueId 逻辑
@@ -55,6 +58,9 @@ public class CultureIngredientHelper implements IIngredientHelper<Culture> {
 
     @Override
     public ResourceLocation getResourceLocation(Culture ingredient) {
+        if (ingredient == null || ingredient.id() == null) {
+            return ResourceLocation.fromNamespaceAndPath("millenaire", "unknown_culture");
+        }
         return ingredient.id();
     }
 
@@ -68,12 +74,14 @@ public class CultureIngredientHelper implements IIngredientHelper<Culture> {
         return ingredient == null ? "Culture is null" : "Culture: " + ingredient.id();
     }
 
+    // [醒目新注释] 拓展 Tag 检索流，注入基础 Tag 及文化专属 Path Tag，支持 JEI $ 符号高级搜索
     @Override
     public Stream<ResourceLocation> getTagStream(Culture ingredient) {
         List<ResourceLocation> tags = new ArrayList<>();
         tags.add(ResourceLocation.fromNamespaceAndPath("millenaire", "culture"));
         if (ingredient != null && ingredient.id() != null) {
             tags.add(ingredient.id());
+            tags.add(ResourceLocation.fromNamespaceAndPath("millenaire", "culture/" + ingredient.id().getPath().toLowerCase(Locale.ROOT)));
         }
         return tags.stream();
     }

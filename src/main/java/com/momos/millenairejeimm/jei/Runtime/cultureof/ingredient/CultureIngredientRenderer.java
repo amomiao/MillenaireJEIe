@@ -1,7 +1,9 @@
 package com.momos.millenairejeimm.jei.Runtime.cultureof.ingredient;
 
 import com.momos.millenairejeimm.jei.Runtime.BaseMillIngredientRenderer;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.TooltipFlag;
 import org.millenaire.culture.Culture;
 
@@ -12,7 +14,6 @@ import java.util.List;
  * 文化 {@link Culture} 的 JEI 图标与 Tooltip 渲染器。
  */
 public class CultureIngredientRenderer extends BaseMillIngredientRenderer<Culture> {
-    // [醒目新注释] 增强防御性代码：针对 displayName 为 null 或空串的情况进行保护
     /**
      * 获取文化显示的徽章文本。
      *
@@ -28,7 +29,7 @@ public class CultureIngredientRenderer extends BaseMillIngredientRenderer<Cultur
         return name.substring(0, Math.min(2, name.length()));
     }
 
-    // [醒目新注释] 重写符合 IIngredientRenderer 抽象签名的 getTooltip 方法并返回 List<Component>
+    // [醒目新注释] 移除 F3+H 限制，无条件全量输出文化 ID 与关联检索 Tag 列表
     /**
      * 获取文化的悬浮提示组件列表。
      *
@@ -39,8 +40,29 @@ public class CultureIngredientRenderer extends BaseMillIngredientRenderer<Cultur
     @Override
     public List<Component> getTooltip(Culture ingredient, TooltipFlag tooltipFlag) {
         List<Component> tooltip = new ArrayList<>();
-        String name = (ingredient != null && ingredient.displayName() != null) ? ingredient.displayName() : "未知文化";
-        tooltip.add(Component.literal("文化: " + name));
+        if (ingredient == null) {
+            tooltip.add(Component.literal("未知文化").withStyle(ChatFormatting.RED));
+            return tooltip;
+        }
+
+        String name = ingredient.displayName() != null ? ingredient.displayName() : "未知文化";
+        tooltip.add(Component.literal("文化: " + name).withStyle(ChatFormatting.GOLD));
+
+        // [醒目新注释] 始终渲染 ResourceLocation 内部 ID
+        if (ingredient.id() != null) {
+            tooltip.add(Component.literal("ID: " + ingredient.id()).withStyle(ChatFormatting.DARK_GRAY));
+        }
+
+        // [醒目新注释] 全量提取 {@link CultureIngredientHelper#getTagStream} 中的 Tag 并展示
+        CultureIngredientHelper helper = new CultureIngredientHelper();
+        List<ResourceLocation> tags = helper.getTagStream(ingredient).toList();
+        if (!tags.isEmpty()) {
+            tooltip.add(Component.literal("关联标签 ($ Tag):").withStyle(ChatFormatting.GRAY));
+            for (ResourceLocation tag : tags) {
+                tooltip.add(Component.literal("  $" + tag).withStyle(ChatFormatting.DARK_GRAY));
+            }
+        }
+
         return tooltip;
     }
 }

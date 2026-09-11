@@ -9,10 +9,12 @@ import mezz.jei.api.ingredients.subtypes.UidContext;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 import org.millenaire.building.BuildingPlanSet;
+import org.millenaire.culture.VillageType;
 import org.millenaire.culture.VillagerType;
 
-import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -26,10 +28,11 @@ public class VillagerIngredientHelper implements IIngredientHelper<VillagerType>
 
     @Override
     public String getDisplayName(VillagerType ingredient) {
+        if (ingredient == null) return "Unknown Villager";
         return MillenaireLocalizeHelper.getVillagerName(ingredient).getString();
     }
 
-    // [醒目新注释] 补全 getUniqueId 抽象方法实现
+    // [醒目新注释] 补全 getUniqueId 抽象方法实现，并做好空防护
     /**
      * 获取村民类型的唯一标识字符串。
      *
@@ -40,7 +43,7 @@ public class VillagerIngredientHelper implements IIngredientHelper<VillagerType>
     @Override
     @SuppressWarnings("removal")
     public String getUniqueId(VillagerType ingredient, UidContext context) {
-        return ingredient.id().toString();
+        return ingredient != null && ingredient.id() != null ? ingredient.id().toString() : "millenaire:unknown_villager";
     }
 
     // [醒目新注释] 重写 getUid 委托给 getUniqueId
@@ -58,6 +61,9 @@ public class VillagerIngredientHelper implements IIngredientHelper<VillagerType>
 
     @Override
     public ResourceLocation getResourceLocation(VillagerType ingredient) {
+        if (ingredient == null || ingredient.id() == null) {
+            return ResourceLocation.fromNamespaceAndPath("millenaire", "unknown_villager");
+        }
         return ingredient.id();
     }
 
@@ -71,22 +77,40 @@ public class VillagerIngredientHelper implements IIngredientHelper<VillagerType>
         return ingredient == null ? "VillagerType is null" : "Villager: " + ingredient.id();
     }
 
+    // [醒目新注释] 统一使用 MillenaireAPIHelper 下的静态 Tag 方法构建标签流，规避手拼 ResourceLocation 与重复大小写转换
     @Override
     public Stream<ResourceLocation> getTagStream(VillagerType ingredient) {
-        List<ResourceLocation> tags = new ArrayList<>();
-        tags.add(ResourceLocation.fromNamespaceAndPath("millenaire", "culture"));
-        tags.add(ResourceLocation.fromNamespaceAndPath("millenaire", "villager"));
-        if (ingredient != null) {
-            if (ingredient.culture() != null) {
-                tags.add(ResourceLocation.fromNamespaceAndPath("millenaire", ingredient.culture().getPath().toLowerCase()));
-            }
-            List<BuildingPlanSet> associatedBuildings = MillenaireAPIHelper.MappingVillagerBuilding(ingredient);
-            for (BuildingPlanSet building : associatedBuildings) {
-                if (building != null && building.buildingId() != null) {
-                    tags.add(ResourceLocation.fromNamespaceAndPath("millenaire", building.buildingId().toLowerCase()));
-                }
-            }
+        if (ingredient == null) {
+            return Stream.of(MillenaireAPIHelper.TAG_CULTURE_BASE, MillenaireAPIHelper.TAG_VILLAGER_BASE);
         }
+
+        Set<ResourceLocation> tags = new LinkedHashSet<>();
+        tags.add(MillenaireAPIHelper.TAG_CULTURE_BASE);
+        tags.add(MillenaireAPIHelper.TAG_VILLAGER_BASE);
+
+        // 1. 文化 Tag
+        if (ingredient.culture() != null) {
+            tags.add(MillenaireAPIHelper.getCultureTag(ingredient.culture()));
+        }
+
+        // 2. 村民自身 ID Tag
+        tags.add(MillenaireAPIHelper.getVillagerTag(ingredient));
+
+        // 3. 关联建筑 Tags
+        List<BuildingPlanSet> associatedBuildings = MillenaireAPIHelper.getBuildingFormVillager(ingredient);
+        for (BuildingPlanSet building : associatedBuildings) {
+            ResourceLocation tag = MillenaireAPIHelper.getBuildingTag(building);
+            if (tag != null) tags.add(tag);
+        }
+
+        // 4. 关联村庄 Tags
+        List<VillageType> associatedVillages = MillenaireAPIHelper.getVillageFormVillager(ingredient);
+        for (VillageType village : associatedVillages) {
+            ResourceLocation tag = MillenaireAPIHelper.getVillageTag(village);
+            if (tag != null) tags.add(tag);
+        }
+
+        tags.remove(null);
         return tags.stream();
     }
 }
