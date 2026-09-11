@@ -114,6 +114,7 @@ public class CultureCategory extends BaseMillCategory<Culture> {
         drawHoverableText(guiGraphics, font, "面板纹理", isDefaultTexture ? "默认" : recipe.panelTexture().toString(), 6, 92, mouseX, mouseY);
 
         if (cultureLayout != null) {
+            cultureLayout.Clear();
             cultureLayout.render(guiGraphics, font, mouseX, mouseY);
         }
     }

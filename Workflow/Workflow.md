@@ -259,3 +259,62 @@
 //- 投降感言，感觉回到了我刚入行做二次开发的时候，不过这花了一天得到的结果还算可以，`MillenaireJeimm`上面注解了分析
 * 处理: 按钮现在只提供悬浮提示功能，`setOnPlusClick`标记为[废弃]
 * 用到的字符串用变量/模板提取出来并替换
+* 书写一个获得`升满建筑等级的道具用量`的方法,这个方法暂时不要写在`MillenaireAPIHelper`里
+  * 传入的`BuildingPlanSet`对象:有
+    * `public Map<String, List<LevelDef>> variants()`:得到
+      * 建筑的变体量: Map.kv 的数量
+      * 建筑的等级数: Map.v=>list的数量(为1就是无升级，直接返回null或0长度)
+      * 建筑的等级: Map.v=>list成员有: `public int level()`
+      * 建筑的NBT文件: Map.v=>list成员有: `public String nbtPath()`
+    * `public ResourceLocation planId();`:得到`BuildingPlan`
+      * `BuildingPlan`:有`public String nbtPath()` 留作备用应该是`variants`的nbtPath
+    * 但是我们并不知道这个`nbtPath`对象的值及其可用性，打一个客户端消息监听一下
+  * `MillenaireAPIHelper`:有`public static Map<ResourceLocation, BuildingPlan> getAllBuildingPlans() { return ModCultures.getAllBuildingPlans(); }` 
+  * `BuildingCostCalculator`:有`public static Map<ResourceLocation, Integer> computeCost(CompoundTag templateNbt)`
+    * 尝试使用一种`nbtPath()`的用法生成`CompoundTag`访问一下
+  * 最终返回做一个`Map<String variants.key,List<ItemStack>> sum(computeCost({nbtPath()}))`
+    * `org.millenaire.building.BuildingPlan`
+    * `org.millenaire.building.BuildingPlanSet`
+    * `org.millenaire.building.BuildingPlanSet.LevelDef`
+    * `org.millenaire.building.BuildingCostCalculator`
+* Q102: 创造这种查询页，`BuildingVillageCategory`,`BuildingVillagerCategory``BuildingCostCategory`, 并且你不要创造API，就是调用Map<String, List<ItemStack>> map = BuildingUpgradeCostHelper.getBuildingUpgradeCosts(building)为1、2、3赋值
+* Q103: `BuildingUpgradeCostHelper`再改一下，每种道具的用量取最高，现在的用量掺水量太大了
+* Q104: 不对只有1级也得算上，应该说是初始/非初始，但是现在不好做先算上1级
+* Q105: setRecipe里面列个分割线和材料输出，我要看看这个空格是什么
+* Q106: 唉果然是空气
+* Q107: 抽一个基类先硬编码支持三个变体，使用abc识别三个窗口
+//- 建筑模块结束
+// 村民模块
+* 村民模块的基础功能链接到`村庄`和`建筑`,这一段可以参照`CultureCategory`和`CultureVillagesCategory`文档资料很齐了
+  * 高级功能参照:[行为](村民行为调查.md),简单来说是四种物品流向的展示:
+    * bring_back_home: `身上的物品`放入`所属建筑`
+    * deliver_resources_shop: `所属建筑的物品`给到`村庄中心`
+    * get_resources_for_shops: `村庄中心的物品`给到`商店(有交易行为的建筑)`
+    * get_goods_for_household: `村庄中心/商店的物品`给到`所属建筑`
+  * 但是目前的UI容量只能再塞下两条，这里考虑对玩家越隐形的内容展示的权重越高
+    * bring_back_home_goods(json:同名): 落选,因为伐木工有木头/采桑人有丝绸，说的是废话
+    * deliver_resources_shop(json:collect_goods): 入选,因为他有一个特殊设定`collect_goods`是白名单，而`collect_goods`为空时此名单不生效
+    * get_resources_for_shops(json:无): 落选,首先前置的轻量化JEI已经展示物品交易内容，其次需要到更大的作用域里去查询商店表，总结为吃力不讨好
+    * millenaire:get_goods_for_household(json:household_goods): 落选,没有观测到实际用例这个json字段说不定都是编的
+      * 但确实存在一个[GetGoodsForHouseholdGoal]其中常出现参数[Map<Item, Integer> requiredGoods]总之不是重点不再研究跳过了
+    * 那`bring_back_home_goods`也加进来了，他和`deliver_resources_shop`的处理是一样的，共用基础设施即可。
+      * Json用例
+        ```json5
+        {
+          "bring_back_home_goods": ["millenaire:olives"],
+          "collect_goods": ["minecraft:wheat_seeds"],  
+        }
+        ```
+  * `VillagerType`:获得的难度基本属于直接拿
+    * `VillagerType`有: 
+      * public List<String> bringBackHomeGoods()
+      * public Set<Item> resolvedBringBackHomeGoods()
+      * public Set<ResourceLocation> resolvedCollectGoods()
+      * public List<String> collectGoods()
+    * 获取很简单，需要搞清楚的是`resolved`是为什么?以及其实暴露出了`Map<String, Integer> requiredGoods()`和`Map<Item, Integer> resolvedRequiredGoods`能简单的获得他那也可将其加入展示。
+  * org.millenaire.culture.VillagerType
+    * 总之先搞清楚一件事这六个数据结构里都存了什么？
+    * 在`VillagerCategory#setRecipe`中触发`VillagerType`的相关内容输出，可调用的其他api有:
+      * `public ResourceLocation id()`
+      * `public ResourceLocation culture()`
+      * 使用这八个API使用客户端聊天栏进行debug内容输出。

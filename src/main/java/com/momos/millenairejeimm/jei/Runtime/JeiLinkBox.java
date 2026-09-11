@@ -94,6 +94,16 @@ public class JeiLinkBox<T> {
         return this;
     }
 
+    /**
+     * [醒目新注释] 重置当前槽位容器持有的数据列表。
+     * <p>
+     * 将 {@link #targetList} 重新赋值为空的 {@link ArrayList}，彻底解决对外部不可变集合
+     * （如 {@link java.util.Collections#emptyList()}）调用 {@link List#clear()} 时抛出
+     * {@link UnsupportedOperationException} 的问题，同时防止赋值为 null 引发 {@link NullPointerException}。
+     * </p>
+     */
+    public void Clear() {this.targetList = new ArrayList<>();}
+
     public JeiLinkBox<T> useJeiMode(IIngredientManager ingredientManager, IIngredientType<T> ingredientType) {
         this.boundIngredientType = ingredientType;
         this.boundRenderer = ingredientManager.getIngredientRenderer(ingredientType);

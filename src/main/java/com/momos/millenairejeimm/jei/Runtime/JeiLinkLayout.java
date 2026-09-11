@@ -40,6 +40,12 @@ public class JeiLinkLayout {
         this.spacing = spacing;
     }
 
+    public void Clear() {
+        for (var box : boxes){
+            box.Clear();
+        }
+    }
+
     /**
      * [醒目新注释] 设置当子 {@link JeiLinkBox} 数据长度为 0 时是否自动隐藏且不参与渲染排版。
      *

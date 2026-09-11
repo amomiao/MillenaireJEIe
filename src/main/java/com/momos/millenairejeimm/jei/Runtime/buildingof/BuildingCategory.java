@@ -2,8 +2,8 @@
 package com.momos.millenairejeimm.jei.Runtime.buildingof;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
+import com.momos.millenairejeimm.jei.BuildingUpgradeCostHelper;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
-import com.momos.millenairejeimm.jei.MillenaireJeimmPlugin;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
 import com.momos.millenairejeimm.jei.Runtime.JeiLinkBox;
 import com.momos.millenairejeimm.jei.Runtime.JeiLinkLayout;
@@ -29,8 +29,7 @@ import org.millenaire.culture.VillageType;
 import org.millenaire.culture.VillagerType;
 import org.millenaire.item.ItemHelper;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * 建筑计划集 {@link BuildingPlanSet} JEI 详情分类，继承自 {@link BaseMillCategory}。
@@ -51,7 +50,10 @@ public class BuildingCategory extends BaseMillCategory<BuildingPlanSet> {
     private final JeiLinkLayout buildingLayout;
     private final JeiLinkBox<VillageType> villageBox;
     private final JeiLinkBox<VillagerType> villagerBox;
-    private final JeiLinkBox<ItemStack> resourceBox;
+    // [醒目新注释] 将原单 resourceBox 重构拆分为 0 级、1 级、2 级三个离散等级消耗的 LinkBox 组件
+    private final JeiLinkBox<ItemStack> resourceBox0;
+    private final JeiLinkBox<ItemStack> resourceBox1;
+    private final JeiLinkBox<ItemStack> resourceBox2;
 
     // [醒目新注释] 构造函数升级：引入 {@link IIngredientManager} 以支持原生 ItemStack 模式与 LinkBox 交互
     public BuildingCategory(IGuiHelper guiHelper, IIngredientManager ingredientManager) {
@@ -64,12 +66,19 @@ public class BuildingCategory extends BaseMillCategory<BuildingPlanSet> {
         this.villagerBox = new JeiLinkBox<VillagerType>("居住或工作村民").useJeiMode(ingredientManager, MillIngredientTypes.VILLAGER);
         // [醒目新注释] 3. 升级/建造用量 LinkBox (Vanilla ITEM_STACK 原生物品渲染)
         // MC 原生 GuiGraphics 与 JEI 槽位天然支持 count > 64 的 ItemStack 文本绘制（如 128、256）
-        this.resourceBox = new JeiLinkBox<ItemStack>("升级与建造用量").useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK);
+        // [醒目新注释] 拆分为 0 级（初始建造）、1 级（首次升级）、2 级（二次升级）三个独立的 LinkBox 实例
+        this.resourceBox0 = new JeiLinkBox<ItemStack>("变体 A 消耗").useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK);
+        this.resourceBox1 = new JeiLinkBox<ItemStack>("变体 B 消耗").useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK);
+        this.resourceBox2 = new JeiLinkBox<ItemStack>("变体 C 消耗").useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK);
+
         // [醒目新注释] 初始化链接布局，起点坐标 Y: 105，总宽度: 172，项间距: 4
+        // [醒目新注释] 借助 JeiLinkLayout 的自动隐藏空盒机制，若某等级消耗列表为空，该 Box 会自动折叠不占位
         this.buildingLayout = new JeiLinkLayout(2, 105, 172, 4)
                 .addBox(villageBox)
                 .addBox(villagerBox)
-                .addBox(resourceBox);
+                .addBox(resourceBox0)
+                .addBox(resourceBox1)
+                .addBox(resourceBox2);
     }
 
     @Override
@@ -92,15 +101,23 @@ public class BuildingCategory extends BaseMillCategory<BuildingPlanSet> {
                 .addIngredient(MillIngredientTypes.BUILDING, recipe)
                 .setCustomRenderer(MillIngredientTypes.BUILDING, ICON_RENDERER);
 
-        // [醒目新注释] 提取关联村庄、村民列表以及升级/建造所需物品用量
-        List<VillageType> villages = MillenaireAPIHelper.getVillageFormBuilding(recipe);
-        List<VillagerType> villagers = MillenaireAPIHelper.getVillagerFormBuilding(recipe);
-        List<ItemStack> upgradeCosts = getBuildingUpgradeCosts(recipe);
-
         if (buildingLayout != null) {
-            buildingLayout.setRecipeForBox(0, builder, villages);
-            buildingLayout.setRecipeForBox(1, builder, villagers);
-            buildingLayout.setRecipeForBox(2, builder, upgradeCosts);
+            buildingLayout.Clear();
+
+            buildingLayout.setRecipeForBox(0, builder, MillenaireAPIHelper.getVillageFormBuilding(recipe));
+            buildingLayout.setRecipeForBox(1, builder, MillenaireAPIHelper.getVillagerFormBuilding(recipe));
+
+            // [醒目新注释] 解绑注释并修复原代码逻辑 Bug：将互斥的 else if 修改为独立的 if 判断，依次绑定各变体/等级消耗列表
+            List<List<ItemStack>> upgradeCosts = getBuildingCosts(recipe);
+            if (upgradeCosts.size() > 0) {
+                buildingLayout.setRecipeForBox(2, builder, upgradeCosts.get(0));
+            }
+            if (upgradeCosts.size() > 1) {
+                buildingLayout.setRecipeForBox(3, builder, upgradeCosts.get(1));
+            }
+            if (upgradeCosts.size() > 2) {
+                buildingLayout.setRecipeForBox(4, builder, upgradeCosts.get(2));
+            }
         }
     }
 
@@ -144,25 +161,32 @@ public class BuildingCategory extends BaseMillCategory<BuildingPlanSet> {
         }
     }
 
-    // [醒目新注释] 声明资源用量接口存根，便于后续对接 {@link BuildingPlanSet} 真实等级与材料解析逻辑
     /**
      * 获取建筑计划集 {@link BuildingPlanSet} 升级/建造所需的资源消耗列表。
+     * <p>
+     * [醒目新注释] 已对各等级/变体消耗列表进行过滤，自动剔除 null 和空气物品 {@link ItemStack#isEmpty()}。
+     * </p>
      *
      * @param building 建筑计划集对象 {@link BuildingPlanSet}
-     * @return 升级消耗的 {@link ItemStack} 列表
+     * @return 各变体升级消耗的 {@link ItemStack} 嵌套列表
      */
-    public static List<ItemStack> getBuildingUpgradeCosts(BuildingPlanSet building) {
-        List<ItemStack> costs = new ArrayList<>();
-        if (building == null) return costs;
-
-        // [醒目新注释] 临时分配测试道具（验证数字大于 64 的大额 ItemStack 堆叠显示）
-        costs.add(new ItemStack(Items.OAK_LOG, 128));       // 测试：128 个橡木原木
-        costs.add(new ItemStack(Items.COBBLESTONE, 256));   // 测试：256 个圆石
-        costs.add(new ItemStack(Items.IRON_INGOT, 32));     // 测试：32 个铁锭
-        costs.add(new ItemStack(Items.GLASS, 64));          // 测试：64 个玻璃
-        costs.add(new ItemStack(Items.BRICKS, 96));         // 测试：96 个砖块
-
-        return costs;
+    public static List<List<ItemStack>> getBuildingCosts(BuildingPlanSet building) {
+        Map<String, List<ItemStack>> map = BuildingUpgradeCostHelper.getBuildingUpgradeCosts(building);
+        if (map != null && !map.isEmpty()) {
+            List<List<ItemStack>> result = new ArrayList<>();
+            for (List<ItemStack> list : map.values()) {
+                if (list != null) {
+                    List<ItemStack> cleaned = new ArrayList<>(list);
+                    // [醒目新注释] 自动剔除 null 和空气物品
+                    cleaned.removeIf(stack -> stack == null || stack.isEmpty());
+                    if (!cleaned.isEmpty()) {
+                        result.add(cleaned);
+                    }
+                }
+            }
+            return result;
+        }
+        return Collections.emptyList();
     }
 // endregion JEI 槽位与绘制实现
 }

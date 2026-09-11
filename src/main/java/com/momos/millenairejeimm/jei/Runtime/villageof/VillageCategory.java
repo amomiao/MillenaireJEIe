@@ -104,6 +104,7 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
         }
 
         if (villageLayout != null) {
+            villageLayout.Clear();
             villageLayout.setRecipeForBox(0, builder, buildings);
             villageLayout.setRecipeForBox(1, builder, villagers);
         }

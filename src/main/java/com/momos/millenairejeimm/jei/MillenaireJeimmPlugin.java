@@ -1,8 +1,14 @@
+// region 插件主体定义与初始化
 package com.momos.millenairejeimm.jei;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeim.util.MMLog;
 import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingCategory;
+import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingCostCategoryA;
+import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingCostCategoryB;
+import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingCostCategoryC;
+import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingVillageCategory;
+import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingVillagerCategory;
 import com.momos.millenairejeimm.jei.Runtime.buildingof.ingredient.BuildingIngredientHelper;
 import com.momos.millenairejeimm.jei.Runtime.buildingof.ingredient.BuildingIngredientRenderer;
 import com.momos.millenairejeimm.jei.Runtime.cultureof.CultureCategory;
@@ -220,6 +226,12 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                 new CultureVillagesCategory(guiHelper,ingredientManager),
                 // 建筑及其详细信息
                 new BuildingCategory(guiHelper,ingredientManager),
+                new BuildingVillageCategory(guiHelper,ingredientManager),
+                new BuildingVillagerCategory(guiHelper,ingredientManager),
+                // [醒目新注释] 注册变体 A、B、C 独立的建材消耗全景大窗口分类
+                new BuildingCostCategoryA(guiHelper, ingredientManager),
+                new BuildingCostCategoryB(guiHelper, ingredientManager),
+                new BuildingCostCategoryC(guiHelper, ingredientManager),
                 // 村庄及其详细信息
                 new VillageCategory(guiHelper,ingredientManager),
                 new VillageBuildingsCategory(guiHelper,ingredientManager),
@@ -271,10 +283,14 @@ public class MillenaireJeimmPlugin implements IModPlugin {
         try {
             Collection<BuildingPlanSet> buildings = MillenaireAPIHelper.getAllBuildingPlanSets().values();
             if (!buildings.isEmpty()) {
-                registration.addRecipes(
-                        BuildingCategory.RECIPE_TYPE,
-                        new ArrayList<>(buildings)
-                );
+                ArrayList<BuildingPlanSet> buildingList = new ArrayList<>(buildings);
+                registration.addRecipes(BuildingCategory.RECIPE_TYPE, buildingList);
+                registration.addRecipes(BuildingVillageCategory.RECIPE_TYPE, buildingList);
+                registration.addRecipes(BuildingVillagerCategory.RECIPE_TYPE, buildingList);
+                // [醒目新注释] 分别为变体 A、B、C 注入建筑配方数据
+                registration.addRecipes(BuildingCostCategoryA.RECIPE_TYPE, buildingList);
+                registration.addRecipes(BuildingCostCategoryB.RECIPE_TYPE, buildingList);
+                registration.addRecipes(BuildingCostCategoryC.RECIPE_TYPE, buildingList);
                 MMLog.info(LOG_BUILDING_RECIPE_SUCCESS_ZH, LOG_BUILDING_RECIPE_SUCCESS_EN, LOG_BUILDING_RECIPE_SUCCESS_FR, buildings.size());
             } else {
                 MMLog.warn(LOG_BUILDING_RECIPE_EMPTY_ZH, LOG_BUILDING_RECIPE_EMPTY_EN, LOG_BUILDING_RECIPE_EMPTY_FR);
@@ -305,3 +321,4 @@ public class MillenaireJeimmPlugin implements IModPlugin {
         JeiRuntime = runtime;
     }
 }
+// endregion 插件主体定义与初始化
