@@ -65,8 +65,7 @@ public class VillageVillagersCategory extends BaseMillCategory<VillageType> {
     public void setRecipe(IRecipeLayoutBuilder builder, VillageType recipe, IFocusGroup focuses) {
         if (recipe == null) return;
 
-        // [醒目新注释] 注册 CATALYST 隐形成分，响应来自 VillageCategory 村民 LinkBox 的专项点击
-        builder.addInvisibleIngredients(RecipeIngredientRole.CATALYST).addIngredient(MillIngredientTypes.VILLAGE, recipe);
+        builder.addInvisibleIngredients(RecipeIngredientRole.OUTPUT).addIngredient(MillIngredientTypes.VILLAGE, recipe);
 
         List<VillagerType> villagers = MillenaireAPIHelper.getVillagerFormVillage(recipe);
         if (villagers == null || villagers.isEmpty()) return;

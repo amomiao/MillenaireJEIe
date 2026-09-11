@@ -61,7 +61,7 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
                     if (MillenaireJeimmPlugin.JeiRuntime != null && contextObject instanceof VillageType village) {
                         // [醒目新注释] 锁定发送 RENDER_ONLY 焦点的 VILLAGE 隐形成分
                         var focus = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory()
-                                .createFocus(RecipeIngredientRole.RENDER_ONLY, MillIngredientTypes.VILLAGE, village);
+                                .createFocus(RecipeIngredientRole.OUTPUT, MillIngredientTypes.VILLAGE, village);
                         MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(focus);
                     }
                 });
@@ -74,7 +74,7 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
                     if (MillenaireJeimmPlugin.JeiRuntime != null && contextObject instanceof VillageType village) {
                         // [醒目新注释] 锁定发送 CATALYST 焦点的 VILLAGE 隐形成分
                         var focus = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory()
-                                .createFocus(RecipeIngredientRole.CATALYST, MillIngredientTypes.VILLAGE, village);
+                                .createFocus(RecipeIngredientRole.OUTPUT, MillIngredientTypes.VILLAGE, village);
 
                         MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(focus);
                     }

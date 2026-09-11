@@ -103,11 +103,11 @@ public class MillenaireJeimm {
     ///     builder.addInvisibleIngredients(RecipeIngredientRole.RENDER_ONLY).addIngredient([MillIngredientTypes#VILLAGE], recipe);
     ///     也就是把自己注册为了[MillIngredientTypes#VILLAGE]的查询结果
     ///     让他们与[MillIngredientTypes#VILLAGE]脱钩，在更高层隔离`查询作用域`，就能解决查询焦点的复杂情况
-    /// (更新)4.3.7.2c 重新梳理了一下[RecipeIngredientRole]的运行逻辑[4.3.7.3.1]
+    /// [失败]4.3.7.2c 重新梳理了一下[RecipeIngredientRole]的运行逻辑[4.3.7.3.1]
     /// 4.3.7.2c.1 首先是为[RecipeIngredientRole]注入更多的值，逻辑上最简单但是可用性难以保证;
     /// 4.3.7.2c.2 其次是接受多`页签`(Categor)的现实，{[RecipeIngredientRole#INPUT]+`多页签`(Categor)+`正确过滤`}是最接近完美方案的情况，他只缺少一个页签跳转，哪怕是进行一次`模拟鼠标点击`也比注入好得多;
     /// 4.3.7.2c.3 (Q79)开始使用了另一种方案，添加NBT标签
-    ///
+    /// (更新)4.3.7.2d 所有的尝试都失败了，不可能去进行那种破坏性行为，现在的方案是所有内容被注册到Output，玩家自己通过点击页签切换查看，最初方案没有只有少量改动
     /// 4.3.8 `MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(focus);` 传入焦点，调用`Jei运行时`，产生页面跳转。
     public MillenaireJeimm(IEventBus modEventBus, ModContainer modContainer) {
 

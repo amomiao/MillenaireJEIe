@@ -211,7 +211,7 @@
   * 建筑全景（VillageBuildingsCategory）：RENDER_ONLY 角色。
   * 由于全局没有任何其他 Category 将 VILLAGE 设为 RENDER_ONLY，发送该焦点时 JEI 只会精准命中 VillageBuildingsCategory 这唯一一个页签，且过滤 100% 正确。
 * 修好了，可以少做功了
-// 新目标 Village
+//: Village
 * Q76:村民属性里有没有显式的承接bring_back_home_goods的成员
   * [VillagerType#bringBackHomeGoods]返回的是`List<String>`,实际运行中这个参数绑定了一个可能需要的对象:会把小屋的{什么}材料带到市政厅
   * 这两个Goal可能与之有关:"millenaire:deliver_resources_shop","millenaire:get_resources_for_shops",
@@ -234,9 +234,26 @@
 * Q83: 还需要处理`XXIngredientRenderer`，重构这些给予的类，进行功能实现和用户友好功能添加
 * Q84: Renderer里把所有关联tag都输出出来，不用对开F3+H的省略内容
 * Q85: 现在有标签了，再回到VillageCategory进行过滤调用
-//- 页签调用Bug流程重点
-// 为建筑绘制`LinkBox`，他的特殊性在于要走Item渲染流程，不确定Item的数量超过一组会不会有制造大的障碍，能通过(原生支持/文本绘制)实现就不难。
+* 为建筑绘制`LinkBox`，他的特殊性在于要走Item渲染流程，不确定Item的数量超过一组会不会有制造大的障碍，能通过(原生支持/文本绘制)实现就不难。
 * 暂不考虑为设计到的建筑材料去注入标签，有Bug以后再说吧，反正是有解决方案了
 * Q86: 为建筑绘制`LinkBox`，他的特殊性在于要走Item渲染流程，不确定Item的数量超过一组会不会有制造大的障碍，能通过(原生支持/文本绘制)实现就不难。查阅源码留下声明资源用量的接口，暂时为其随便赋值一些道具。
   * 建筑的`LinkBox`包括`村庄(Ingredient)`、`村民(Ingredient)`、`升级用量(Item)`
-* 87: 没有声明对应的二级窗口，但是二级窗口本质上就是一个文本然后列出内容，可以封成一个通用窗口吗？不行就算了声明三个新窗口。
+* Q87: 没有声明对应的二级窗口，但是二级窗口本质上就是一个文本然后列出内容，可以封成一个通用窗口吗？不行就算了声明三个新窗口。
+* Q88: 对源码不了解、不能修改，难以抽象，放弃修改了，老老实实新建页面吧
+* Q89: 为Building新建三个页面并在Plugin声明他们
+* Q90: 道具列表的展示也需要独立的窗口，并且这些二级窗口能不能至少封装一个基类？
+* Q91: AbstractBuildingSubCategory改成AbstractSubCategory并更新对应成员、引用，功能还是这些，只不过别的页面也会希望调用这个基类
+* Q92: 注册这三个页面，并且MMLog三语都变成常量声明在上面用region封起来，下面在一行里调用三个变量
+* Q93: 点建筑使用用量Layout在工作，点不进窗口，building下辖的三个页面工作不正常，我要求的基类是正常运行的这个`村庄包含建筑`样式
+* Q94: 别抽象基类了，你就每个都按VillageVillagersCategory这样全写声明
+* Q95: 参照VillageCategory和他的两个子页面，为BuildingCategory声明BuildingItemsCategory、BuildingVillagersCategory、BuildingVillagesCategory，其中BuildingItemsCategory#setRecipe中items的获取先指向BuildingCategory中的临时静态方法
+* Q96: 我不是用标签隔离内容了吗？为什么还要设置不同的RecipeIngredientRole？
+* Q97: 那就是还是没解决枚举有限，更多Layout时焦点就是不可能正常运作了？
+* Q98: “JEI 的 Subtype（子类型） 机制, 类似于“带 NBT 的物品”或“带不同 Mode 的工具”，你可以让 Village 对象在 JEI 视角下附带不同的子类型 Key”我给道具添加了这么多内部信息就是让你过滤掉其他页签里的内容让他们消失的，现在你告诉我做不到 点点点点点点点点点点点点点点点点点点点点点
+* Q99: 那还说啥了，所有对象都注册到Output让玩家自己再点一次呗，一上午又白干，还是我的代替玩家点一次鼠标靠谱
+* 不对不能Output，不然点击村庄页签他们仨就出来了
+* 不对不对就该Output，输出三个页签可以是对的，这三个就是相关链接一起出来是合理的，现在的问题是想办法让加号比变成切换页签，哪怕是像`user32`一样让玩家点一下，页签就在固定的位置，完全可以做到，但是这个API的安全性...
+* Q100: 你还真用鼠标点击啊，JEI真没API吗
+* Q101: 肯定不能鼠标模拟啊，拉倒吧让用户多点一下
+//- 页签调用Bug流程终点
+//- 投降感言，感觉回到了我刚入行做二次开发的时候，不过这花了一天得到的结果还算可以，`MillenaireJeimm`上面注解了分析
