@@ -16,10 +16,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-// region DebugGuiUtils 工具类
 /**
- * JEI 开发者 Debug 模式通用 GUI 绘制工具类 {@link DebugGuiUtils}。
- * 提供暗色 Debug 终端面板、属性徽章（Badge）、动态悬浮 Inspector 及全量对象 JSON Dump 大窗口预览功能。
+ * JEI Developer Debug Mode GUI Utility Class {@link DebugGuiUtils}.
+ * Provides dark terminal panels, property badges, inspector tooltips, and full object JSON dump windows.
  */
 public class DebugGuiUtils {
     public static final int BUTTON_WIDTH = 22;
@@ -37,6 +36,17 @@ public class DebugGuiUtils {
         return mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height;
     }
 
+    // [醒目新注释] 将“细节”按钮硬编码文本替换为英文“Details”
+    /**
+     * Renders the small "Details" debug button on the screen.
+     *
+     * @param guiGraphics Graphics context {@link GuiGraphics}
+     * @param font Font renderer {@link Font}
+     * @param x Button X coordinate
+     * @param y Button Y coordinate
+     * @param mouseX Mouse X coordinate
+     * @param mouseY Mouse Y coordinate
+     */
     public static void drawDetailsButton(GuiGraphics guiGraphics, Font font, int x, int y, double mouseX, double mouseY) {
         boolean hovered = mouseX >= x && mouseX <= x + BUTTON_WIDTH && mouseY >= y && mouseY <= y + BUTTON_HEIGHT;
 
@@ -47,22 +57,9 @@ public class DebugGuiUtils {
         guiGraphics.fill(x, y, x + BUTTON_WIDTH, y + 1, 0xFF666666);
         guiGraphics.fill(x, y, x + 1, y + BUTTON_HEIGHT, 0xFF666666);
 
-        guiGraphics.drawString(font, Component.literal("细节"), x + 1, y + 1, textColor, false);
+        guiGraphics.drawString(font, Component.literal("Raw"), x + 1, y + 1, textColor, false);
     }
 
-    // [醒目新注释] 重载 handleDetailsButtonClick，支持自动生成 Inspector 数据或接收自定义 debugLines
-    /**
-     * 处理"细节"按钮的鼠标点击响应，自动提取 Inspector 属性并打开 {@link JsonDumpScreen} 界面。
-     * [醒目新注释] 修复按钮碰撞检测判定，使用 {@link DebugGuiUtils#isMouseOver} 统一边界规则。
-     *
-     * @param targetObject 目标调试对象
-     * @param customDebugLines 自定义 Inspector 调试文本
-     * @param mouseX 当前鼠标 X 坐标
-     * @param mouseY 当前鼠标 Y 坐标
-     * @param btnX 按钮起始 X 坐标
-     * @param btnY 按钮起始 Y 坐标
-     * @return 是否成功命中按钮区域
-     */
     public static boolean handleDetailsButtonClick(Object targetObject, List<Component> customDebugLines, double mouseX, double mouseY, int btnX, int btnY) {
         if (isMouseOver(mouseX, mouseY, btnX, btnY, BUTTON_WIDTH, BUTTON_HEIGHT)) {
             openJsonDumpScreen(targetObject, customDebugLines);
@@ -75,13 +72,12 @@ public class DebugGuiUtils {
         openJsonDumpScreen(targetObj, List.of());
     }
 
-    // [醒目新注释] 若未传入 customDebugLines，自动通过反射/RecordComponent 构建完整的 Inspector 属性行
+    // [醒目新注释] 替换序列化失败信息与 Screen 标题文本为全英文
     /**
-     * 打开 {@link JsonDumpScreen} 调试大窗口。
-     * [醒目新注释] 关键修复：通过 {@link net.minecraft.client.Minecraft#execute(Runnable)} 异步提交至客户端下一帧主线程，防止 JEI 事件循环冲突。
+     * Opens the {@link JsonDumpScreen} screen safely on the client thread.
      *
-     * @param targetObj 目标调试对象
-     * @param debugLines 自定义 Inspector 属性行
+     * @param targetObj Target object to serialize and inspect
+     * @param debugLines Custom debug lines to pass to inspector tab
      */
     public static void openJsonDumpScreen(Object targetObj, List<Component> debugLines) {
         if (targetObj == null) return;
@@ -89,8 +85,7 @@ public class DebugGuiUtils {
         try {
             jsonText = GSON.toJson(targetObj);
         } catch (Throwable e) {
-            // [醒目新注释] 改为捕获 Throwable，防止对象图循环引用抛出 StackOverflowError 导致主线程直接中断
-            jsonText = "// JSON 序列化失败: " + e.getMessage();
+            jsonText = "// JSON Serialization Failed: " + e.getMessage();
         }
 
         List<Component> finalDebugLines = (debugLines != null && !debugLines.isEmpty())
@@ -98,19 +93,18 @@ public class DebugGuiUtils {
                 : buildDefaultInspectorLines(targetObj);
 
         String titleName = targetObj.getClass().getSimpleName();
-        // [醒目新注释] 使用 Minecraft#execute 将打开窗口动作延后至主线程当前渲染帧结束后安全执行
         String finalJsonText = jsonText;
         Minecraft.getInstance().execute(() -> {
-            Minecraft.getInstance().setScreen(new JsonDumpScreen(Component.literal("开发者深度诊断 - " + titleName), finalJsonText, finalDebugLines));
+            Minecraft.getInstance().setScreen(new JsonDumpScreen(Component.literal("Diag - " + titleName), finalJsonText, finalDebugLines));
         });
     }
 
-    // [醒目新注释] 新增通用 Inspector 属性构建方法，自动解析 Java Record 与常规 Class 的所有字段
+    // [醒目新注释] 移除指定的 3 行中文 Class 结构头信息，并将异常捕获提示修改为英文 <Failed to read>
     /**
-     * 利用反射与 {@link RecordComponent} 提取对象的全量属性信息，作为 Inspector 视图的展现行。
+     * Extracts all fields and record components from a target object for the Inspector view.
      *
-     * @param target 目标对象
-     * @return 格式化后的 {@link Component} 列表
+     * @param target Target object to analyze via reflection
+     * @return List of formatted text components {@link Component}
      */
     public static List<Component> buildDefaultInspectorLines(Object target) {
         if (target == null) return List.of(Component.literal("§c[Null Object]"));
@@ -118,11 +112,7 @@ public class DebugGuiUtils {
         List<Component> lines = new ArrayList<>();
         Class<?> clazz = target.getClass();
 
-        lines.add(Component.literal("§e[类信息]: §f" + clazz.getName()));
-        lines.add(Component.literal("§e[结构类型]: §f" + (clazz.isRecord() ? "Java Record" : "Standard Class")));
-        lines.add(Component.literal("§8----------------------------------------"));
-
-        // 1. 如果是 Java Record（如 Millénaire 的各类 Record 结构）
+        // 1. Java Record structures
         if (clazz.isRecord()) {
             RecordComponent[] components = clazz.getRecordComponents();
             for (RecordComponent rc : components) {
@@ -130,11 +120,11 @@ public class DebugGuiUtils {
                     Object value = rc.getAccessor().invoke(target);
                     lines.add(Component.literal("§b" + rc.getName() + "§7: §f" + String.valueOf(value)));
                 } catch (Exception e) {
-                    lines.add(Component.literal("§b" + rc.getName() + "§7: §c<读取失败>"));
+                    lines.add(Component.literal("§b" + rc.getName() + "§7: §c<Failed to read>"));
                 }
             }
         }
-        // 2. 普通 Class 对象的 Field 反射提取
+        // 2. Standard Class field extraction
         else {
             Field[] fields = clazz.getDeclaredFields();
             for (Field field : fields) {
@@ -144,12 +134,11 @@ public class DebugGuiUtils {
                     Object value = field.get(target);
                     lines.add(Component.literal("§b" + field.getName() + "§7: §f" + String.valueOf(value)));
                 } catch (Exception e) {
-                    lines.add(Component.literal("§b" + field.getName() + "§7: §c<读取失败>"));
+                    lines.add(Component.literal("§b" + field.getName() + "§7: §c<Failed to read>"));
                 }
             }
         }
         return lines;
     }
-// endregion 标题行快捷 Debug 按钮渲染与交互逻辑
-
 }
+// endregion DebugGuiUtils Utility Implementation

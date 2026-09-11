@@ -2,6 +2,7 @@ package com.momos.millenairejeimm.jei.Runtime.cultureof;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeimm.MillenaireJeimm;
+import com.momos.millenairejeimm.jei.MillenaireJeimmKeys;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -50,7 +51,9 @@ public class CultureVillagesCategory extends BaseMillCategory<Culture> {
     }
 
     @Override public RecipeType<Culture> getRecipeType() { return RECIPE_TYPE; }
-    @Override public Component getTitle() { return Component.literal("文化关联村庄 (全景大窗口)"); }
+
+    // [醒目新注释] 使用 {@link MillenaireJeimmKeys#CATEGORY_CULTURE_VILLAGES_FULL} 替换硬编码标题
+    @Override public Component getTitle() { return Component.translatable(MillenaireJeimmKeys.CATEGORY_CULTURE_VILLAGES_FULL); }
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, Culture recipe, IFocusGroup focuses) {
@@ -86,11 +89,12 @@ public class CultureVillagesCategory extends BaseMillCategory<Culture> {
         /**
          * [醒目新注释]
          * 优化：仅在配方示例更改时重新生成 {@link Component}，消除帧循环中的字符串拼接与对象创建开销。
+         * 现改用 {@link MillenaireJeimmKeys#BELONGING_CULTURE} 进行参数化本地化组件构造。
          */
         if (recipe != this.lastRecipe) {
             this.lastRecipe = recipe;
             String displayName = recipe.displayName() != null ? recipe.displayName() : recipe.id().getPath();
-            this.cachedDisplayNameComponent = Component.literal("§1所属文化: §f" + displayName);
+            this.cachedDisplayNameComponent = Component.translatable(MillenaireJeimmKeys.BELONGING_CULTURE, displayName);
         }
 
         guiGraphics.drawString(font, this.cachedDisplayNameComponent, 14, 8, 0x000000, false);
@@ -121,3 +125,4 @@ public class CultureVillagesCategory extends BaseMillCategory<Culture> {
         }
     }
 }
+// endregion 文化关联村庄全景大窗口面板类

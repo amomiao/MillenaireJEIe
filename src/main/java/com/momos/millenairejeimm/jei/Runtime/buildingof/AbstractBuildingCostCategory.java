@@ -1,16 +1,16 @@
-// region 基类定义与变体匹配实现
+// region AbstractBuildingCostCategory Implementation
 package com.momos.millenairejeimm.jei.Runtime.buildingof;
 
 import com.momos.millenairejeimm.jei.BuildingUpgradeCostHelper;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
+import com.momos.millenairejeimm.jei.MillenaireJeimmKeys;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.runtime.IIngredientManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -29,6 +29,7 @@ import java.util.Map;
  */
 public abstract class AbstractBuildingCostCategory extends BaseMillCategory<BuildingPlanSet> {
 
+    // [醒目新注释] 逻辑常量抽离
     private static final int SLOT_SIZE = 18;
     private static final int COLUMNS = 8;
     private static final int ROWS = 5;
@@ -59,11 +60,16 @@ public abstract class AbstractBuildingCostCategory extends BaseMillCategory<Buil
      */
     private Component cachedDisplayNameComponent;
 
+    // [醒目新注释] 使用 translatableWithFallback 构建统一的变体标题
     public AbstractBuildingCostCategory(IGuiHelper guiHelper, IIngredientManager ingredientManager, char variantKey, String variantTitle) {
         super(guiHelper, guiHelper.createDrawableItemStack(new ItemStack(Items.CHEST)));
         this.variantKey = Character.toLowerCase(variantKey);
         this.variantIndex = this.variantKey - 'a';
-        this.titleComponent = Component.literal("建筑消耗材料 (" + variantTitle + ")");
+        this.titleComponent = Component.translatableWithFallback(
+                MillenaireJeimmKeys.CATEGORY_BUILDING_COST,
+                "Building Costs (%s)",
+                variantTitle
+        );
     }
 
     @Override
@@ -140,6 +146,7 @@ public abstract class AbstractBuildingCostCategory extends BaseMillCategory<Buil
         }
     }
 
+    // [醒目新注释] 将绘制文本修改为 Component.translatableWithFallback 模板格式
     @Override
     public void draw(BuildingPlanSet recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
         if (recipe == null) return;
@@ -148,7 +155,12 @@ public abstract class AbstractBuildingCostCategory extends BaseMillCategory<Buil
         if (recipe != this.lastRecipe) {
             this.lastRecipe = recipe;
             String name = recipe.nativeName() != null && !recipe.nativeName().isEmpty() ? recipe.nativeName() : recipe.buildingId();
-            this.cachedDisplayNameComponent = Component.literal("§1所属建筑: §f" + name + " §8[变体 " + Character.toUpperCase(this.variantKey) + "]");
+            this.cachedDisplayNameComponent = Component.translatableWithFallback(
+                    MillenaireJeimmKeys.BELONGING_BUILDING_VARIANT,
+                    "§1Belonging Building: §f%s §8[Variant %s]",
+                    name,
+                    String.valueOf(Character.toUpperCase(this.variantKey))
+            );
         }
 
         guiGraphics.drawString(font, this.cachedDisplayNameComponent, 14, 8, 0x000000, false);
@@ -173,4 +185,4 @@ public abstract class AbstractBuildingCostCategory extends BaseMillCategory<Buil
         }
     }
 }
-// endregion 基类定义与变体匹配实现
+// endregion AbstractBuildingCostCategory Implementation

@@ -1,5 +1,6 @@
 package com.momos.millenairejeimm.jei.Runtime.villagerof;
 
+import com.momos.millenairejeimm.jei.MillenaireJeimmKeys;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
 import mezz.jei.api.constants.VanillaTypes;
@@ -33,9 +34,6 @@ public class VillagerCollectCategory extends BaseMillCategory<VillagerType> {
     private static final int ROWS = 5;
     private static final int PAGE_SIZE = COLUMNS * ROWS;
 
-    private VillagerType lastRecipe;
-    private Component cachedDisplayNameComponent;
-
     public VillagerCollectCategory(IGuiHelper guiHelper, IIngredientManager ingredientManager) {
         super(guiHelper, guiHelper.createDrawableItemStack(new ItemStack(Items.HOPPER)));
     }
@@ -47,7 +45,7 @@ public class VillagerCollectCategory extends BaseMillCategory<VillagerType> {
 
     @Override
     public Component getTitle() {
-        return Component.translatable("gui.millenairejeim.category.villager_collect_goods");
+        return MillenaireJeimmKeys.getCategoryVillagerCollectGoodsTitle();
     }
 
     @Override
@@ -97,13 +95,10 @@ public class VillagerCollectCategory extends BaseMillCategory<VillagerType> {
         if (recipe == null) return;
         Font font = Minecraft.getInstance().font;
 
-        if (recipe != this.lastRecipe) {
-            this.lastRecipe = recipe;
-            String name = recipe.nativeName() != null && !recipe.nativeName().isEmpty() ? recipe.nativeName() : recipe.id().getPath();
-            this.cachedDisplayNameComponent = Component.literal("§1所属村民: §f" + name);
-        }
+        String name = recipe.nativeName() != null && !recipe.nativeName().isEmpty() ? recipe.nativeName() : recipe.id().getPath();
+        Component displayNameComponent = MillenaireJeimmKeys.getVillagerLabelBelongs(name);
 
-        guiGraphics.drawString(font, this.cachedDisplayNameComponent, 14, 8, 0x000000, false);
+        guiGraphics.drawString(font, displayNameComponent, 14, 8, 0x000000, false);
 
         int total = recipeSlotsView.getSlotViews().size();
         int startX = 14;

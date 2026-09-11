@@ -1,6 +1,7 @@
 package com.momos.millenairejeimm.jei.Runtime.villageof;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
+import com.momos.millenairejeimm.jei.MillenaireJeimmKeys;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -27,12 +28,24 @@ import java.util.List;
  * 展示村庄类型 {@link VillageType} 包含的所有建筑 {@link BuildingPlanSet} 的 JEI 全景大窗口分类。
  */
 public class VillageBuildingsCategory extends BaseMillCategory<VillageType> {
-    public static final RecipeType<VillageType> RECIPE_TYPE = RecipeType.create("millenaire", "village_buildings_full", VillageType.class);
+
+    // [醒目新注释] 抽取 RecipeType ID 常量与 GUI 布局常量
+    private static final String RECIPE_TYPE_NAMESPACE = "millenaire";
+    private static final String RECIPE_TYPE_PATH = "village_buildings_full";
+    public static final RecipeType<VillageType> RECIPE_TYPE = RecipeType.create(RECIPE_TYPE_NAMESPACE, RECIPE_TYPE_PATH, VillageType.class);
 
     private static final int SLOT_SIZE = 18;
     private static final int COLUMNS = 8;
     private static final int ROWS = 5;
     private static final int PAGE_SIZE = COLUMNS * ROWS;
+
+    private static final int GUI_START_X = 14;
+    private static final int GUI_START_Y = 24;
+    private static final int HEADER_X = 14;
+    private static final int HEADER_Y = 8;
+    private static final int HEADER_COLOR = 0x000000;
+    private static final int BG_FILL_COLOR = 0x20000000;
+    private static final int BORDER_FILL_COLOR = 0x50000000;
 
     private VillageType lastRecipe;
     private Component cachedDisplayNameComponent;
@@ -42,7 +55,12 @@ public class VillageBuildingsCategory extends BaseMillCategory<VillageType> {
     }
 
     @Override public RecipeType<VillageType> getRecipeType() { return RECIPE_TYPE; }
-    @Override public Component getTitle() { return Component.literal("村庄包含建筑 (全景大窗口)"); }
+
+    @Override
+    public Component getTitle() {
+        // [醒目新注释] 使用 {@link MillenaireJeimmKeys#getCategoryVillageBuildingsFullTitle} 获取分类标题
+        return MillenaireJeimmKeys.getCategoryVillageBuildingsFullTitle();
+    }
 
     // [醒目新注释] 将隐形成分修改为 RENDER_ONLY 角色，形成全景建筑分类的独占类型区分
     /**
@@ -72,15 +90,12 @@ public class VillageBuildingsCategory extends BaseMillCategory<VillageType> {
             }
         }
 
-        int startX = 14;
-        int startY = 24;
-
         for (int i = 0; i < Math.min(buildings.size(), PAGE_SIZE); i++) {
             BuildingPlanSet building = buildings.get(i);
             int row = i / COLUMNS;
             int col = i % COLUMNS;
-            int slotX = startX + (col * SLOT_SIZE);
-            int slotY = startY + (row * SLOT_SIZE);
+            int slotX = GUI_START_X + (col * SLOT_SIZE);
+            int slotY = GUI_START_Y + (row * SLOT_SIZE);
 
             builder.addSlot(RecipeIngredientRole.INPUT, slotX + 1, slotY + 1)
                     .addIngredient(MillIngredientTypes.BUILDING, building);
@@ -94,27 +109,26 @@ public class VillageBuildingsCategory extends BaseMillCategory<VillageType> {
 
         if (recipe != this.lastRecipe) {
             this.lastRecipe = recipe;
-            this.cachedDisplayNameComponent = Component.literal("§1所属村庄: §f" + recipe.name());
+            // [醒目新注释] 使用 {@link MillenaireJeimmKeys#getVillageLabelBelongs} 格式化并缓存显示名称
+            this.cachedDisplayNameComponent = MillenaireJeimmKeys.getVillageLabelBelongs(recipe.name());
         }
 
-        guiGraphics.drawString(font, this.cachedDisplayNameComponent, 14, 8, 0x000000, false);
+        guiGraphics.drawString(font, this.cachedDisplayNameComponent, HEADER_X, HEADER_Y, HEADER_COLOR, false);
 
         int total = recipeSlotsView.getSlotViews().size();
-        int startX = 14;
-        int startY = 24;
 
         for (int i = 0; i < PAGE_SIZE; i++) {
             int row = i / COLUMNS;
             int col = i % COLUMNS;
-            int slotX = startX + (col * SLOT_SIZE);
-            int slotY = startY + (row * SLOT_SIZE);
+            int slotX = GUI_START_X + (col * SLOT_SIZE);
+            int slotY = GUI_START_Y + (row * SLOT_SIZE);
 
             if (i < total) {
-                guiGraphics.fill(slotX, slotY, slotX + 18, slotY + 18, 0x20000000);
-                guiGraphics.fill(slotX, slotY, slotX + 18, slotY + 1, 0x50000000);
-                guiGraphics.fill(slotX, slotY + 17, slotX + 18, slotY + 18, 0x50000000);
-                guiGraphics.fill(slotX, slotY, slotX + 1, slotY + 18, 0x50000000);
-                guiGraphics.fill(slotX + 17, slotY, slotX + 18, slotY + 18, 0x50000000);
+                guiGraphics.fill(slotX, slotY, slotX + 18, slotY + 18, BG_FILL_COLOR);
+                guiGraphics.fill(slotX, slotY, slotX + 18, slotY + 1, BORDER_FILL_COLOR);
+                guiGraphics.fill(slotX, slotY + 17, slotX + 18, slotY + 18, BORDER_FILL_COLOR);
+                guiGraphics.fill(slotX, slotY, slotX + 1, slotY + 18, BORDER_FILL_COLOR);
+                guiGraphics.fill(slotX + 17, slotY, slotX + 18, slotY + 18, BORDER_FILL_COLOR);
             }
         }
     }

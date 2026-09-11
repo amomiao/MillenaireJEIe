@@ -1,5 +1,6 @@
 package com.momos.millenairejeimm.jei.Runtime.villagerof;
 
+import com.momos.millenairejeimm.jei.MillenaireJeimmKeys;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
 import mezz.jei.api.constants.VanillaTypes;
@@ -32,9 +33,6 @@ public class VillagerRequiredCategory extends BaseMillCategory<VillagerType> {
     private static final int ROWS = 5;
     private static final int PAGE_SIZE = COLUMNS * ROWS;
 
-    private VillagerType lastRecipe;
-    private Component cachedDisplayNameComponent;
-
     public VillagerRequiredCategory(IGuiHelper guiHelper, IIngredientManager ingredientManager) {
         super(guiHelper, guiHelper.createDrawableItemStack(new ItemStack(Items.CRAFTING_TABLE)));
     }
@@ -46,12 +44,11 @@ public class VillagerRequiredCategory extends BaseMillCategory<VillagerType> {
 
     @Override
     public Component getTitle() {
-        return Component.translatable("gui.millenairejeim.category.villager_required_goods");
+        return MillenaireJeimmKeys.getCategoryVillagerRequiredGoodsTitle();
     }
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, VillagerType recipe, IFocusGroup focuses) {
-        // [醒目新注释] 过滤掉 requiredGoods 为空的平民/通用村民
         if (recipe == null || recipe.requiredGoods().isEmpty()) return;
 
         builder.addInvisibleIngredients(RecipeIngredientRole.OUTPUT).addIngredient(MillIngredientTypes.VILLAGER, recipe);
@@ -96,13 +93,10 @@ public class VillagerRequiredCategory extends BaseMillCategory<VillagerType> {
         if (recipe == null) return;
         Font font = Minecraft.getInstance().font;
 
-        if (recipe != this.lastRecipe) {
-            this.lastRecipe = recipe;
-            String name = recipe.nativeName() != null && !recipe.nativeName().isEmpty() ? recipe.nativeName() : recipe.id().getPath();
-            this.cachedDisplayNameComponent = Component.literal("§1所属村民: §f" + name);
-        }
+        String name = recipe.nativeName() != null && !recipe.nativeName().isEmpty() ? recipe.nativeName() : recipe.id().getPath();
+        Component displayNameComponent = MillenaireJeimmKeys.getVillagerLabelBelongs(name);
 
-        guiGraphics.drawString(font, this.cachedDisplayNameComponent, 14, 8, 0x000000, false);
+        guiGraphics.drawString(font, displayNameComponent, 14, 8, 0x000000, false);
 
         int total = recipeSlotsView.getSlotViews().size();
         int startX = 14;

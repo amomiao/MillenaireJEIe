@@ -1,5 +1,6 @@
 package com.momos.millenairejeimm.jei.Runtime.cultureof.ingredient;
 
+import com.momos.millenairejeimm.jei.MillenaireJeimmKeys;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillIngredientRenderer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -30,6 +31,7 @@ public class CultureIngredientRenderer extends BaseMillIngredientRenderer<Cultur
     }
 
     // [醒目新注释] 移除 F3+H 限制，无条件全量输出文化 ID 与关联检索 Tag 列表
+    // [醒目新注释] 替换硬编码字符串，全量使用 {@link MillenaireJeimmKeys} 本地化 Key 构建文本组件
     /**
      * 获取文化的悬浮提示组件列表。
      *
@@ -41,23 +43,23 @@ public class CultureIngredientRenderer extends BaseMillIngredientRenderer<Cultur
     public List<Component> getTooltip(Culture ingredient, TooltipFlag tooltipFlag) {
         List<Component> tooltip = new ArrayList<>();
         if (ingredient == null) {
-            tooltip.add(Component.literal("未知文化").withStyle(ChatFormatting.RED));
+            tooltip.add(Component.translatable(MillenaireJeimmKeys.UNKNOWN_CULTURE).withStyle(ChatFormatting.RED));
             return tooltip;
         }
 
-        String name = ingredient.displayName() != null ? ingredient.displayName() : "未知文化";
-        tooltip.add(Component.literal("文化: " + name).withStyle(ChatFormatting.GOLD));
+        String name = ingredient.displayName() != null ? ingredient.displayName() : Component.translatable(MillenaireJeimmKeys.UNKNOWN_CULTURE).getString();
+        tooltip.add(Component.translatable(MillenaireJeimmKeys.CULTURE_PREFIX, name).withStyle(ChatFormatting.GOLD));
 
         // [醒目新注释] 始终渲染 ResourceLocation 内部 ID
         if (ingredient.id() != null) {
-            tooltip.add(Component.literal("ID: " + ingredient.id()).withStyle(ChatFormatting.DARK_GRAY));
+            tooltip.add(Component.translatable(MillenaireJeimmKeys.ID_PREFIX, ingredient.id().toString()).withStyle(ChatFormatting.DARK_GRAY));
         }
 
         // [醒目新注释] 全量提取 {@link CultureIngredientHelper#getTagStream} 中的 Tag 并展示
         CultureIngredientHelper helper = new CultureIngredientHelper();
         List<ResourceLocation> tags = helper.getTagStream(ingredient).toList();
         if (!tags.isEmpty()) {
-            tooltip.add(Component.literal("关联标签 ($ Tag):").withStyle(ChatFormatting.GRAY));
+            tooltip.add(Component.translatable(MillenaireJeimmKeys.ASSOCIATED_TAGS).withStyle(ChatFormatting.GRAY));
             for (ResourceLocation tag : tags) {
                 tooltip.add(Component.literal("  $" + tag).withStyle(ChatFormatting.DARK_GRAY));
             }

@@ -1,6 +1,7 @@
 package com.momos.millenairejeimm.jei.Runtime.villagerof;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
+import com.momos.millenairejeimm.jei.MillenaireJeimmKeys;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -33,10 +34,6 @@ public class VillagerVillageCategory extends BaseMillCategory<VillagerType> {
     private static final int ROWS = 5;
     private static final int PAGE_SIZE = COLUMNS * ROWS;
 
-    // [醒目新注释] 缓存上次渲染的村民对象，规避每帧重新解析并分配 Component 文本的开销
-    private VillagerType lastRecipe;
-    private Component cachedDisplayNameComponent;
-
     public VillagerVillageCategory(IGuiHelper guiHelper, IIngredientManager ingredientManager) {
         super(guiHelper, guiHelper.createDrawableItemStack(new ItemStack(Items.VILLAGER_SPAWN_EGG)));
     }
@@ -48,20 +45,18 @@ public class VillagerVillageCategory extends BaseMillCategory<VillagerType> {
 
     @Override
     public Component getTitle() {
-        return Component.translatable("gui.millenairejeim.category.villager_villages");
+        return MillenaireJeimmKeys.getCategoryVillagerVillagesFullTitle();
     }
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, VillagerType recipe, IFocusGroup focuses) {
         if (recipe == null) return;
 
-        // [醒目新注释] 注册输出端隐形成分，确立此全景大窗口配方绑定的主视点组件为当前 VillagerType
         builder.addInvisibleIngredients(RecipeIngredientRole.OUTPUT).addIngredient(MillIngredientTypes.VILLAGER, recipe);
 
         List<VillageType> villages = MillenaireAPIHelper.getVillageFormVillager(recipe);
         if (villages == null || villages.isEmpty()) return;
 
-        // [醒目新注释] 焦点排序：优先置顶玩家选中的焦点村庄类型
         if (focuses != null && !focuses.isEmpty()) {
             List<VillageType> focusedVillages = focuses.getFocuses(MillIngredientTypes.VILLAGE)
                     .map(f -> f.getTypedValue().getIngredient())
@@ -92,19 +87,15 @@ public class VillagerVillageCategory extends BaseMillCategory<VillagerType> {
         if (recipe == null) return;
         Font font = Minecraft.getInstance().font;
 
-        if (recipe != this.lastRecipe) {
-            this.lastRecipe = recipe;
-            String name = recipe.nativeName() != null && !recipe.nativeName().isEmpty() ? recipe.nativeName() : recipe.id().getPath();
-            this.cachedDisplayNameComponent = Component.literal("§1所属村民: §f" + name);
-        }
+        String name = recipe.nativeName() != null && !recipe.nativeName().isEmpty() ? recipe.nativeName() : recipe.id().getPath();
+        Component displayNameComponent = MillenaireJeimmKeys.getVillagerLabelBelongs(name);
 
-        guiGraphics.drawString(font, this.cachedDisplayNameComponent, 14, 8, 0x000000, false);
+        guiGraphics.drawString(font, displayNameComponent, 14, 8, 0x000000, false);
 
         int total = recipeSlotsView.getSlotViews().size();
         int startX = 14;
         int startY = 24;
 
-        // [醒目新注释] 绘制符合全景风格的标准网格背景槽位
         for (int i = 0; i < PAGE_SIZE; i++) {
             int row = i / COLUMNS;
             int col = i % COLUMNS;

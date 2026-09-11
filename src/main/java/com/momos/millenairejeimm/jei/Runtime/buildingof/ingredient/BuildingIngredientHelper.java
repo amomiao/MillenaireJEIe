@@ -1,3 +1,4 @@
+// region BuildingIngredientHelper Implementation
 package com.momos.millenairejeimm.jei.Runtime.buildingof.ingredient;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
@@ -19,14 +20,30 @@ import java.util.stream.Stream;
  * 建筑集 {@link BuildingPlanSet} 的 JEI 检索辅助类。
  */
 public class BuildingIngredientHelper implements IIngredientHelper<BuildingPlanSet> {
+
+    // [醒目新注释] 逻辑运行依赖的字符串常量封装
+    private static final String MOD_ID = "millenaire";
+    private static final String UNKNOWN_BUILDING_ID = "unknown_building";
+    private static final String UNKNOWN_PATH = "unknown";
+    private static final String DEFAULT_DISPLAY_NAME = "Unknown Building";
+    private static final String ERR_NULL_INGREDIENT = "BuildingPlanSet is null";
+    private static final String ERR_BUILDING_PREFIX = "Building: ";
+
     @Override
     public IIngredientType<BuildingPlanSet> getIngredientType() {
         return MillIngredientTypes.BUILDING;
     }
 
+    // [醒目新注释] 采用常量做空值降级处理
+    /**
+     * 获取建筑集显示名称 {@link BuildingPlanSet}。
+     *
+     * @param ingredient 建筑集对象
+     * @return 显示名称字符串
+     */
     @Override
     public String getDisplayName(BuildingPlanSet ingredient) {
-        if (ingredient == null) return "Unknown Building";
+        if (ingredient == null) return DEFAULT_DISPLAY_NAME;
         return MillenaireLocalizeHelper.getBuildingName(ingredient).getString();
     }
 
@@ -41,9 +58,9 @@ public class BuildingIngredientHelper implements IIngredientHelper<BuildingPlanS
     @Override
     @SuppressWarnings("removal")
     public String getUniqueId(BuildingPlanSet ingredient, UidContext context) {
-        if (ingredient == null) return "millenaire:unknown_building";
-        String culture = ingredient.culture() != null ? ingredient.culture().getPath() : "unknown";
-        String building = ingredient.buildingId() != null ? ingredient.buildingId() : "unknown";
+        if (ingredient == null) return MOD_ID + ":" + UNKNOWN_BUILDING_ID;
+        String culture = ingredient.culture() != null ? ingredient.culture().getPath() : UNKNOWN_PATH;
+        String building = ingredient.buildingId() != null ? ingredient.buildingId() : UNKNOWN_PATH;
         return culture + ":" + building;
     }
 
@@ -69,11 +86,11 @@ public class BuildingIngredientHelper implements IIngredientHelper<BuildingPlanS
      */
     @Override
     public ResourceLocation getResourceLocation(BuildingPlanSet ingredient) {
-        if (ingredient == null) return ResourceLocation.fromNamespaceAndPath("millenaire", "unknown_building");
-        String culturePath = ingredient.culture() != null ? ingredient.culture().getPath() : "unknown";
-        String buildingId = ingredient.buildingId() != null ? ingredient.buildingId() : "unknown";
+        if (ingredient == null) return ResourceLocation.fromNamespaceAndPath(MOD_ID, UNKNOWN_BUILDING_ID);
+        String culturePath = ingredient.culture() != null ? ingredient.culture().getPath() : UNKNOWN_PATH;
+        String buildingId = ingredient.buildingId() != null ? ingredient.buildingId() : UNKNOWN_PATH;
         String fullPath = (culturePath + "/" + buildingId).toLowerCase(Locale.ROOT);
-        return ResourceLocation.fromNamespaceAndPath("millenaire", fullPath);
+        return ResourceLocation.fromNamespaceAndPath(MOD_ID, fullPath);
     }
 
     @Override
@@ -83,7 +100,7 @@ public class BuildingIngredientHelper implements IIngredientHelper<BuildingPlanS
 
     @Override
     public String getErrorInfo(@Nullable BuildingPlanSet ingredient) {
-        return ingredient == null ? "BuildingPlanSet is null" : "Building: " + ingredient.buildingId();
+        return ingredient == null ? ERR_NULL_INGREDIENT : ERR_BUILDING_PREFIX + ingredient.buildingId();
     }
 
     @Override
@@ -122,3 +139,4 @@ public class BuildingIngredientHelper implements IIngredientHelper<BuildingPlanS
         return tags.stream();
     }
 }
+// endregion BuildingIngredientHelper Implementation

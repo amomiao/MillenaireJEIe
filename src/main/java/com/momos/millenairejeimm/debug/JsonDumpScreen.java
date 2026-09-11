@@ -1,3 +1,4 @@
+// region JSON Debug Screen Implementation
 package com.momos.millenairejeimm.debug;
 
 import net.minecraft.client.Minecraft;
@@ -15,6 +16,9 @@ import java.util.List;
 import static com.momos.millenairejeimm.debug.DebugGuiUtils.buildDefaultInspectorLines;
 import static org.millenaire.culture.JsonLoaderUtils.GSON;
 
+/**
+ * Debug GUI Screen for inspecting raw JSON and Object inspector properties {@link JsonDumpScreen}.
+ */
 public class JsonDumpScreen extends Screen {
 
     private final String rawJson;
@@ -36,7 +40,7 @@ public class JsonDumpScreen extends Screen {
     private boolean isDraggingScrollbar = false;
 
     public JsonDumpScreen(Object targetObject) {
-        this(Component.literal("开发者深度诊断 - " + (targetObject != null ? targetObject.getClass().getSimpleName() : "Null")),
+        this(Component.literal("Debug - " + (targetObject != null ? targetObject.getClass().getSimpleName() : "Null")),
                 targetObject != null ? GSON.toJson(targetObject) : "{}",
                 buildDefaultInspectorLines(targetObject));
     }
@@ -49,6 +53,10 @@ public class JsonDumpScreen extends Screen {
         this.debugLines = debugLines != null ? debugLines : List.of();
     }
 
+    // [醒目新注释] 初始化界面控件并将原本硬编码的中文按钮文本替换为全英文文本
+    /**
+     * Initializes elements including buttons, tabs, and layout bounds for {@link JsonDumpScreen}.
+     */
     @Override
     protected void init() {
         super.init();
@@ -65,12 +73,12 @@ public class JsonDumpScreen extends Screen {
         int modalY = (this.height - modalHeight) / 2;
 
         int tabY = modalY + 3;
-        this.tabJsonButton = Button.builder(Component.literal("JSON 结构"), btn -> {
+        this.tabJsonButton = Button.builder(Component.literal("JSON Structure"), btn -> {
             this.activeTab = 0;
             this.scrollAmount = 0;
         }).bounds(modalX + modalWidth - 195, tabY, 75, 16).build();
 
-        this.tabInspectorButton = Button.builder(Component.literal("Inspector 属性"), btn -> {
+        this.tabInspectorButton = Button.builder(Component.literal("Inspector Props"), btn -> {
             this.activeTab = 1;
             this.scrollAmount = 0;
         }).bounds(modalX + modalWidth - 115, tabY, 85, 16).build();
@@ -79,14 +87,14 @@ public class JsonDumpScreen extends Screen {
         int btnHeight = 20;
         int btnY = modalY + modalHeight - 28;
 
-        this.copyButton = Button.builder(Component.literal("📋 复制当前视图到剪贴板"), btn -> {
+        this.copyButton = Button.builder(Component.literal("📋 Copy View to Clipboard"), btn -> {
             String copyText = (this.activeTab == 0) ? this.rawJson : String.join("\n", this.inspectorLines);
             Minecraft.getInstance().keyboardHandler.setClipboard(copyText);
             this.copySuccessNotice = true;
             this.noticeTimestamp = System.currentTimeMillis();
         }).bounds(modalX + (modalWidth / 2) - btnWidth - 10, btnY, btnWidth, btnHeight).build();
 
-        this.closeButton = Button.builder(Component.literal("关闭 (ESC)"), btn -> {
+        this.closeButton = Button.builder(Component.literal("Close (ESC)"), btn -> {
             this.onClose();
         }).bounds(modalX + (modalWidth / 2) + 10, btnY, 110, btnHeight).build();
 
@@ -100,6 +108,15 @@ public class JsonDumpScreen extends Screen {
         return (this.activeTab == 0) ? this.jsonLines : this.inspectorLines;
     }
 
+    // [醒目新注释] 渲染界面元素，包含将中文成功提示文本“已成功复制当前视图！”修改为英文“Copied view to clipboard!”
+    /**
+     * Renders background, text content, scrollbar, copy notification, and child widgets for {@link JsonDumpScreen}.
+     *
+     * @param guiGraphics The graphics object used for rendering {@link GuiGraphics}
+     * @param mouseX Current mouse cursor X coordinate
+     * @param mouseY Current mouse cursor Y coordinate
+     * @param partialTick Partial tick value for rendering interpolation
+     */
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         if (this.tabJsonButton != null) this.tabJsonButton.active = (this.activeTab != 0);
@@ -161,7 +178,7 @@ public class JsonDumpScreen extends Screen {
 
         if (this.copySuccessNotice) {
             if (System.currentTimeMillis() - this.noticeTimestamp < 2000) {
-                guiGraphics.drawString(this.font, Component.literal("§a✔ 已成功复制当前视图！"), modalX + modalWidth - 170, modalY + 7, 0x00FF00, true);
+                guiGraphics.drawString(this.font, Component.literal("§a✔ Copied view to clipboard!"), modalX + modalWidth - 170, modalY + 7, 0x00FF00, true);
             } else {
                 this.copySuccessNotice = false;
             }
@@ -247,3 +264,4 @@ public class JsonDumpScreen extends Screen {
         return false;
     }
 }
+// endregion JSON Debug Screen Implementation

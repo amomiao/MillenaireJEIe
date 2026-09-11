@@ -1,18 +1,21 @@
 package com.momos.millenairejeimm.jei.Runtime.buildingof;
 
+import com.momos.millenairejeimm.jei.MillenaireJeimmKeys;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.runtime.IIngredientManager;
+import net.minecraft.network.chat.Component;
 import org.millenaire.building.BuildingPlanSet;
 
-/**
- * 变体 C 建筑消耗材料 JEI 分类窗口。
- */
 public class BuildingCostCategoryC extends AbstractBuildingCostCategory {
-    public static final RecipeType<BuildingPlanSet> RECIPE_TYPE = RecipeType.create("millenaire", "building_cost_c", BuildingPlanSet.class);
+    private static final String MOD_ID = "millenaire";
+    private static final String RECIPE_TYPE_ID = "building_cost_c";
+    private static final String VARIANT_LETTER = "C";
+
+    public static final RecipeType<BuildingPlanSet> RECIPE_TYPE = RecipeType.create(MOD_ID, RECIPE_TYPE_ID, BuildingPlanSet.class);
 
     public BuildingCostCategoryC(IGuiHelper guiHelper, IIngredientManager ingredientManager) {
-        super(guiHelper, ingredientManager, 'c', "变体 C");
+        super(guiHelper, ingredientManager, 'c', Component.translatableWithFallback(MillenaireJeimmKeys.VARIANT_TITLE, "Variant %s", VARIANT_LETTER).getString());
     }
 
     @Override

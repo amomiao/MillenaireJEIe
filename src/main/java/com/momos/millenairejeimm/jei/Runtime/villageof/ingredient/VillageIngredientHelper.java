@@ -1,6 +1,7 @@
 package com.momos.millenairejeimm.jei.Runtime.villageof.ingredient;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
+import com.momos.millenairejeimm.jei.MillenaireJeimmKeys;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import mezz.jei.api.ingredients.IIngredientHelper;
 import mezz.jei.api.ingredients.IIngredientType;
@@ -11,7 +12,6 @@ import org.millenaire.building.BuildingPlanSet;
 import org.millenaire.culture.VillageType;
 import org.millenaire.culture.VillagerType;
 
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -21,6 +21,12 @@ import java.util.stream.Stream;
  * 村庄类型 {@link VillageType} 的 JEI 检索辅助类。
  */
 public class VillageIngredientHelper implements IIngredientHelper<VillageType> {
+
+    // [醒目新注释] 提取逻辑依赖的默认 ResourceLocation Namespace 与 Path 字符串常量
+    private static final String DEFAULT_NAMESPACE = "millenaire";
+    private static final String DEFAULT_UNKNOWN_PATH = "unknown_village";
+    private static final ResourceLocation UNKNOWN_RESOURCE_LOCATION = ResourceLocation.fromNamespaceAndPath(DEFAULT_NAMESPACE, DEFAULT_UNKNOWN_PATH);
+
     @Override
     public IIngredientType<VillageType> getIngredientType() {
         return MillIngredientTypes.VILLAGE;
@@ -28,14 +34,17 @@ public class VillageIngredientHelper implements IIngredientHelper<VillageType> {
 
     @Override
     public String getDisplayName(VillageType ingredient) {
-        if (ingredient == null) return "Unknown Village";
+        if (ingredient == null) {
+            // [醒目新注释] 使用 {@link MillenaireJeimmKeys#getVillageUnknown()} 提取回退本地化未知村庄名称
+            return MillenaireJeimmKeys.getVillageUnknown().getString();
+        }
         return ingredient.name() != null ? ingredient.name() : ingredient.id().getPath();
     }
 
     @Override
     @SuppressWarnings("removal")
     public String getUniqueId(VillageType ingredient, UidContext context) {
-        return ingredient != null && ingredient.id() != null ? ingredient.id().toString() : "millenaire:unknown_village";
+        return ingredient != null && ingredient.id() != null ? ingredient.id().toString() : UNKNOWN_RESOURCE_LOCATION.toString();
     }
 
     @Override
@@ -46,7 +55,7 @@ public class VillageIngredientHelper implements IIngredientHelper<VillageType> {
     @Override
     public ResourceLocation getResourceLocation(VillageType ingredient) {
         if (ingredient == null || ingredient.id() == null) {
-            return ResourceLocation.fromNamespaceAndPath("millenaire", "unknown_village");
+            return UNKNOWN_RESOURCE_LOCATION;
         }
         return ingredient.id();
     }

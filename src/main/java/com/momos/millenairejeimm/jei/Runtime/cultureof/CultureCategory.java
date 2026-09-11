@@ -1,6 +1,7 @@
 package com.momos.millenairejeimm.jei.Runtime.cultureof;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
+import com.momos.millenairejeimm.jei.MillenaireJeimmKeys;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
 import com.momos.millenairejeimm.jei.Runtime.MillIconOnlyRenderer;
@@ -51,12 +52,15 @@ public class CultureCategory extends BaseMillCategory<Culture> {
                 new ItemStack(ItemHelper.resolve("millenaire:village_norman") != null ? ItemHelper.resolve("millenaire:village_norman") : Items.MAP))
         );
 
-        this.villageBox = new JeiLinkBox<VillageType>("文化关联村庄").useJeiMode(ingredientManager, MillIngredientTypes.VILLAGE);
+        // [醒目新注释] 使用 {@link MillenaireJeimmKeys#BOX_VILLAGES} 替换硬编码容器标题
+        this.villageBox = new JeiLinkBox<VillageType>(Component.translatable(MillenaireJeimmKeys.BOX_VILLAGES).getString()).useJeiMode(ingredientManager, MillIngredientTypes.VILLAGE);
         this.cultureLayout = new JeiLinkLayout(2, 106, 172, 4).addBox(villageBox);
     }
 
     @Override public RecipeType<Culture> getRecipeType() { return RECIPE_TYPE; }
-    @Override public Component getTitle() { return Component.translatable("gui.millenairejeim.category.culture_details"); }
+
+    // [醒目新注释] 使用 {@link MillenaireJeimmKeys#CATEGORY_CULTURE_DETAILS} 常量替换字符串硬编码
+    @Override public Component getTitle() { return Component.translatable(MillenaireJeimmKeys.CATEGORY_CULTURE_DETAILS); }
 
     // [醒目新注释] 提取布局同步私有方法，保证跨配方渲染/注册 Extras 时强行将 Layout 刷新至当前配方
     /**
@@ -102,21 +106,29 @@ public class CultureCategory extends BaseMillCategory<Culture> {
         Font font = Minecraft.getInstance().font;
         String displayName = recipe.displayName() != null && !recipe.displayName().isEmpty() ? recipe.displayName() : recipe.id().getPath();
 
-        drawCommonHeader(guiGraphics, font, displayName, recipe.id().toString(), "文化主体", mouseX, mouseY);
+        // [醒目新注释] 提取 Header 文本与全量属性标签为 {@link MillenaireJeimmKeys} 本地化 key 渲染
+        drawCommonHeader(guiGraphics, font, displayName, recipe.id().toString(), Component.translatable(MillenaireJeimmKeys.HEADER_CULTURE_MAIN).getString(), mouseX, mouseY);
 
-        drawLabelValue(guiGraphics, font, "原生语言", recipe.nativeLanguage() != null ? recipe.nativeLanguage() : "未设", 6, 42);
+        String nativeLangVal = recipe.nativeLanguage() != null ? recipe.nativeLanguage() : Component.translatable(MillenaireJeimmKeys.VALUE_UNSET).getString();
+        drawLabelValue(guiGraphics, font, Component.translatable(MillenaireJeimmKeys.LABEL_NATIVE_LANGUAGE).getString(), nativeLangVal, 6, 42);
 
         int cropCount = recipe.knownCrops() != null ? recipe.knownCrops().size() : 0;
-        drawLabelValue(guiGraphics, font, "已知农作物", "§2" + cropCount + " 种", 6, 52);
+        String cropVal = Component.translatable(MillenaireJeimmKeys.VALUE_CROP_COUNT, cropCount).getString();
+        drawLabelValue(guiGraphics, font, Component.translatable(MillenaireJeimmKeys.LABEL_KNOWN_CROPS).getString(), "§2" + cropVal, 6, 52);
 
         int dropCount = recipe.knownHuntingDrops() != null ? recipe.knownHuntingDrops().size() : 0;
-        drawLabelValue(guiGraphics, font, "狩猎掉落物", "§c" + dropCount + " 种", 6, 62);
+        String dropVal = Component.translatable(MillenaireJeimmKeys.VALUE_DROP_COUNT, dropCount).getString();
+        drawLabelValue(guiGraphics, font, Component.translatable(MillenaireJeimmKeys.LABEL_HUNTING_DROPS).getString(), "§c" + dropVal, 6, 62);
 
-        drawLabelValue(guiGraphics, font, "地图图标", recipe.mapIcon().isPresent() ? "§a已配置" : "§7未配置", 6, 72);
-        drawLabelValue(guiGraphics, font, "文化旗帜", recipe.cultureBannerNbt() != null ? "§a有 NBT" : "§8无 NBT", 6, 82);
+        String mapIconVal = recipe.mapIcon().isPresent() ? "§a" + Component.translatable(MillenaireJeimmKeys.VALUE_CONFIGURED).getString() : "§7" + Component.translatable(MillenaireJeimmKeys.VALUE_UNCONFIGURED).getString();
+        drawLabelValue(guiGraphics, font, Component.translatable(MillenaireJeimmKeys.LABEL_MAP_ICON).getString(), mapIconVal, 6, 72);
+
+        String bannerVal = recipe.cultureBannerNbt() != null ? "§a" + Component.translatable(MillenaireJeimmKeys.VALUE_HAS_NBT).getString() : "§8" + Component.translatable(MillenaireJeimmKeys.VALUE_NO_NBT).getString();
+        drawLabelValue(guiGraphics, font, Component.translatable(MillenaireJeimmKeys.LABEL_CULTURE_BANNER).getString(), bannerVal, 6, 82);
 
         boolean isDefaultTexture = Culture.DEFAULT_PANEL_TEXTURE.equals(recipe.panelTexture());
-        drawHoverableText(guiGraphics, font, "面板纹理", isDefaultTexture ? "默认" : recipe.panelTexture().toString(), 6, 92, mouseX, mouseY);
+        String textureVal = isDefaultTexture ? Component.translatable(MillenaireJeimmKeys.VALUE_DEFAULT).getString() : recipe.panelTexture().toString();
+        drawHoverableText(guiGraphics, font, Component.translatable(MillenaireJeimmKeys.LABEL_PANEL_TEXTURE).getString(), textureVal, 6, 92, mouseX, mouseY);
 
         // [醒目新注释] 彻底移除原代码中的 cultureLayout.Clear() 清空操作，并在渲染前对当前配方强行同步数据
         if (cultureLayout != null) {

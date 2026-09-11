@@ -63,7 +63,7 @@ public abstract class BaseMillCategory<T> implements IRecipeCategory<T> {
         // [醒目新注释] 2. 右侧流畅排布：标题 (Y: 6) -> ID (Y: 17) -> 类别 (Y: 27)
         guiGraphics.drawString(font, Component.literal("§l" + title), 28, 6, 0x111111, false);
         guiGraphics.drawString(font, Component.literal("§8ID: " + idText), 28, 17, 0x555555, false);
-        guiGraphics.drawString(font, Component.literal("§8类别: " + categoryText), 28, 27, 0x555555, false);
+        guiGraphics.drawString(font, Component.literal("§8Type: " + categoryText), 28, 27, 0x555555, false);
 
         // [醒目新注释] 3. 分割线向上微调至 Y: 38
         guiGraphics.fill(6, 38, PAGE_WIDTH - 6, 39, 0xFFCCCCCC);

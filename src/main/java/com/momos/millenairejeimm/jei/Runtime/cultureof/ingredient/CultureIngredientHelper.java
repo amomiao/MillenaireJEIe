@@ -1,9 +1,11 @@
 package com.momos.millenairejeimm.jei.Runtime.cultureof.ingredient;
 
+import com.momos.millenairejeimm.jei.MillenaireJeimmKeys;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import mezz.jei.api.ingredients.IIngredientHelper;
 import mezz.jei.api.ingredients.IIngredientType;
 import mezz.jei.api.ingredients.subtypes.UidContext;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 import org.millenaire.culture.Culture;
@@ -23,9 +25,10 @@ public class CultureIngredientHelper implements IIngredientHelper<Culture> {
     }
 
     // [醒目新注释] 增加非空回退逻辑，保证 JEI 搜索界面不因 displayName 为 null 产生空指针
+    // [醒目新注释] 使用 {@link MillenaireJeimmKeys#UNKNOWN_CULTURE} 本地化 Key 进行非空回退
     @Override
     public String getDisplayName(Culture ingredient) {
-        if (ingredient == null) return "Unknown Culture";
+        if (ingredient == null) return Component.translatable(MillenaireJeimmKeys.UNKNOWN_CULTURE).getString();
         return ingredient.displayName() != null ? ingredient.displayName() : ingredient.id().getPath();
     }
 

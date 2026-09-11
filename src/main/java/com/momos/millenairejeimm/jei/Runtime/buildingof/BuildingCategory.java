@@ -1,3 +1,4 @@
+// region BuildingCategory Implementation
 package com.momos.millenairejeimm.jei.Runtime.buildingof;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
@@ -7,6 +8,7 @@ import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
 import com.momos.millenairejeimm.jei.Runtime.JeiLinkBox;
 import com.momos.millenairejeimm.jei.Runtime.JeiLinkLayout;
 import com.momos.millenairejeimm.jei.Runtime.MillIconOnlyRenderer;
+import com.momos.millenairejeimm.jei.MillenaireJeimmKeys;
 import mezz.jei.api.constants.VanillaTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
@@ -32,7 +34,16 @@ import java.util.*;
 
 public class BuildingCategory extends BaseMillCategory<BuildingPlanSet> {
 
-    public static final RecipeType<BuildingPlanSet> RECIPE_TYPE = RecipeType.create("millenaire", "building_details", BuildingPlanSet.class);
+    // [醒目新注释] 逻辑依赖的资源路径与 RecipeType 标识抽离至顶层常量
+    private static final String MOD_ID = "millenaire";
+    private static final String RECIPE_TYPE_ID = "building_details";
+    private static final String FALLBACK_ITEM_GLASS_BOTTLE = "minecraft:glass_bottle";
+    private static final String COLOR_GOLD = "§6";
+    private static final String COLOR_GREEN = "§2";
+    private static final String COLOR_BLUE = "§1";
+    private static final String COLOR_PURPLE = "§d";
+
+    public static final RecipeType<BuildingPlanSet> RECIPE_TYPE = RecipeType.create(MOD_ID, RECIPE_TYPE_ID, BuildingPlanSet.class);
 
     private static final MillIconOnlyRenderer<BuildingPlanSet> ICON_RENDERER = new MillIconOnlyRenderer<>(recipe -> {
         if (recipe != null && recipe.icon() != null && !recipe.icon().isEmpty()) {
@@ -49,15 +60,30 @@ public class BuildingCategory extends BaseMillCategory<BuildingPlanSet> {
     private final JeiLinkBox<ItemStack> resourceBox1;
     private final JeiLinkBox<ItemStack> resourceBox2;
 
+    // [醒目新注释] 构造方法中使用 MillenaireJeimmKeys 与 translatableWithFallback 构建动态 Box 标题
     public BuildingCategory(IGuiHelper guiHelper, IIngredientManager ingredientManager) {
         super(guiHelper, guiHelper.createDrawableItemStack(
-                new ItemStack(ItemHelper.resolve("minecraft:glass_bottle") != null ? ItemHelper.resolve("minecraft:glass_bottle") : Items.GLASS_BOTTLE)));
+                new ItemStack(ItemHelper.resolve(FALLBACK_ITEM_GLASS_BOTTLE) != null ? ItemHelper.resolve(FALLBACK_ITEM_GLASS_BOTTLE) : Items.GLASS_BOTTLE)));
 
-        this.villageBox = new JeiLinkBox<VillageType>("包含此建筑的村庄").useJeiMode(ingredientManager, MillIngredientTypes.VILLAGE);
-        this.villagerBox = new JeiLinkBox<VillagerType>("居住或工作村民").useJeiMode(ingredientManager, MillIngredientTypes.VILLAGER);
-        this.resourceBox0 = new JeiLinkBox<ItemStack>("变体 A 消耗").useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK);
-        this.resourceBox1 = new JeiLinkBox<ItemStack>("变体 B 消耗").useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK);
-        this.resourceBox2 = new JeiLinkBox<ItemStack>("变体 C 消耗").useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK);
+        this.villageBox = new JeiLinkBox<VillageType>(
+                Component.translatableWithFallback(MillenaireJeimmKeys.BOX_VILLAGES, "Villages Containing Building").getString()
+        ).useJeiMode(ingredientManager, MillIngredientTypes.VILLAGE);
+
+        this.villagerBox = new JeiLinkBox<VillagerType>(
+                Component.translatableWithFallback(MillenaireJeimmKeys.BOX_VILLAGERS, "Resident or Worker Villagers").getString()
+        ).useJeiMode(ingredientManager, MillIngredientTypes.VILLAGER);
+
+        this.resourceBox0 = new JeiLinkBox<ItemStack>(
+                Component.translatableWithFallback(MillenaireJeimmKeys.BOX_VARIANT_COST, "Variant %s Costs", "A").getString()
+        ).useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK);
+
+        this.resourceBox1 = new JeiLinkBox<ItemStack>(
+                Component.translatableWithFallback(MillenaireJeimmKeys.BOX_VARIANT_COST, "Variant %s Costs", "B").getString()
+        ).useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK);
+
+        this.resourceBox2 = new JeiLinkBox<ItemStack>(
+                Component.translatableWithFallback(MillenaireJeimmKeys.BOX_VARIANT_COST, "Variant %s Costs", "C").getString()
+        ).useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK);
 
         this.buildingLayout = new JeiLinkLayout(2, 105, 172, 4)
                 .addBox(villageBox)
@@ -74,7 +100,7 @@ public class BuildingCategory extends BaseMillCategory<BuildingPlanSet> {
 
     @Override
     public Component getTitle() {
-        return Component.translatable("gui.millenairejeim.category.building_details");
+        return Component.translatableWithFallback(MillenaireJeimmKeys.CATEGORY_BUILDING_DETAILS, "Building Details");
     }
 
     // [醒目新注释] 提取建筑布局数据同步方法，防止跨配方卡片渲染时 Layout 数据污染
@@ -132,6 +158,7 @@ public class BuildingCategory extends BaseMillCategory<BuildingPlanSet> {
         }
     }
 
+    // [醒目新注释] 替换所有 draw 内的本地化文本渲染，使用 MillenaireJeimmKeys 与 Component.translatableWithFallback
     @Override
     public void draw(BuildingPlanSet recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
         if (recipe == null) return;
@@ -141,20 +168,30 @@ public class BuildingCategory extends BaseMillCategory<BuildingPlanSet> {
 
         drawCommonHeader(guiGraphics, font, displayName, recipe.buildingId(), recipe.category(), mouseX, mouseY);
 
-        drawLabelValue(guiGraphics, font, "造价", "§6" + recipe.price(), 6, 42);
-        drawLabelValue(guiGraphics, font, "声望需求", "§2" + recipe.reputation(), 6, 52);
-        drawLabelValue(guiGraphics, font, "建造上限", "§1" + recipe.maxCount() + " 座", 6, 62);
-        drawLabelValue(guiGraphics, font, "搬入优先级", "§d" + recipe.priorityMoveIn(), 6, 72);
-        drawLabelValue(guiGraphics, font, "关联文化", recipe.culture() != null ? recipe.culture().getPath() : "通用", 6, 82);
+        String labelPrice = Component.translatableWithFallback(MillenaireJeimmKeys.LABEL_PRICE, "Price").getString();
+        String labelRep = Component.translatableWithFallback(MillenaireJeimmKeys.LABEL_REPUTATION, "Reputation Req.").getString();
+        String labelMax = Component.translatableWithFallback(MillenaireJeimmKeys.LABEL_MAX_COUNT, "Max Count").getString();
+        String labelPriority = Component.translatableWithFallback(MillenaireJeimmKeys.LABEL_MOVE_IN_PRIORITY, "Move-in Priority").getString();
+        String labelCulture = Component.translatableWithFallback(MillenaireJeimmKeys.LABEL_CULTURE, "Culture").getString();
+
+        String valMaxCount = Component.translatableWithFallback(MillenaireJeimmKeys.VALUE_MAX_COUNT, "%s Buildings", recipe.maxCount()).getString();
+        String cultureName = recipe.culture() != null ? recipe.culture().getPath() : Component.translatableWithFallback(MillenaireJeimmKeys.VALUE_CULTURE_COMMON, "Common").getString();
+
+        drawLabelValue(guiGraphics, font, labelPrice, COLOR_GOLD + recipe.price(), 6, 42);
+        drawLabelValue(guiGraphics, font, labelRep, COLOR_GREEN + recipe.reputation(), 6, 52);
+        drawLabelValue(guiGraphics, font, labelMax, COLOR_BLUE + valMaxCount, 6, 62);
+        drawLabelValue(guiGraphics, font, labelPriority, COLOR_PURPLE + recipe.priorityMoveIn(), 6, 72);
+        drawLabelValue(guiGraphics, font, labelCulture, cultureName, 6, 82);
 
         StringBuilder flags = new StringBuilder();
-        if (recipe.isTownHall()) flags.append("[市镇厅] ");
-        if (recipe.isResidential()) flags.append("[住宅] ");
-        if (recipe.isSubBuilding()) flags.append("[子建筑] ");
-        if (recipe.isWallSegment()) flags.append("[城墙] ");
-        String flagText = flags.length() > 0 ? flags.toString() : "无";
+        if (recipe.isTownHall()) flags.append(Component.translatableWithFallback(MillenaireJeimmKeys.FLAG_TOWN_HALL, "[Town Hall] ").getString());
+        if (recipe.isResidential()) flags.append(Component.translatableWithFallback(MillenaireJeimmKeys.FLAG_RESIDENTIAL, "[Residential] ").getString());
+        if (recipe.isSubBuilding()) flags.append(Component.translatableWithFallback(MillenaireJeimmKeys.FLAG_SUB_BUILDING, "[Sub Building] ").getString());
+        if (recipe.isWallSegment()) flags.append(Component.translatableWithFallback(MillenaireJeimmKeys.FLAG_WALL_SEGMENT, "[Wall] ").getString());
+        String flagText = flags.length() > 0 ? flags.toString() : Component.translatableWithFallback(MillenaireJeimmKeys.FLAG_NONE, "None").getString();
 
-        drawHoverableText(guiGraphics, font, "标记特性", flagText, 6, 92, mouseX, mouseY);
+        String labelFlags = Component.translatableWithFallback(MillenaireJeimmKeys.LABEL_FLAGS, "Flags").getString();
+        drawHoverableText(guiGraphics, font, labelFlags, flagText, 6, 92, mouseX, mouseY);
 
         // [醒目新注释] 渲染前按当前配方强行同步 Layout 状态
         if (buildingLayout != null) {
@@ -181,3 +218,4 @@ public class BuildingCategory extends BaseMillCategory<BuildingPlanSet> {
         return Collections.emptyList();
     }
 }
+// endregion BuildingCategory Implementation

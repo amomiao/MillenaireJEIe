@@ -336,3 +336,12 @@
       * 由于 Java 中 String 和 ResourceLocation 类型不同，Map.get 比较 equals 时必定永远返回 null！  
       * 修改 MillIngredientTypes.java 中的 BUILDING_CODEC，将传入的 String 正确解析/转换为 ResourceLocation 后再进行 Map 查询
   * 2.通过全局页签查看的方式，查看一个页签的所有对象时，CultureCategory、VillageCategory、BuildingCategory、VillagerCategory，这四个一级页签里的Layout框架不会得到更新，且内容会更新导致有一定错乱、闪烁，Layout错误的作为了内容载体。
+* 进行多语言优化收尾
+* Q111: 把这些类里的本地化Key提取到一个新类`MillenaireJeimmKeys`里，为Component.translatableWithFallback声明key，注意key如果能做成模板就尽量减少单个字词的出现；把逻辑运行依赖的字符串封装到类的顶部
+* Q112: 同样的为文化提供字符串提取变成了、进行本地化填写到MillenaireJeimmKeys中
+* Q113: 同样的为村庄提供字符串提取变成了、进行本地化填写到MillenaireJeimmKeys中
+* Q114: 往这里面加写，常量提取为参数怎么没做？
+* Q115: 为村庄提供字符串提取成变量、进行本地化填写到MillenaireJeimmKeys中
+* Q116: key为Component.translatableWithFallback声明，注意key如果能做成模板就尽量减少单个字词的出现；把逻辑运行依赖的字符串封装到类的顶部
+* Q117: Component.translatableWithFallback声明Key，注意key如果能做成模板就尽量减少单个字词的出现；把逻辑运行依赖的字符串封装到类的顶部
+* Q118: 这个`类别`你找个单词/简写硬编码成英文算了

@@ -1,8 +1,10 @@
+// region BuildingVillagerCategory Implementation
 package com.momos.millenairejeimm.jei.Runtime.buildingof;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
+import com.momos.millenairejeimm.jei.MillenaireJeimmKeys;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -26,7 +28,11 @@ import java.util.List;
  * 展示建筑计划集 {@link BuildingPlanSet} 居住或工作的所有村民类型 {@link VillagerType} 的 JEI 全景大窗口分类。
  */
 public class BuildingVillagerCategory extends BaseMillCategory<BuildingPlanSet> {
-    public static final RecipeType<BuildingPlanSet> RECIPE_TYPE = RecipeType.create("millenaire", "building_villagers_full", BuildingPlanSet.class);
+
+    private static final String MOD_ID = "millenaire";
+    private static final String RECIPE_TYPE_ID = "building_villagers_full";
+
+    public static final RecipeType<BuildingPlanSet> RECIPE_TYPE = RecipeType.create(MOD_ID, RECIPE_TYPE_ID, BuildingPlanSet.class);
 
     private static final int SLOT_SIZE = 18;
     private static final int COLUMNS = 8;
@@ -54,7 +60,7 @@ public class BuildingVillagerCategory extends BaseMillCategory<BuildingPlanSet> 
 
     @Override
     public Component getTitle() {
-        return Component.literal("建筑居住村民 (全景大窗口)");
+        return Component.translatableWithFallback(MillenaireJeimmKeys.CATEGORY_BUILDING_VILLAGERS_FULL, "Building Villagers (Full View)");
     }
 
     /**
@@ -98,6 +104,7 @@ public class BuildingVillagerCategory extends BaseMillCategory<BuildingPlanSet> 
         }
     }
 
+    // [醒目新注释] 改用 translatableWithFallback 构建所属建筑名称文本
     @Override
     public void draw(BuildingPlanSet recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
         if (recipe == null) return;
@@ -106,7 +113,11 @@ public class BuildingVillagerCategory extends BaseMillCategory<BuildingPlanSet> 
         if (recipe != this.lastRecipe) {
             this.lastRecipe = recipe;
             String name = recipe.nativeName() != null && !recipe.nativeName().isEmpty() ? recipe.nativeName() : recipe.buildingId();
-            this.cachedDisplayNameComponent = Component.literal("§1所属建筑: §f" + name);
+            this.cachedDisplayNameComponent = Component.translatableWithFallback(
+                    MillenaireJeimmKeys.BELONGING_BUILDING,
+                    "§1Belonging Building: §f%s",
+                    name
+            );
         }
 
         guiGraphics.drawString(font, this.cachedDisplayNameComponent, 14, 8, 0x000000, false);
@@ -131,3 +142,4 @@ public class BuildingVillagerCategory extends BaseMillCategory<BuildingPlanSet> 
         }
     }
 }
+// endregion BuildingVillagerCategory Implementation
