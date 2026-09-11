@@ -318,3 +318,10 @@
       * `public ResourceLocation id()`
       * `public ResourceLocation culture()`
       * 使用这八个API使用客户端聊天栏进行debug内容输出。
+* 取样调查报告[VillagerType调查](VillagerType调查.md)
+    * resolved语义就是safe，直接`三个方法resolved`调用即可,编写代码时需要遵循调查报告 
+* Q108: 其中`BuildingCategory和CultureCategory`包下的内容是编写参考，除`VillagerCategory`都是基类上下文，以及一个助手类，参考他们，生成最终的方案。
+* 唉击穿上下文了
+* Q109: 根据文字及文件要求，生成最终的VillagerCategory及其二级页面：VillagerVillageCategory/VillagerBuildingCategory/VillagerBringBackHomeCategory/VillagerCollectCategory/VillagerRequiredCategory，并将代码补充进MillenaireJeimmPlugin。
+* Q110: 参照这些二级页签重构五个VillagerXXXCategory页签，你现在为这五个套用了一级页签的格式，这不对。
+  * 我说registerCategories里构造方法没有要求ingredientManager
