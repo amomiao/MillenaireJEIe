@@ -58,7 +58,7 @@ public class CultureVillagesCategory extends BaseMillCategory<Culture> {
 
         // [醒目新注释] 正确的 JEI 隐形成分注册方式：使用 {@link IRecipeLayoutBuilder#addInvisibleIngredients} 获得 {@link IIngredientAcceptor}
         // [醒目新注释] 这会将 {@link Culture} 注册入 Focus 索引链，使 JEI 能够聚焦定位，但不会在 GUI 上创建或渲染任何槽位
-        builder.addInvisibleIngredients(RecipeIngredientRole.INPUT).addIngredient(MillIngredientTypes.CULTURE, recipe);
+        builder.addInvisibleIngredients(RecipeIngredientRole.OUTPUT).addIngredient(MillIngredientTypes.CULTURE, recipe);
 
         List<VillageType> villages = MillenaireAPIHelper.getVillageFormCulture(recipe);
         if (villages == null || villages.isEmpty()) return;

@@ -101,10 +101,7 @@ public class VillageVillagersCategory extends BaseMillCategory<VillageType> {
         if (recipe == null) return;
         Font font = Minecraft.getInstance().font;
 
-        /**
-         * [醒目新注释]
-         * 优化：配方变化时才重构 {@link Component}，减少 GUI 绘制帧率开销。
-         */
+        /** 优化：配方变化时才重构 {@link Component}，减少 GUI 绘制帧率开销。*/
         if (recipe != this.lastRecipe) {
             this.lastRecipe = recipe;
             this.cachedDisplayNameComponent = Component.literal("§1所属村庄: §f" + recipe.name());

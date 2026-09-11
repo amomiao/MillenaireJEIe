@@ -42,26 +42,112 @@ public class MillenaireJeimmPlugin implements IModPlugin {
     public static final ResourceLocation PLUGIN_ID = ResourceLocation.fromNamespaceAndPath("millenairejeimm", "jei_plugin");
     public static IJeiRuntime JeiRuntime;
 
-    @Override
-    public ResourceLocation getPluginUid() {
-        return PLUGIN_ID;
-    }
+    // region 日志文本常量
+    private static final String LOG_INGREDIENTS_START_ZH = "开始注册 JEI 自定义成分 (Ingredients)...";
+    private static final String LOG_INGREDIENTS_START_EN = "Starting registration of JEI custom ingredients...";
+    private static final String LOG_INGREDIENTS_START_FR = "Début de l'enregistrement des ingrédients personnalisés JEI...";
 
-    // [醒目新注释] 接入 {@link MMLog} 三语控制台日志，对每个 Ingredient 注册阶段实施异常捕获与数量监控
+    private static final String LOG_CULTURE_ING_SUCCESS_ZH = "已注册文化成分，总数: {}";
+    private static final String LOG_CULTURE_ING_SUCCESS_EN = "Registered culture ingredients, total: {}";
+    private static final String LOG_CULTURE_ING_SUCCESS_FR = "Ingrédients de culture enregistrés, total: {}";
+
+    private static final String LOG_CULTURE_ING_ERR_ZH = "注册文化成分阶段出现异常: {}";
+    private static final String LOG_CULTURE_ING_ERR_EN = "Exception during culture ingredient registration: {}";
+    private static final String LOG_CULTURE_ING_ERR_FR = "Exception lors de l'enregistrement de l'ingrédient de culture: {}";
+
+    private static final String LOG_VILLAGE_ING_SUCCESS_ZH = "已注册村庄成分，总数: {}";
+    private static final String LOG_VILLAGE_ING_SUCCESS_EN = "Registered village ingredients, total: {}";
+    private static final String LOG_VILLAGE_ING_SUCCESS_FR = "Ingrédients de village enregistrés, total: {}";
+
+    private static final String LOG_VILLAGE_ING_ERR_ZH = "注册村庄成分阶段出现异常: {}";
+    private static final String LOG_VILLAGE_ING_ERR_EN = "Exception during village ingredient registration: {}";
+    private static final String LOG_VILLAGE_ING_ERR_FR = "Exception lors de l'enregistrement de l'ingrédient de village: {}";
+
+    private static final String LOG_BUILDING_ING_SUCCESS_ZH = "已注册建筑集成分，总数: {}";
+    private static final String LOG_BUILDING_ING_SUCCESS_EN = "Registered building ingredients, total: {}";
+    private static final String LOG_BUILDING_ING_SUCCESS_FR = "Ingrédients de bâtiment enregistrés, total: {}";
+
+    private static final String LOG_BUILDING_ING_ERR_ZH = "注册建筑集成分阶段出现异常: {}";
+    private static final String LOG_BUILDING_ING_ERR_EN = "Exception during building ingredient registration: {}";
+    private static final String LOG_BUILDING_ING_ERR_FR = "Exception lors de l'enregistrement de l'ingrédient de bâtiment: {}";
+
+    private static final String LOG_VILLAGER_ING_SUCCESS_ZH = "已注册村民成分，总数: {}";
+    private static final String LOG_VILLAGER_ING_SUCCESS_EN = "Registered villager ingredients, total: {}";
+    private static final String LOG_VILLAGER_ING_SUCCESS_FR = "Ingrédients de villageois enregistrés, total: {}";
+
+    private static final String LOG_VILLAGER_ING_ERR_ZH = "注册村民成分阶段出现异常: {}";
+    private static final String LOG_VILLAGER_ING_ERR_EN = "Exception during villager ingredient registration: {}";
+    private static final String LOG_VILLAGER_ING_ERR_FR = "Exception lors de l'enregistrement de l'ingrédient de villageois: {}";
+
+    private static final String LOG_CATEGORIES_SUCCESS_ZH = "已成功向 JEI 注册全部 RecipeCategory 类别 (文化、建筑、村民、村庄)。";
+    private static final String LOG_CATEGORIES_SUCCESS_EN = "Successfully registered all JEI RecipeCategories (Culture, Building, Villager, Village).";
+    private static final String LOG_CATEGORIES_SUCCESS_FR = "Toutes les catégories de recettes JEI ont été enregistrées avec succès.";
+
+    private static final String LOG_RECIPES_START_ZH = "开始向 JEI 注入各分类配方数据...";
+    private static final String LOG_RECIPES_START_EN = "Starting registration of JEI recipe data...";
+    private static final String LOG_RECIPES_START_FR = "Début de l'enregistrement des données de recettes JEI...";
+
+    private static final String LOG_CULTURE_RECIPE_SUCCESS_ZH = "已向 JEI 注入文化配方，数量: {}";
+    private static final String LOG_CULTURE_RECIPE_SUCCESS_EN = "Injected culture recipes to JEI, count: {}";
+    private static final String LOG_CULTURE_RECIPE_SUCCESS_FR = "Recettes de culture injectées dans JEI, quantité: {}";
+
+    private static final String LOG_CULTURE_RECIPE_EMPTY_ZH = "文化数据为空，跳过 JEI 文化配方注入。";
+    private static final String LOG_CULTURE_RECIPE_EMPTY_EN = "Culture list is empty, skipping JEI culture recipe injection.";
+    private static final String LOG_CULTURE_RECIPE_EMPTY_FR = "La liste des cultures est vide, injection ignorée.";
+
+    private static final String LOG_CULTURE_RECIPE_ERR_ZH = "注入文化配方失败: {}";
+    private static final String LOG_CULTURE_RECIPE_ERR_EN = "Failed to inject culture recipes: {}";
+    private static final String LOG_CULTURE_RECIPE_ERR_FR = "Échec de l'injection des recettes de culture: {}";
+
+    private static final String LOG_VILLAGE_RECIPE_SUCCESS_ZH = "已向 JEI 注入村庄配方，数量: {}";
+    private static final String LOG_VILLAGE_RECIPE_SUCCESS_EN = "Injected village recipes to JEI, count: {}";
+    private static final String LOG_VILLAGE_RECIPE_SUCCESS_FR = "Recettes de village injectées dans JEI, quantité: {}";
+
+    private static final String LOG_VILLAGE_RECIPE_EMPTY_ZH = "村庄数据为空，跳过 JEI 村庄配方注入。";
+    private static final String LOG_VILLAGE_RECIPE_EMPTY_EN = "Village list is empty, skipping JEI village recipe injection.";
+    private static final String LOG_VILLAGE_RECIPE_EMPTY_FR = "La liste des villages est vide, injection ignorée.";
+
+    private static final String LOG_VILLAGE_RECIPE_ERR_ZH = "注入村庄配方失败: {}";
+    private static final String LOG_VILLAGE_RECIPE_ERR_EN = "Failed to inject village recipes: {}";
+    private static final String LOG_VILLAGE_RECIPE_ERR_FR = "Échec de l'injection des recettes de village: {}";
+
+    private static final String LOG_BUILDING_RECIPE_SUCCESS_ZH = "已向 JEI 注入建筑配方，数量: {}";
+    private static final String LOG_BUILDING_RECIPE_SUCCESS_EN = "Injected building recipes to JEI, count: {}";
+    private static final String LOG_BUILDING_RECIPE_SUCCESS_FR = "Recettes de bâtiment injectées dans JEI, quantité: {}";
+
+    private static final String LOG_BUILDING_RECIPE_EMPTY_ZH = "建筑数据为空，跳过 JEI 建筑配方注入。";
+    private static final String LOG_BUILDING_RECIPE_EMPTY_EN = "Building list is empty, skipping JEI building recipe injection.";
+    private static final String LOG_BUILDING_RECIPE_EMPTY_FR = "La liste des bâtiments est vide, injection ignorée.";
+
+    private static final String LOG_BUILDING_RECIPE_ERR_ZH = "注入建筑配方失败: {}";
+    private static final String LOG_BUILDING_RECIPE_ERR_EN = "Failed to inject building recipes: {}";
+    private static final String LOG_BUILDING_RECIPE_ERR_FR = "Échec de l'injection des recettes de bâtiment: {}";
+
+    private static final String LOG_VILLAGER_RECIPE_SUCCESS_ZH = "已向 JEI 注入村民配方，数量: {}";
+    private static final String LOG_VILLAGER_RECIPE_SUCCESS_EN = "Injected villager recipes to JEI, count: {}";
+    private static final String LOG_VILLAGER_RECIPE_SUCCESS_FR = "Recettes de villageois injectées dans JEI, quantité: {}";
+
+    private static final String LOG_VILLAGER_RECIPE_EMPTY_ZH = "村民数据为空，跳过 JEI 村民配方注入。";
+    private static final String LOG_VILLAGER_RECIPE_EMPTY_EN = "Villager list is empty, skipping JEI villager recipe injection.";
+    private static final String LOG_VILLAGER_RECIPE_EMPTY_FR = "La liste des villageois est vide, injection ignorée.";
+
+    private static final String LOG_VILLAGER_RECIPE_ERR_ZH = "注入村民配方失败: {}";
+    private static final String LOG_VILLAGER_RECIPE_ERR_EN = "Failed to inject villager recipes: {}";
+    private static final String LOG_VILLAGER_RECIPE_ERR_FR = "Échec de l'injection des recettes de villageois: {}";
+    // endregion 日志文本常量
+
+    @Override
+    public ResourceLocation getPluginUid() {return PLUGIN_ID;}
+
+    // 接入 {@link MMLog} 三语控制台日志，对每个 Ingredient 注册阶段实施异常捕获与数量监控
     /**
      * 注册自定义 JEI 成分类型 {@link IModIngredientRegistration}。
      * 采用异常隔离机制，防止单一 Ingredient 注册抛错中断整个 JEI 初始化。
-     *
      * @param registration JEI 成分注册器
      */
     @Override
     public void registerIngredients(IModIngredientRegistration registration) {
-        MMLog.info(
-                "开始注册 JEI 自定义成分 (Ingredients)...",
-                "Starting registration of JEI custom ingredients...",
-                "Début de l'enregistrement des ingrédients personnalisés JEI..."
-        );
-
+        MMLog.info(LOG_INGREDIENTS_START_ZH, LOG_INGREDIENTS_START_EN, LOG_INGREDIENTS_START_FR);
         // 1. 文化成分注册
         try {
             Collection<Culture> cultures = MillenaireAPIHelper.getAllCultureType().values();
@@ -72,19 +158,9 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                     new CultureIngredientRenderer(),
                     MillIngredientTypes.CULTURE_CODEC
             );
-            MMLog.info(
-                    "已注册文化成分，总数: {}",
-                    "Registered culture ingredients, total: {}",
-                    "Ingrédients de culture enregistrés, total: {}",
-                    cultures.size()
-            );
+            MMLog.info(LOG_CULTURE_ING_SUCCESS_ZH, LOG_CULTURE_ING_SUCCESS_EN, LOG_CULTURE_ING_SUCCESS_FR, cultures.size());
         } catch (Exception e) {
-            MMLog.warn(
-                    "注册文化成分阶段出现异常: {}",
-                    "Exception during culture ingredient registration: {}",
-                    "Exception lors de l'enregistrement de l'ingrédient de culture: {}",
-                    e.getMessage()
-            );
+            MMLog.warn(LOG_CULTURE_ING_ERR_ZH, LOG_CULTURE_ING_ERR_EN, LOG_CULTURE_ING_ERR_FR, e.getMessage());
         }
 
         // 2. 村庄类型成分注册
@@ -97,19 +173,9 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                     new VillageIngredientRenderer(),
                     MillIngredientTypes.VILLAGE_CODEC
             );
-            MMLog.info(
-                    "已注册村庄成分，总数: {}",
-                    "Registered village ingredients, total: {}",
-                    "Ingrédients de village enregistrés, total: {}",
-                    villages.size()
-            );
+            MMLog.info(LOG_VILLAGE_ING_SUCCESS_ZH, LOG_VILLAGE_ING_SUCCESS_EN, LOG_VILLAGE_ING_SUCCESS_FR, villages.size());
         } catch (Exception e) {
-            MMLog.warn(
-                    "注册村庄成分阶段出现异常: {}",
-                    "Exception during village ingredient registration: {}",
-                    "Exception lors de l'enregistrement de l'ingrédient de village: {}",
-                    e.getMessage()
-            );
+            MMLog.warn(LOG_VILLAGE_ING_ERR_ZH, LOG_VILLAGE_ING_ERR_EN, LOG_VILLAGE_ING_ERR_FR, e.getMessage());
         }
 
         // 3. 建筑集成分注册
@@ -122,19 +188,9 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                     new BuildingIngredientRenderer(),
                     MillIngredientTypes.BUILDING_CODEC
             );
-            MMLog.info(
-                    "已注册建筑集成分，总数: {}",
-                    "Registered building ingredients, total: {}",
-                    "Ingrédients de bâtiment enregistrés, total: {}",
-                    buildings.size()
-            );
+            MMLog.info(LOG_BUILDING_ING_SUCCESS_ZH, LOG_BUILDING_ING_SUCCESS_EN, LOG_BUILDING_ING_SUCCESS_FR, buildings.size());
         } catch (Exception e) {
-            MMLog.warn(
-                    "注册建筑集成分阶段出现异常: {}",
-                    "Exception during building ingredient registration: {}",
-                    "Exception lors de l'enregistrement de l'ingrédient de bâtiment: {}",
-                    e.getMessage()
-            );
+            MMLog.warn(LOG_BUILDING_ING_ERR_ZH, LOG_BUILDING_ING_ERR_EN, LOG_BUILDING_ING_ERR_FR, e.getMessage());
         }
 
         // 4. 村民类型成分注册
@@ -147,19 +203,9 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                     new VillagerIngredientRenderer(),
                     MillIngredientTypes.VILLAGER_CODEC
             );
-            MMLog.info(
-                    "已注册村民成分，总数: {}",
-                    "Registered villager ingredients, total: {}",
-                    "Ingrédients de villageois enregistrés, total: {}",
-                    villagers.size()
-            );
+            MMLog.info(LOG_VILLAGER_ING_SUCCESS_ZH, LOG_VILLAGER_ING_SUCCESS_EN, LOG_VILLAGER_ING_SUCCESS_FR, villagers.size());
         } catch (Exception e) {
-            MMLog.warn(
-                    "注册村民成分阶段出现异常: {}",
-                    "Exception during villager ingredient registration: {}",
-                    "Exception lors de l'enregistrement de l'ingrédient de villageois: {}",
-                    e.getMessage()
-            );
+            MMLog.warn(LOG_VILLAGER_ING_ERR_ZH, LOG_VILLAGER_ING_ERR_EN, LOG_VILLAGER_ING_ERR_FR, e.getMessage());
         }
     }
 
@@ -169,67 +215,42 @@ public class MillenaireJeimmPlugin implements IModPlugin {
         IIngredientManager ingredientManager = registration.getJeiHelpers().getIngredientManager();
         // [醒目新注释] 注册 VillageCategory 分类页面
         registration.addRecipeCategories(
+                // 文化及其详细信息
                 new CultureCategory(guiHelper, ingredientManager),
                 new CultureVillagesCategory(guiHelper,ingredientManager),
-
+                // 建筑及其详细信息
                 new BuildingCategory(guiHelper,ingredientManager),
-
+                // 村庄及其详细信息
                 new VillageCategory(guiHelper,ingredientManager),
                 new VillageBuildingsCategory(guiHelper,ingredientManager),
                 new VillageVillagersCategory(guiHelper,ingredientManager),
-
+                // 村民及其详细信息
                 new VillagerCategory(guiHelper)
         );
         // [醒目新注释] 使用 {@link MMLog} 确认页签 Class 注册完成
-        MMLog.info(
-                "已成功向 JEI 注册全部 RecipeCategory 类别 (文化、建筑、村民、村庄)。",
-                "Successfully registered all JEI RecipeCategories (Culture, Building, Villager, Village).",
-                "Toutes les catégories de recettes JEI ont été enregistrées avec succès."
-        );
+        MMLog.info(LOG_CATEGORIES_SUCCESS_ZH, LOG_CATEGORIES_SUCCESS_EN, LOG_CATEGORIES_SUCCESS_FR);
     }
 
     // [醒目新注释] 引入 {@link MMLog} 三语埋点，并增加对配方集合的非空判断，避免向 JEI 注入空配方导致页签被自动隐藏
-    /**
-     * 向 JEI 注册具体配方内容 {@link IRecipeRegistration}。
-     *
+    /** 声明有配方的对象
      * @param registration JEI 配方注册器
      */
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
-        MMLog.info(
-                "开始向 JEI 注入各分类配方数据...",
-                "Starting registration of JEI recipe data...",
-                "Début de l'enregistrement des données de recettes JEI..."
-        );
-
+        MMLog.info(LOG_RECIPES_START_ZH, LOG_RECIPES_START_EN, LOG_RECIPES_START_FR);
         // 1. 文化配方注册
         try {
             ArrayList<Culture> cultures = new ArrayList<>(MillenaireAPIHelper.getAllCultureType().values());
             if (!cultures.isEmpty()) {
                 registration.addRecipes(CultureCategory.RECIPE_TYPE, new ArrayList<>(cultures));
                 registration.addRecipes(CultureVillagesCategory.RECIPE_TYPE, cultures);
-                MMLog.info(
-                        "已向 JEI 注入文化配方，数量: {}",
-                        "Injected culture recipes to JEI, count: {}",
-                        "Recettes de culture injectées dans JEI, quantité: {}",
-                        cultures.size()
-                );
+                MMLog.info(LOG_CULTURE_RECIPE_SUCCESS_ZH, LOG_CULTURE_RECIPE_SUCCESS_EN, LOG_CULTURE_RECIPE_SUCCESS_FR, cultures.size());
             } else {
-                MMLog.warn(
-                        "文化数据为空，跳过 JEI 文化配方注入。",
-                        "Culture list is empty, skipping JEI culture recipe injection.",
-                        "La liste des cultures est vide, injection ignorée."
-                );
+                MMLog.warn(LOG_CULTURE_RECIPE_EMPTY_ZH, LOG_CULTURE_RECIPE_EMPTY_EN, LOG_CULTURE_RECIPE_EMPTY_FR);
             }
         } catch (Exception e) {
-            MMLog.warn(
-                    "注入文化配方失败: {}",
-                    "Failed to inject culture recipes: {}",
-                    "Échec de l'injection des recettes de culture: {}",
-                    e.getMessage()
-            );
+            MMLog.warn(LOG_CULTURE_RECIPE_ERR_ZH, LOG_CULTURE_RECIPE_ERR_EN, LOG_CULTURE_RECIPE_ERR_FR, e.getMessage());
         }
-
 
         // 2. 村庄配方注册
         try {
@@ -238,26 +259,12 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                 registration.addRecipes(VillageCategory.RECIPE_TYPE, villages);
                 registration.addRecipes(VillageBuildingsCategory.RECIPE_TYPE, villages);
                 registration.addRecipes(VillageVillagersCategory.RECIPE_TYPE, villages);
-                MMLog.info(
-                        "已向 JEI 注入村庄配方，数量: {}",
-                        "Injected village recipes to JEI, count: {}",
-                        "Recettes de village injectées dans JEI, quantité: {}",
-                        villages.size()
-                );
+                MMLog.info(LOG_VILLAGE_RECIPE_SUCCESS_ZH, LOG_VILLAGE_RECIPE_SUCCESS_EN, LOG_VILLAGE_RECIPE_SUCCESS_FR, villages.size());
             } else {
-                MMLog.warn(
-                        "村庄数据为空，跳过 JEI 村庄配方注入。",
-                        "Village list is empty, skipping JEI village recipe injection.",
-                        "La liste des villages est vide, injection ignorée."
-                );
+                MMLog.warn(LOG_VILLAGE_RECIPE_EMPTY_ZH, LOG_VILLAGE_RECIPE_EMPTY_EN, LOG_VILLAGE_RECIPE_EMPTY_FR);
             }
         } catch (Exception e) {
-            MMLog.warn(
-                    "注入村庄配方失败: {}",
-                    "Failed to inject village recipes: {}",
-                    "Échec de l'injection des recettes de village: {}",
-                    e.getMessage()
-            );
+            MMLog.warn(LOG_VILLAGE_RECIPE_ERR_ZH, LOG_VILLAGE_RECIPE_ERR_EN, LOG_VILLAGE_RECIPE_ERR_FR, e.getMessage());
         }
 
         // 3. 建筑配方注册
@@ -268,26 +275,12 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                         BuildingCategory.RECIPE_TYPE,
                         new ArrayList<>(buildings)
                 );
-                MMLog.info(
-                        "已向 JEI 注入建筑配方，数量: {}",
-                        "Injected building recipes to JEI, count: {}",
-                        "Recettes de bâtiment injectées dans JEI, quantité: {}",
-                        buildings.size()
-                );
+                MMLog.info(LOG_BUILDING_RECIPE_SUCCESS_ZH, LOG_BUILDING_RECIPE_SUCCESS_EN, LOG_BUILDING_RECIPE_SUCCESS_FR, buildings.size());
             } else {
-                MMLog.warn(
-                        "建筑数据为空，跳过 JEI 建筑配方注入。",
-                        "Building list is empty, skipping JEI building recipe injection.",
-                        "La liste des bâtiments est vide, injection ignorée."
-                );
+                MMLog.warn(LOG_BUILDING_RECIPE_EMPTY_ZH, LOG_BUILDING_RECIPE_EMPTY_EN, LOG_BUILDING_RECIPE_EMPTY_FR);
             }
         } catch (Exception e) {
-            MMLog.warn(
-                    "注入建筑配方失败: {}",
-                    "Failed to inject building recipes: {}",
-                    "Échec de l'injection des recettes de bâtiment: {}",
-                    e.getMessage()
-            );
+            MMLog.warn(LOG_BUILDING_RECIPE_ERR_ZH, LOG_BUILDING_RECIPE_ERR_EN, LOG_BUILDING_RECIPE_ERR_FR, e.getMessage());
         }
 
         // 4. 村民配方注册
@@ -298,26 +291,12 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                         VillagerCategory.RECIPE_TYPE,
                         new ArrayList<>(villagers)
                 );
-                MMLog.info(
-                        "已向 JEI 注入村民配方，数量: {}",
-                        "Injected villager recipes to JEI, count: {}",
-                        "Recettes de villageois injectées dans JEI, quantité: {}",
-                        villagers.size()
-                );
+                MMLog.info(LOG_VILLAGER_RECIPE_SUCCESS_ZH, LOG_VILLAGER_RECIPE_SUCCESS_EN, LOG_VILLAGER_RECIPE_SUCCESS_FR, villagers.size());
             } else {
-                MMLog.warn(
-                        "村民数据为空，跳过 JEI 村民配方注入。",
-                        "Villager list is empty, skipping JEI villager recipe injection.",
-                        "La liste des villageois est vide, injection ignorée."
-                );
+                MMLog.warn(LOG_VILLAGER_RECIPE_EMPTY_ZH, LOG_VILLAGER_RECIPE_EMPTY_EN, LOG_VILLAGER_RECIPE_EMPTY_FR);
             }
         } catch (Exception e) {
-            MMLog.warn(
-                    "注入村民配方失败: {}",
-                    "Failed to inject villager recipes: {}",
-                    "Échec de l'injection des recettes de villageois: {}",
-                    e.getMessage()
-            );
+            MMLog.warn(LOG_VILLAGER_RECIPE_ERR_ZH, LOG_VILLAGER_RECIPE_ERR_EN, LOG_VILLAGER_RECIPE_ERR_FR, e.getMessage());
         }
     }
 

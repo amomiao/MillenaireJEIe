@@ -9,17 +9,15 @@ import mezz.jei.api.ingredients.IIngredientRenderer;
 import mezz.jei.api.ingredients.IIngredientType;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.runtime.IIngredientManager;
-import mezz.jei.api.runtime.IJeiRuntime;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
+// 注意:[+]现在改成了[...]所有加号内容已过时
 // region 通用槽位组件与回调接口
 /**
  * 千年 JEI 通用联动槽位容器组件 {@link JeiLinkBox}。
@@ -28,8 +26,17 @@ import java.util.List;
  * @param <T> 槽位绑定的成分数据类型
  */
 public class JeiLinkBox<T> {
+    // region UI 常量与字符串模板
     private static final int SLOT_SIZE = 18;
     private static final int PREVIEW_SLOTS = 8;
+
+    private static final String TEXT_COUNT_ALL_FMT = " §aAll(%d)";
+    private static final String TEXT_COUNT_NONE = " §7(None)";
+    private static final String TEXT_TITLE_FMT = "§e%s%s";
+    private static final String TEXT_PLUS_ICON = "§a...";
+    private static final String TOOLTIP_ALL_FMT = "§aAll(%d)";
+
+    // endregion UI 常量与字符串模板
 
     private final String title;
     private final int layoutMode; // 兼容多页签/布局模式标记
@@ -37,6 +44,7 @@ public class JeiLinkBox<T> {
 
     private IIngredientType<T> boundIngredientType;
     private IIngredientRenderer<T> boundRenderer;
+    private OnPlusClickListener<T> customClickListener;
 
     @FunctionalInterface
     public interface OnPlusClickListener<T> {
@@ -48,8 +56,6 @@ public class JeiLinkBox<T> {
          */
         void onClick(Object contextObject, List<T> items);
     }
-
-    private OnPlusClickListener<T> customClickListener;
 
     public JeiLinkBox(String title) {
         this(title, 0);
@@ -64,9 +70,26 @@ public class JeiLinkBox<T> {
     }
 
     /**
-     * [醒目新注释] 链式配置加号按钮被点击时的自定义响应回调。
+     * @deprecated 本方法已废弃 (Since 1.0)。
+     * <p>
+     * <b>废弃原因：</b><br>
+     * 在 JEI 19+ 架构中，企图通过第九格 {@code +} 按钮触发自定义回调并调用
+     * {@link mezz.jei.api.runtime.IRecipesGui#showTypes(java.util.List)}
+     * 或强行注入多重 {@link mezz.jei.api.recipe.RecipeIngredientRole} 来实现“单页签精准聚焦”的方案已证实不可行。<br>
+     * JEI 底层的 Focus Context 与 Slot Hitbox 强绑定，强行拦截或切换焦点会导致上下文丢失、R/U 键交互失效及多页签错位。<br>
+     * </p>
+     * <p>
+     * <b>替代方案：</b><br>
+     * 请直接将关联对象统一注册为 {@link mezz.jei.api.recipe.RecipeIngredientRole#OUTPUT} 角色，
+     * 遵循 JEI 原生的多页签检索与分发机制，由玩家在顶级页签栏自行点击切换。
+     * </p>
+     * @param listener 废弃的加号点击事件监听器
+     * @return 当前 {@link JeiLinkBox} 实例
+     * @see <a href="https://github.com/mezz/JustEnoughItems">JEI API Specification</a>
      */
+    @Deprecated(since = "1.0", forRemoval = true)
     public JeiLinkBox<T> setOnPlusClick(OnPlusClickListener<T> listener) {
+        // 新增醒目警告注释：此回调逻辑存在 JEI 19+ 焦点上下文冲突风险，保留仅用于兼容旧版退化逻辑
         this.customClickListener = listener;
         return this;
     }
@@ -76,7 +99,7 @@ public class JeiLinkBox<T> {
         this.boundRenderer = ingredientManager.getIngredientRenderer(ingredientType);
         return this;
     }
-    
+
 // endregion 通用槽位组件与回调接口
 
 // region JEI 数据与事件注册
@@ -136,7 +159,7 @@ public class JeiLinkBox<T> {
             public boolean handleInput(double mouseX, double mouseY, IJeiUserInput input) {
                 InputConstants.Key key = input.getKey();
                 if (key.getType() == InputConstants.Type.MOUSE && key.getValue() == 0) {
-                    if(!input.isSimulate()) {
+                    if (!input.isSimulate()) {
                         executeClickAction(contextObject);
                     }
                     return true;
@@ -156,12 +179,7 @@ public class JeiLinkBox<T> {
         if (this.customClickListener != null) {
             this.customClickListener.onClick(contextObject, targetList);
         } else {
-            // [醒目新注释] 移除原 DebugGuiUtils 大窗口弹窗，改为通过 {@link LocalPlayer#displayClientMessage} 向客户端发送安全截取后的文本预览
-            LocalPlayer player = Minecraft.getInstance().player;
-            if (player != null) {
-                // [醒目新注释] 测试向：直接调用 {@link LocalPlayer#displayClientMessage(Component, boolean)}，使用 {@link Component#literal(String)} 发送 "1"
-                player.displayClientMessage(Component.literal("1"), false);
-            }
+            // 按钮事件已废弃
         }
     }
 
@@ -183,8 +201,9 @@ public class JeiLinkBox<T> {
         guiGraphics.fill(x, y, x + width, y + 1, 0x40FFFFFF);
         guiGraphics.fill(x, y + height - 1, x + width, y + height, 0x40FFFFFF);
 
-        String countText = totalSize > 0 ? " §a(" + totalSize + " 个)" : " §7(无)";
-        guiGraphics.drawString(font, "§e" + title + countText, x + 5, y + 3, 0xFFFFFF, false);
+        String countText = totalSize > 0 ? String.format(TEXT_COUNT_ALL_FMT, totalSize) : TEXT_COUNT_NONE;
+        String headerText = String.format(TEXT_TITLE_FMT, title, countText);
+        guiGraphics.drawString(font, headerText, x + 5, y + 3, 0xFFFFFF, false);
 
         int startX = x + 5;
         int startY = y + 15;
@@ -204,16 +223,14 @@ public class JeiLinkBox<T> {
         int btnBg = isHovered ? 0x8000AA00 : 0x35000000;
         guiGraphics.fill(plusX, startY, plusX + 18, startY + 18, btnBg);
 
-        String plusStr = "§a+";
-        int strWidth = font.width(plusStr);
-        guiGraphics.drawString(font, plusStr, plusX + (18 - strWidth) / 2 + 1, startY + 5, 0xFFFFFF, false);
+        int strWidth = font.width(TEXT_PLUS_ICON);
+        guiGraphics.drawString(font, TEXT_PLUS_ICON, plusX + (18 - strWidth) / 2 + 1, startY + 5, 0xFFFFFF, false);
 
         if (isHovered) {
             guiGraphics.renderComponentTooltip(
                     font,
                     List.of(
-                            Component.literal("§a查看全部关联项 (" + totalSize + " 个)"),
-                            Component.literal("§7单击以打开全景诊断/大窗口视图")
+                            Component.literal(String.format(TOOLTIP_ALL_FMT, totalSize))
                     ),
                     (int) mouseX,
                     (int) mouseY

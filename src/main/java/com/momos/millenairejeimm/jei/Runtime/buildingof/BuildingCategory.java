@@ -59,32 +59,12 @@ public class BuildingCategory extends BaseMillCategory<BuildingPlanSet> {
                 new ItemStack(ItemHelper.resolve("minecraft:glass_bottle") != null ? ItemHelper.resolve("minecraft:glass_bottle") : Items.GLASS_BOTTLE)));
 
         // [醒目新注释] 1. 建筑所属村庄 LinkBox (Ingredient: VILLAGE)
-        this.villageBox = new JeiLinkBox<VillageType>("包含此建筑的村庄")
-                .useJeiMode(ingredientManager, MillIngredientTypes.VILLAGE)
-                .setOnPlusClick((contextObject, items) -> {
-                    if (MillenaireJeimmPlugin.JeiRuntime != null && contextObject instanceof BuildingPlanSet building) {
-                        var focus = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory()
-                                .createFocus(RecipeIngredientRole.INPUT, MillIngredientTypes.BUILDING, building);
-                        MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(focus);
-                    }
-                });
-
+        this.villageBox = new JeiLinkBox<VillageType>("包含此建筑的村庄").useJeiMode(ingredientManager, MillIngredientTypes.VILLAGE);
         // [醒目新注释] 2. 居住/工作村民 LinkBox (Ingredient: VILLAGER)
-        this.villagerBox = new JeiLinkBox<VillagerType>("居住或工作村民")
-                .useJeiMode(ingredientManager, MillIngredientTypes.VILLAGER)
-                .setOnPlusClick((contextObject, items) -> {
-                    if (MillenaireJeimmPlugin.JeiRuntime != null && contextObject instanceof BuildingPlanSet building) {
-                        var focus = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory()
-                                .createFocus(RecipeIngredientRole.INPUT, MillIngredientTypes.BUILDING, building);
-                        MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(focus);
-                    }
-                });
-
+        this.villagerBox = new JeiLinkBox<VillagerType>("居住或工作村民").useJeiMode(ingredientManager, MillIngredientTypes.VILLAGER);
         // [醒目新注释] 3. 升级/建造用量 LinkBox (Vanilla ITEM_STACK 原生物品渲染)
         // MC 原生 GuiGraphics 与 JEI 槽位天然支持 count > 64 的 ItemStack 文本绘制（如 128、256）
-        this.resourceBox = new JeiLinkBox<ItemStack>("升级与建造用量")
-                .useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK);
-
+        this.resourceBox = new JeiLinkBox<ItemStack>("升级与建造用量").useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK);
         // [醒目新注释] 初始化链接布局，起点坐标 Y: 105，总宽度: 172，项间距: 4
         this.buildingLayout = new JeiLinkLayout(2, 105, 172, 4)
                 .addBox(villageBox)

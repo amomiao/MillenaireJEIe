@@ -55,17 +55,7 @@ public class CultureCategory extends BaseMillCategory<Culture> {
         );
 
         // [醒目新注释] 在构造函数中链式调用 {@link JeiLinkBox#setOnPlusClick}，引入 try-catch 拦截与 JEI 内部深层状态检测
-        this.villageBox = new JeiLinkBox<VillageType>("文化关联村庄")
-                .useJeiMode(ingredientManager, MillIngredientTypes.VILLAGE)
-                .setOnPlusClick((contextObject, items) -> {
-                    if (MillenaireJeimmPlugin.JeiRuntime != null && contextObject instanceof Culture culture) {
-                        // [醒目新注释] 构建目标 Culture 的输入焦点
-                        var focus = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory().createFocus(RecipeIngredientRole.INPUT, MillIngredientTypes.CULTURE, culture);
-                        // [醒目新注释] 触发焦点查询，JEI 会自动切换至 CultureVillagesCategory 并精确定位到对应的文化页
-                        MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(focus);
-                    }
-                });
-
+        this.villageBox = new JeiLinkBox<VillageType>("文化关联村庄").useJeiMode(ingredientManager, MillIngredientTypes.VILLAGE);
         this.cultureLayout = new JeiLinkLayout(2, 106, 172, 4).addBox(villageBox);
     }
 

@@ -38,7 +38,7 @@ public class MillIngredientIconResolver {
         } else if (ingredient instanceof VillagerType villager) {
             return resolveVillager(villager);
         }
-        return new IngredientIconInfo(new ItemStack(Items.BARRIER), "未", 0xFF5555);
+        return new IngredientIconInfo(new ItemStack(Items.BARRIER), "None", 0xFF5555);
     }
 
     private static IngredientIconInfo resolveBuilding(BuildingPlanSet building) {
@@ -54,28 +54,27 @@ public class MillIngredientIconResolver {
         }
 
         if (building.isTownHall()) {
-            return new IngredientIconInfo(iconStack, "厅", 0xFFD700);
+            return new IngredientIconInfo(iconStack, "TH", 0xFFD700);
         } else if (building.isResidential()) {
-            return new IngredientIconInfo(iconStack, "居", 0x55FF55);
+            return new IngredientIconInfo(iconStack, "R", 0x55FF55);
         }
-
         String badge = (building.nativeName() != null && !building.nativeName().isEmpty())
-                ? building.nativeName().substring(0, 1)
-                : "建";
+                ? building.nativeName().substring(0, 1) : "B";
+
         return new IngredientIconInfo(iconStack, badge, 0xFFDD55);
     }
 
     private static IngredientIconInfo resolveCulture(Culture culture) {
         String name = (culture != null && culture.displayName() != null) ? culture.displayName() : "";
-        String badge = name.isEmpty() ? "文" : name.substring(0, Math.min(2, name.length()));
+        String badge = name.isEmpty() ? "C" : name.substring(0, Math.min(2, name.length()));
         return new IngredientIconInfo(new ItemStack(Items.WRITABLE_BOOK), badge, 0x55FFFF);
     }
 
     private static IngredientIconInfo resolveVillage(VillageType village) {
-        return new IngredientIconInfo(new ItemStack(Items.BELL), "村", 0xFFAA00);
+        return new IngredientIconInfo(new ItemStack(Items.BELL), "V", 0xFFAA00);
     }
 
     private static IngredientIconInfo resolveVillager(VillagerType villager) {
-        return new IngredientIconInfo(new ItemStack(Items.EMERALD), "民", 0x55FF55);
+        return new IngredientIconInfo(new ItemStack(Items.EMERALD), "Vr", 0x55FF55);
     }
 }

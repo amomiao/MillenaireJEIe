@@ -33,6 +33,7 @@ import org.millenaire.culture.VillageType;
 
 @Mod(MillenaireJeimm.MODID)
 public class MillenaireJeimm {
+    // 注意:[+]现在改成了[...]所有`加号`内容已过时
     public static final String MODID = "millenairejeimm";
 
     /// 如果改动内容在`com.momos.millenairejeim`(比当前少一个`m`)那么要确保`替换前置jar`到最新版本
@@ -107,9 +108,8 @@ public class MillenaireJeimm {
     /// 4.3.7.2c.1 首先是为[RecipeIngredientRole]注入更多的值，逻辑上最简单但是可用性难以保证;
     /// 4.3.7.2c.2 其次是接受多`页签`(Categor)的现实，{[RecipeIngredientRole#INPUT]+`多页签`(Categor)+`正确过滤`}是最接近完美方案的情况，他只缺少一个页签跳转，哪怕是进行一次`模拟鼠标点击`也比注入好得多;
     /// 4.3.7.2c.3 (Q79)开始使用了另一种方案，添加NBT标签
-    /// (更新)4.3.7.2d 所有的尝试都失败了，不可能去进行那种破坏性行为，现在的方案是所有内容被注册到Output，玩家自己通过点击页签切换查看，最初方案没有只有少量改动
+    /// (更新)4.3.7.2d 所有的尝试都失败了，不可能去进行那种破坏性行为，现在的方案是所有内容被注册到Output，玩家自己通过点击页签切换查看，最初方案只有少量改动
     /// 4.3.8 `MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(focus);` 传入焦点，调用`Jei运行时`，产生页面跳转。
     public MillenaireJeimm(IEventBus modEventBus, ModContainer modContainer) {
-
     }
 }
