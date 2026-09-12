@@ -1,4 +1,4 @@
-// region 动态数据同步接口
+// region JeiLinkBox Implementation
 package com.momos.millenairejeimm.jei.Runtime;
 
 import com.mojang.blaze3d.platform.InputConstants;
@@ -17,6 +17,7 @@ import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * 千年 JEI 通用联动槽位容器组件 {@link JeiLinkBox}。
@@ -33,7 +34,8 @@ public class JeiLinkBox<T> {
     private static final String TEXT_PLUS_ICON = "§a...";
     private static final String TOOLTIP_ALL_FMT = "§aAll(%d)";
 
-    private final String title;
+    // [醒目新注释] 改用 Supplier<Component> 动态提供标题，支持游戏中切换语言时实时刷新标题文本
+    private final Supplier<Component> titleSupplier;
     private final int layoutMode;
     private List<T> targetList = new ArrayList<>();
 
@@ -46,13 +48,30 @@ public class JeiLinkBox<T> {
         void onClick(Object contextObject, List<T> items);
     }
 
+    // [醒目新注释] 重载构造方法，支持直接传入 Component 与 Supplier<Component> 以实现动态语言刷新
+    public JeiLinkBox(Supplier<Component> titleSupplier) {
+        this(titleSupplier, 0);
+    }
+
+    public JeiLinkBox(Component titleComponent) {
+        this(() -> titleComponent, 0);
+    }
+
     public JeiLinkBox(String title) {
-        this(title, 0);
+        this(() -> Component.literal(title), 0);
+    }
+
+    public JeiLinkBox(Supplier<Component> titleSupplier, int layoutMode) {
+        this.titleSupplier = titleSupplier != null ? titleSupplier : () -> Component.empty();
+        this.layoutMode = layoutMode;
+    }
+
+    public JeiLinkBox(Component titleComponent, int layoutMode) {
+        this(() -> titleComponent, layoutMode);
     }
 
     public JeiLinkBox(String title, int layoutMode) {
-        this.title = title;
-        this.layoutMode = layoutMode;
+        this(() -> Component.literal(title), layoutMode);
     }
 
     @Deprecated(since = "1.0", forRemoval = true)
@@ -147,7 +166,9 @@ public class JeiLinkBox<T> {
         guiGraphics.fill(x, y + height - 1, x + width, y + height, 0x40FFFFFF);
 
         String countText = totalSize > 0 ? String.format(TEXT_COUNT_ALL_FMT, totalSize) : TEXT_COUNT_NONE;
-        String headerText = String.format(TEXT_TITLE_FMT, title, countText);
+        // [醒目新注释] 渲染时实时调用 titleSupplier.get().getString() 获取当前语言环境下的文本
+        String currentTitle = this.titleSupplier != null ? this.titleSupplier.get().getString() : "";
+        String headerText = String.format(TEXT_TITLE_FMT, currentTitle, countText);
         guiGraphics.drawString(font, headerText, x + 5, y + 3, 0xFFFFFF, false);
 
         int startX = x + 5;
@@ -185,4 +206,4 @@ public class JeiLinkBox<T> {
         render(guiGraphics, font, x, y, width, -1, -1);
     }
 }
-// endregion 动态数据同步接口
+// endregion JeiLinkBox Implementation

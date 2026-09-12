@@ -6,7 +6,10 @@
   "gui.millenairejeim.associated_tags": "关联标签:",
 
   "gui.millenairejeim.category.building_details": "建筑详情",
-  "gui.millenairejeim.category.building_cost": "建筑建材消耗",
+  "gui.millenairejeim.category.building_cost_a": "建筑A变体建材消耗",
+  "gui.millenairejeim.category.building_cost_b": "建筑B变体建材消耗",
+  "gui.millenairejeim.category.building_cost_c": "建筑C变体建材消耗",
+  "gui.millenairejeim.category.building_cost_variant": "变体",
   "gui.millenairejeim.category.building_villages_full": "建筑所属村庄 (全景大窗口)",
   "gui.millenairejeim.category.building_villagers_full": "建筑居住/工作村民 (全景大窗口)",
   "gui.millenairejeim.category.culture_details": "文化详情",
@@ -14,14 +17,14 @@
 
   "gui.millenairejeim.header.culture_main": "文化主页面",
 
-  "gui.millenairejeim.variant_title": "变体标题",
+  "gui.millenairejeim.variant_title": "变体%s",
   "gui.millenairejeim.belonging_building": "所属建筑",
-  "gui.millenairejeim.belonging_building_variant": "所属建筑变体",
+  "gui.millenairejeim.belonging_building_variant": "所属建筑变体(%s)",
   "gui.millenairejeim.label.belonging_culture": "所属文化",
 
   "gui.millenairejeim.box.villages": "生成/关联村庄",
   "gui.millenairejeim.box.villagers": "相关村民",
-  "gui.millenairejeim.box.variant_cost": "变体材料消耗",
+  "gui.millenairejeim.box.variant_cost": "变体%s材料消耗",
 
   "gui.millenairejeim.label.price": "价格",
   "gui.millenairejeim.label.reputation": "声望要求",

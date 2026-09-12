@@ -15,7 +15,7 @@ public class BuildingCostCategoryC extends AbstractBuildingCostCategory {
     public static final RecipeType<BuildingPlanSet> RECIPE_TYPE = RecipeType.create(MOD_ID, RECIPE_TYPE_ID, BuildingPlanSet.class);
 
     public BuildingCostCategoryC(IGuiHelper guiHelper, IIngredientManager ingredientManager) {
-        super(guiHelper, ingredientManager, 'c', Component.translatableWithFallback(MillenaireJeimmKeys.VARIANT_TITLE, "Variant %s", VARIANT_LETTER).getString());
+        super(guiHelper, ingredientManager, 'c', MillenaireJeimmKeys.BuildingCostCategoryC.asComponent());
     }
 
     @Override

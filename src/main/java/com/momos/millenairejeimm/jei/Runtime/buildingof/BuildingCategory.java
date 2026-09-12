@@ -60,29 +60,29 @@ public class BuildingCategory extends BaseMillCategory<BuildingPlanSet> {
     private final JeiLinkBox<ItemStack> resourceBox1;
     private final JeiLinkBox<ItemStack> resourceBox2;
 
-    // [醒目新注释] 构造方法中使用 MillenaireJeimmKeys 与 translatableWithFallback 构建动态 Box 标题
+    // [醒目新注释] 构造方法中使用 Component 实例构建动态 Box 标题，移除 .getString() 以支持语言切换实时刷新
     public BuildingCategory(IGuiHelper guiHelper, IIngredientManager ingredientManager) {
         super(guiHelper, guiHelper.createDrawableItemStack(
                 new ItemStack(ItemHelper.resolve(FALLBACK_ITEM_GLASS_BOTTLE) != null ? ItemHelper.resolve(FALLBACK_ITEM_GLASS_BOTTLE) : Items.GLASS_BOTTLE)));
 
         this.villageBox = new JeiLinkBox<VillageType>(
-                Component.translatableWithFallback(MillenaireJeimmKeys.BOX_VILLAGES, "Villages Containing Building").getString()
+                Component.translatableWithFallback(MillenaireJeimmKeys.BOX_VILLAGES, "Villages Containing Building")
         ).useJeiMode(ingredientManager, MillIngredientTypes.VILLAGE);
 
         this.villagerBox = new JeiLinkBox<VillagerType>(
-                Component.translatableWithFallback(MillenaireJeimmKeys.BOX_VILLAGERS, "Resident or Worker Villagers").getString()
+                Component.translatableWithFallback(MillenaireJeimmKeys.BOX_VILLAGERS, "Resident or Worker Villagers")
         ).useJeiMode(ingredientManager, MillIngredientTypes.VILLAGER);
 
         this.resourceBox0 = new JeiLinkBox<ItemStack>(
-                Component.translatableWithFallback(MillenaireJeimmKeys.BOX_VARIANT_COST, "Variant %s Costs", "A").getString()
+                Component.translatableWithFallback(MillenaireJeimmKeys.BOX_VARIANT_COST, "Variant %s Costs", "A")
         ).useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK);
 
         this.resourceBox1 = new JeiLinkBox<ItemStack>(
-                Component.translatableWithFallback(MillenaireJeimmKeys.BOX_VARIANT_COST, "Variant %s Costs", "B").getString()
+                Component.translatableWithFallback(MillenaireJeimmKeys.BOX_VARIANT_COST, "Variant %s Costs", "B")
         ).useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK);
 
         this.resourceBox2 = new JeiLinkBox<ItemStack>(
-                Component.translatableWithFallback(MillenaireJeimmKeys.BOX_VARIANT_COST, "Variant %s Costs", "C").getString()
+                Component.translatableWithFallback(MillenaireJeimmKeys.BOX_VARIANT_COST, "Variant %s Costs", "C")
         ).useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK);
 
         this.buildingLayout = new JeiLinkLayout(2, 105, 172, 4)
@@ -99,9 +99,7 @@ public class BuildingCategory extends BaseMillCategory<BuildingPlanSet> {
     }
 
     @Override
-    public Component getTitle() {
-        return Component.translatableWithFallback(MillenaireJeimmKeys.CATEGORY_BUILDING_DETAILS, "Building Details");
-    }
+    public Component getTitle() { return MillenaireJeimmKeys.BuildingCategory.asComponent(); }
 
     // [醒目新注释] 提取建筑布局数据同步方法，防止跨配方卡片渲染时 Layout 数据污染
     /**

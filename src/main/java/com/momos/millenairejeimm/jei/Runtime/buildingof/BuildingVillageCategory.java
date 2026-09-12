@@ -59,9 +59,7 @@ public class BuildingVillageCategory extends BaseMillCategory<BuildingPlanSet> {
     }
 
     @Override
-    public Component getTitle() {
-        return Component.translatableWithFallback(MillenaireJeimmKeys.CATEGORY_BUILDING_VILLAGES_FULL, "Building Villages (Full View)");
-    }
+    public Component getTitle() { return MillenaireJeimmKeys.BuildingVillageCategory.asComponent(); }
 
     /**
      * 设置全景村庄分类的 JEI 槽位布局与隐形成分。

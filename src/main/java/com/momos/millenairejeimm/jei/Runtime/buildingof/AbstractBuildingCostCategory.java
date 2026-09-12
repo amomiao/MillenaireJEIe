@@ -61,15 +61,11 @@ public abstract class AbstractBuildingCostCategory extends BaseMillCategory<Buil
     private Component cachedDisplayNameComponent;
 
     // [醒目新注释] 使用 translatableWithFallback 构建统一的变体标题
-    public AbstractBuildingCostCategory(IGuiHelper guiHelper, IIngredientManager ingredientManager, char variantKey, String variantTitle) {
+    public AbstractBuildingCostCategory(IGuiHelper guiHelper, IIngredientManager ingredientManager, char variantKey, Component component) {
         super(guiHelper, guiHelper.createDrawableItemStack(new ItemStack(Items.CHEST)));
         this.variantKey = Character.toLowerCase(variantKey);
         this.variantIndex = this.variantKey - 'a';
-        this.titleComponent = Component.translatableWithFallback(
-                MillenaireJeimmKeys.CATEGORY_BUILDING_COST,
-                "Building Costs (%s)",
-                variantTitle
-        );
+        this.titleComponent = component;
     }
 
     @Override

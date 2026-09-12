@@ -41,6 +41,7 @@ import org.millenaire.culture.VillagerType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 千年百科高级 JEI 扩展主插件 {@link IModPlugin}。
@@ -292,9 +293,21 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                 registration.addRecipes(BuildingCategory.RECIPE_TYPE, buildings);
                 registration.addRecipes(BuildingVillageCategory.RECIPE_TYPE, buildings);
                 registration.addRecipes(BuildingVillagerCategory.RECIPE_TYPE, buildings);
-                registration.addRecipes(BuildingCostCategoryA.RECIPE_TYPE, buildings);
-                registration.addRecipes(BuildingCostCategoryB.RECIPE_TYPE, buildings);
-                registration.addRecipes(BuildingCostCategoryC.RECIPE_TYPE, buildings);
+
+                List<BuildingPlanSet> buildingsA = buildings.stream()
+                        .filter(b -> b.variants() != null && b.variants().size() > 0)
+                        .toList();
+                List<BuildingPlanSet> buildingsB = buildingsA.stream()
+                        .filter(b -> b.variants().size() > 1)
+                        .toList();
+                List<BuildingPlanSet> buildingsC = buildingsB.stream()
+                        .filter(b -> b.variants().size() > 2)
+                        .toList();
+
+                registration.addRecipes(BuildingCostCategoryA.RECIPE_TYPE, buildingsA);
+                registration.addRecipes(BuildingCostCategoryB.RECIPE_TYPE, buildingsB);
+                registration.addRecipes(BuildingCostCategoryC.RECIPE_TYPE, buildingsC);
+
                 MMLog.info(LOG_BUILDING_RECIPE_SUCCESS_ZH, LOG_BUILDING_RECIPE_SUCCESS_EN, LOG_BUILDING_RECIPE_SUCCESS_FR, buildings.size());
             } else {
                 MMLog.warn(LOG_BUILDING_RECIPE_EMPTY_ZH, LOG_BUILDING_RECIPE_EMPTY_EN, LOG_BUILDING_RECIPE_EMPTY_FR);
@@ -312,9 +325,9 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                 registration.addRecipes(VillagerBuildingCategory.RECIPE_TYPE, villagers);
                 registration.addRecipes(VillagerBringBackHomeCategory.RECIPE_TYPE, villagers);
                 registration.addRecipes(VillagerCollectCategory.RECIPE_TYPE, villagers);
-                registration.addRecipes(VillagerRequiredCategory.RECIPE_TYPE, villagers);
-                //List<VillagerType> requiredVillagers = villagers.stream().filter(v -> v.requiredGoods() != null && !v.requiredGoods().isEmpty()).toList();
-                //registration.addRecipes(VillagerRequiredCategory.RECIPE_TYPE, requiredVillagers);
+                //registration.addRecipes(VillagerRequiredCategory.RECIPE_TYPE, villagers);
+                List<VillagerType> requiredVillagers = villagers.stream().filter(v -> v.requiredGoods() != null && !v.requiredGoods().isEmpty()).toList();
+                registration.addRecipes(VillagerRequiredCategory.RECIPE_TYPE, requiredVillagers);
                 MMLog.info(LOG_VILLAGER_RECIPE_SUCCESS_ZH, LOG_VILLAGER_RECIPE_SUCCESS_EN, LOG_VILLAGER_RECIPE_SUCCESS_FR, villagers.size());
             } else {
                 MMLog.warn(LOG_VILLAGER_RECIPE_EMPTY_ZH, LOG_VILLAGER_RECIPE_EMPTY_EN, LOG_VILLAGER_RECIPE_EMPTY_FR);

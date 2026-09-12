@@ -13,6 +13,8 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.MutableComponent;
 
 import java.util.Collections;
 import java.util.List;
@@ -69,23 +71,39 @@ public abstract class BaseMillCategory<T> implements IRecipeCategory<T> {
         guiGraphics.fill(6, 38, PAGE_WIDTH - 6, 39, 0xFFCCCCCC);
     }
 
-    protected void drawLabelValue(GuiGraphics guiGraphics, Font font, String label, String value, int x, int y) {
-        guiGraphics.drawString(font, Component.literal("§8" + label + ": §0" + value), x, y, 0x333333, false);
+    protected void drawLabelValue(GuiGraphics guiGraphics, Font font, MutableComponent label, String value, int x, int y) {
+        guiGraphics.drawString(font, Component.literal("§8").append(label).append(": §0").append(value), x, y, 0x333333, false);
     }
 
-    protected void drawHoverableText(GuiGraphics guiGraphics, Font font, String label, String fullValueText, int x, int y, double mouseX, double mouseY) {
-        String lineStr = "§8" + label + ": " + fullValueText;
-        int textWidth = font.width(lineStr);
+    protected void drawHoverableText(GuiGraphics guiGraphics, Font font, MutableComponent label, MutableComponent fullValueText, int x, int y, double mouseX, double mouseY) {
+        MutableComponent fullLine = Component.literal("§8")
+                .append(label)
+                .append(Component.literal(": §0"))
+                .append(fullValueText);
 
-        if (textWidth > PAGE_WIDTH - x - 6) {
-            String trimmed = font.plainSubstrByWidth(lineStr, PAGE_WIDTH - x - 14) + "...";
-            guiGraphics.drawString(font, Component.literal(trimmed), x, y, 0x333333, false);
+        int textWidth = font.width(fullLine);
+        int maxWidth = PAGE_WIDTH - x - 6;
+
+        if (textWidth > maxWidth) {
+            int availableWidth = PAGE_WIDTH - x - 14;
+            // 【修正点】substrByWidth 返回的是 FormattedText，没有 copy() 方法
+            // 提取截断后的纯文本内容并重新封装为带有省略号的 MutableComponent
+            FormattedText truncatedText = font.substrByWidth(fullLine, availableWidth);
+            MutableComponent trimmedLine = Component.literal(truncatedText.getString()).append("...");
+            guiGraphics.drawString(font, trimmedLine, x, y, 0x333333, false);
         } else {
-            guiGraphics.drawString(font, Component.literal(lineStr), x, y, 0x333333, false);
+            guiGraphics.drawString(font, fullLine, x, y, 0x333333, false);
         }
 
+        // 悬浮检测：鼠标处于文本区域内部时绘制 Tooltip
         if (mouseX >= x && mouseX <= PAGE_WIDTH - 6 && mouseY >= y && mouseY < y + 9) {
-            guiGraphics.renderComponentTooltip(font, Collections.singletonList(Component.literal("§f" + label + ":\n" + fullValueText)), (int) mouseX, (int) mouseY);
+            // 构造 Tooltip 展示的跨行组件（换行使用多段 Component 列表传入 renderComponentTooltip）
+            List<Component> tooltipLines = List.of(
+                    Component.literal("§f").append(label).append(":"),
+                    Component.literal("§7").append(fullValueText)
+            );
+
+            guiGraphics.renderComponentTooltip(font, tooltipLines, (int) mouseX, (int) mouseY);
         }
     }
 // endregion 通用 UI 渲染与辅助组件

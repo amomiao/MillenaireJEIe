@@ -47,11 +47,12 @@ public class VillagerCategory extends BaseMillCategory<VillagerType> {
         super(guiHelper, guiHelper.createDrawableItemStack(
                 new ItemStack(ItemHelper.resolve("millenaire:travel_book") != null ? ItemHelper.resolve("millenaire:travel_book") : Items.BOOK)));
 
-        JeiLinkBox<VillageType> villageBox = new JeiLinkBox<VillageType>(MillenaireJeimmKeys.getVillagerBoxVillages().getString()).useJeiMode(ingredientManager, MillIngredientTypes.VILLAGE);
-        JeiLinkBox<BuildingPlanSet> buildingBox = new JeiLinkBox<BuildingPlanSet>(MillenaireJeimmKeys.getVillagerBoxBuildings().getString()).useJeiMode(ingredientManager, MillIngredientTypes.BUILDING);
-        JeiLinkBox<ItemStack> bringBackHomeBox = new JeiLinkBox<ItemStack>(MillenaireJeimmKeys.getVillagerBoxBringBackHome().getString());
-        JeiLinkBox<ItemStack> collectBox = new JeiLinkBox<ItemStack>(MillenaireJeimmKeys.getVillagerBoxCollect().getString());
-        JeiLinkBox<ItemStack> requiredBox = new JeiLinkBox<ItemStack>(MillenaireJeimmKeys.getVillagerBoxRequired().getString());
+        // [醒目新注释] 直接传入 Component 实例而非调用 .getString() 提取固化字符串，使标题可随游戏语言切换动态更新
+        JeiLinkBox<VillageType> villageBox = new JeiLinkBox<VillageType>(MillenaireJeimmKeys.getVillagerBoxVillages()).useJeiMode(ingredientManager, MillIngredientTypes.VILLAGE);
+        JeiLinkBox<BuildingPlanSet> buildingBox = new JeiLinkBox<BuildingPlanSet>(MillenaireJeimmKeys.getVillagerBoxBuildings()).useJeiMode(ingredientManager, MillIngredientTypes.BUILDING);
+        JeiLinkBox<ItemStack> bringBackHomeBox = new JeiLinkBox<ItemStack>(MillenaireJeimmKeys.getVillagerBoxBringBackHome());
+        JeiLinkBox<ItemStack> collectBox = new JeiLinkBox<ItemStack>(MillenaireJeimmKeys.getVillagerBoxCollect());
+        JeiLinkBox<ItemStack> requiredBox = new JeiLinkBox<ItemStack>(MillenaireJeimmKeys.getVillagerBoxRequired());
 
         this.villagerLayout = new JeiLinkLayout(2, 105, 172, 4)
                 .addBox(villageBox)
@@ -67,9 +68,7 @@ public class VillagerCategory extends BaseMillCategory<VillagerType> {
     }
 
     @Override
-    public Component getTitle() {
-        return MillenaireJeimmKeys.getCategoryVillagerDetailsTitle();
-    }
+    public Component getTitle() { return MillenaireJeimmKeys.VillagerCategory.asComponent(); }
 
     private void updateLayoutData(VillagerType recipe) {
         if (villagerLayout == null || recipe == null) return;

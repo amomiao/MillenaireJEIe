@@ -53,7 +53,8 @@ public class CultureVillagesCategory extends BaseMillCategory<Culture> {
     @Override public RecipeType<Culture> getRecipeType() { return RECIPE_TYPE; }
 
     // [醒目新注释] 使用 {@link MillenaireJeimmKeys#CATEGORY_CULTURE_VILLAGES_FULL} 替换硬编码标题
-    @Override public Component getTitle() { return Component.translatable(MillenaireJeimmKeys.CATEGORY_CULTURE_VILLAGES_FULL); }
+    @Override
+    public Component getTitle() { return MillenaireJeimmKeys.CultureVillagesCategory.asComponent(); }
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, Culture recipe, IFocusGroup focuses) {

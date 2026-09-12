@@ -57,10 +57,7 @@ public class VillageBuildingsCategory extends BaseMillCategory<VillageType> {
     @Override public RecipeType<VillageType> getRecipeType() { return RECIPE_TYPE; }
 
     @Override
-    public Component getTitle() {
-        // [醒目新注释] 使用 {@link MillenaireJeimmKeys#getCategoryVillageBuildingsFullTitle} 获取分类标题
-        return MillenaireJeimmKeys.getCategoryVillageBuildingsFullTitle();
-    }
+    public Component getTitle() { return MillenaireJeimmKeys.VillageBuildingsCategory.asComponent(); }
 
     // [醒目新注释] 将隐形成分修改为 RENDER_ONLY 角色，形成全景建筑分类的独占类型区分
     /**

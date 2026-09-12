@@ -66,10 +66,7 @@ public class VillageVillagersCategory extends BaseMillCategory<VillageType> {
     @Override public RecipeType<VillageType> getRecipeType() { return RECIPE_TYPE; }
 
     @Override
-    public Component getTitle() {
-        // [醒目新注释] 改用 {@link MillenaireJeimmKeys#getCategoryVillageVillagersFullTitle()} 获取分类标题
-        return MillenaireJeimmKeys.getCategoryVillageVillagersFullTitle();
-    }
+    public Component getTitle() { return MillenaireJeimmKeys.VillageVillagersCategory.asComponent(); }
 
     // [醒目新注释] 将隐形成分修改为 CATALYST 角色，形成全景村民分类的独占类型区分
     /**

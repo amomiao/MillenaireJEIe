@@ -43,9 +43,7 @@ public class VillagerRequiredCategory extends BaseMillCategory<VillagerType> {
     }
 
     @Override
-    public Component getTitle() {
-        return MillenaireJeimmKeys.getCategoryVillagerRequiredGoodsTitle();
-    }
+    public Component getTitle() { return MillenaireJeimmKeys.VillagerRequiredCategory.asComponent(); }
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, VillagerType recipe, IFocusGroup focuses) {

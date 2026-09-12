@@ -345,3 +345,25 @@
 * Q116: key为Component.translatableWithFallback声明，注意key如果能做成模板就尽量减少单个字词的出现；把逻辑运行依赖的字符串封装到类的顶部
 * Q117: Component.translatableWithFallback声明Key，注意key如果能做成模板就尽量减少单个字词的出现；把逻辑运行依赖的字符串封装到类的顶部
 * Q118: 这个`类别`你找个单词/简写硬编码成英文算了
+* Q119: 把JeiLink的title也放进更新里，现在的方式在游戏中更改语言后无法刷新title
+* Q120: 对`BuildingPlanSet#variants`进行过滤，大于0的进入BuildingCostCategoryA，大于1的进入B，大于2的进入C，A包含B包含C是特意的设计
+* Q121: JEI能不能做到一个页签里的一个展示框里再增加一个左右箭头显示自己的翻页内容？
+* Q122: 太麻烦翻页先不做了，你改动后的JEILink让BuildingCostCategory系列页面的ABC没了
+* Q123: 卡片隐藏是特意设计，是不是你给他们仨复用Key了
+//- 1.0结束
+// 开始本地化
+* 你把下面的内容像上面一样放进一行里
+* Q124: Keys太臃肿了重构一下，现在没有任何key要以`gui.millenairejeim.`为前缀，所有key的前缀都要多一个m为`gui.millenairejeimm.`
+* Q125: 我受不了Java的静态(常量)命名方式了，你以C#的静态变量标准，首字母大写的驼峰格式重构Keys
+* 重构了Keys的架构，现在由一个内部类KT(KeyTuple)封装了
+  * public Component asComponent(Object... args) { return Component.translatableWithFallback(key, fallback, args); }
+  * 收尾居然是AI失控的，我在编写Key，令人唏嘘
+  * 我不甘心，我要让AI写
+* Q126: 按图文，给我构造这部分代码
+  * 哈哈成了
+* 我擦，每个类型负责的对话不一样类名标准有微小差距，算了不管了
+* Q127:图1=>[Keys新版本]、图2=>[Category页面里的旧本吧]-迁移到新版本
+  * 以C#的静态变量标准，首字母大写的驼峰格式重构Keys
+  * 我去怎么直接写cs了
+* Q128:我让你变量名写VillagerCategory这样的格式，不是让你写cs代码
+* 算了我手改吧

@@ -59,9 +59,9 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
         super(guiHelper, guiHelper.createDrawableItemStack(
                 new ItemStack(ItemHelper.resolve(ITEM_TRAVEL_BOOK) != null ? ItemHelper.resolve(ITEM_TRAVEL_BOOK) : Items.MAP)));
 
-        // [醒目新注释] 改用 {@link MillenaireJeimmKeys#getVillageBoxBuildings()} 及 {@link MillenaireJeimmKeys#getVillageBoxVillagers()} 初始化 LinkBox 字符串标题
-        this.buildingBox = new JeiLinkBox<BuildingPlanSet>(MillenaireJeimmKeys.getVillageBoxBuildings().getString()).useJeiMode(ingredientManager, MillIngredientTypes.BUILDING);
-        this.villagerBox = new JeiLinkBox<VillagerType>(MillenaireJeimmKeys.getVillageBoxVillagers().getString()).useJeiMode(ingredientManager, MillIngredientTypes.VILLAGER);
+        // [醒目新注释] 传入 Component 实例而非调用 .getString()，实现语言实时动态刷新
+        this.buildingBox = new JeiLinkBox<BuildingPlanSet>(MillenaireJeimmKeys.getVillageBoxBuildings()).useJeiMode(ingredientManager, MillIngredientTypes.BUILDING);
+        this.villagerBox = new JeiLinkBox<VillagerType>(MillenaireJeimmKeys.getVillageBoxVillagers()).useJeiMode(ingredientManager, MillIngredientTypes.VILLAGER);
         this.villageLayout = new JeiLinkLayout(2, 115, 172, 4)
                 .addBox(buildingBox)
                 .addBox(villagerBox);
@@ -70,10 +70,7 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
     @Override public RecipeType<VillageType> getRecipeType() { return RECIPE_TYPE; }
 
     @Override
-    public Component getTitle() {
-        // [醒目新注释] 改用 {@link MillenaireJeimmKeys#getCategoryVillageDetailsTitle()} 获取统一组件
-        return MillenaireJeimmKeys.getCategoryVillageDetailsTitle();
-    }
+    public Component getTitle() { return MillenaireJeimmKeys.VillageCategory.asComponent(); }
 
     // [醒目新注释] 提取村庄布局数据同步逻辑，包含焦点组排序计算
     /**
