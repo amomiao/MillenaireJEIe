@@ -75,7 +75,10 @@ public abstract class BaseMillCategory<T> implements IRecipeCategory<T> {
         guiGraphics.drawString(font, Component.literal("§8").append(label).append(": §0").append(value), x, y, 0x333333, false);
     }
 
-    protected void drawHoverableText(GuiGraphics guiGraphics, Font font, MutableComponent label, MutableComponent fullValueText, int x, int y, double mouseX, double mouseY) {
+    protected void drawHoverableText(GuiGraphics guiGraphics, Font font, MutableComponent label, MutableComponent fullValueText, int x, int y, double mouseX, double mouseY){
+        drawHoverableText(guiGraphics,font,label,fullValueText.getString(),x,y,mouseX,mouseY);
+    }
+    protected void drawHoverableText(GuiGraphics guiGraphics, Font font, MutableComponent label, String fullValueText, int x, int y, double mouseX, double mouseY) {
         MutableComponent fullLine = Component.literal("§8")
                 .append(label)
                 .append(Component.literal(": §0"))

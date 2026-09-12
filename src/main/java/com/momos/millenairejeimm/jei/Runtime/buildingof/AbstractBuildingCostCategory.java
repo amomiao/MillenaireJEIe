@@ -151,12 +151,7 @@ public abstract class AbstractBuildingCostCategory extends BaseMillCategory<Buil
         if (recipe != this.lastRecipe) {
             this.lastRecipe = recipe;
             String name = recipe.nativeName() != null && !recipe.nativeName().isEmpty() ? recipe.nativeName() : recipe.buildingId();
-            this.cachedDisplayNameComponent = Component.translatableWithFallback(
-                    MillenaireJeimmKeys.BELONGING_BUILDING_VARIANT,
-                    "§1Belonging Building: §f%s §8[Variant %s]",
-                    name,
-                    String.valueOf(Character.toUpperCase(this.variantKey))
-            );
+            this.cachedDisplayNameComponent = MillenaireJeimmKeys.AbstractBuildingCostCategoryTitle_S.asComponent(name);
         }
 
         guiGraphics.drawString(font, this.cachedDisplayNameComponent, 14, 8, 0x000000, false);

@@ -113,11 +113,7 @@ public class BuildingVillageCategory extends BaseMillCategory<BuildingPlanSet> {
         if (recipe != this.lastRecipe) {
             this.lastRecipe = recipe;
             String name = recipe.nativeName() != null && !recipe.nativeName().isEmpty() ? recipe.nativeName() : recipe.buildingId();
-            this.cachedDisplayNameComponent = Component.translatableWithFallback(
-                    MillenaireJeimmKeys.BELONGING_BUILDING,
-                    "§1Belonging Building: §f%s",
-                    name
-            );
+            this.cachedDisplayNameComponent = MillenaireJeimmKeys.BuildingVillageCategoryTitle_S.asComponent(name);
         }
 
         guiGraphics.drawString(font, this.cachedDisplayNameComponent, 14, 8, 0x000000, false);

@@ -117,12 +117,12 @@ public class CultureCategory extends BaseMillCategory<Culture> {
 
         // 2. CropCount
         int cropCount = recipe.knownCrops() != null ? recipe.knownCrops().size() : 0;
-        String cropVal = MillenaireJeimmKeys.CropCountValue.asComponent(cropCount).getString();
+        String cropVal = MillenaireJeimmKeys.CropCountValue_D.asComponent(cropCount).getString();
         drawLabelValue(guiGraphics, font, MillenaireJeimmKeys.KnownCropsLabel.asComponent(), "§2" + cropVal, 6, 52);
 
         // 3. DropCount
         int dropCount = recipe.knownHuntingDrops() != null ? recipe.knownHuntingDrops().size() : 0;
-        String dropVal = MillenaireJeimmKeys.DropCountValue.asComponent(dropCount).getString();
+        String dropVal = MillenaireJeimmKeys.DropCountValue_D.asComponent(dropCount).getString();
         drawLabelValue(guiGraphics, font, MillenaireJeimmKeys.HuntingDropsLabel.asComponent(), "§c" + dropVal, 6, 62);
 
         // 4. MapIcon

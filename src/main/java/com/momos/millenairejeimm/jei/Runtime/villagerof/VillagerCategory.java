@@ -29,6 +29,9 @@ import org.millenaire.item.ItemHelper;
 
 import java.util.List;
 
+/**
+ * 村民 {@link VillagerType} JEI 详情主分类面板。
+ */
 public class VillagerCategory extends BaseMillCategory<VillagerType> {
 
     public static final RecipeType<VillagerType> RECIPE_TYPE = RecipeType.create("millenaire", "villager_details", VillagerType.class);
@@ -48,11 +51,12 @@ public class VillagerCategory extends BaseMillCategory<VillagerType> {
                 new ItemStack(ItemHelper.resolve("millenaire:travel_book") != null ? ItemHelper.resolve("millenaire:travel_book") : Items.BOOK)));
 
         // [醒目新注释] 直接传入 Component 实例而非调用 .getString() 提取固化字符串，使标题可随游戏语言切换动态更新
-        JeiLinkBox<VillageType> villageBox = new JeiLinkBox<VillageType>(MillenaireJeimmKeys.getVillagerBoxVillages()).useJeiMode(ingredientManager, MillIngredientTypes.VILLAGE);
-        JeiLinkBox<BuildingPlanSet> buildingBox = new JeiLinkBox<BuildingPlanSet>(MillenaireJeimmKeys.getVillagerBoxBuildings()).useJeiMode(ingredientManager, MillIngredientTypes.BUILDING);
-        JeiLinkBox<ItemStack> bringBackHomeBox = new JeiLinkBox<ItemStack>(MillenaireJeimmKeys.getVillagerBoxBringBackHome());
-        JeiLinkBox<ItemStack> collectBox = new JeiLinkBox<ItemStack>(MillenaireJeimmKeys.getVillagerBoxCollect());
-        JeiLinkBox<ItemStack> requiredBox = new JeiLinkBox<ItemStack>(MillenaireJeimmKeys.getVillagerBoxRequired());
+        // [醒目新注释] 关联槽位标题彻底对齐 {@link MillenaireJeimmKeys} 中的静态 KT 组件，保证多语言实时同步
+        JeiLinkBox<VillageType> villageBox = new JeiLinkBox<VillageType>(MillenaireJeimmKeys.VillageBoxLink.asComponent()).useJeiMode(ingredientManager, MillIngredientTypes.VILLAGE);
+        JeiLinkBox<BuildingPlanSet> buildingBox = new JeiLinkBox<BuildingPlanSet>(MillenaireJeimmKeys.BuildingBoxLink.asComponent()).useJeiMode(ingredientManager, MillIngredientTypes.BUILDING);
+        JeiLinkBox<ItemStack> bringBackHomeBox = new JeiLinkBox<ItemStack>(MillenaireJeimmKeys.BringBackHomeBoxLink.asComponent());
+        JeiLinkBox<ItemStack> collectBox = new JeiLinkBox<ItemStack>(MillenaireJeimmKeys.CollectBoxLink.asComponent());
+        JeiLinkBox<ItemStack> requiredBox = new JeiLinkBox<ItemStack>(MillenaireJeimmKeys.RequiredBoxLink.asComponent());
 
         this.villagerLayout = new JeiLinkLayout(2, 105, 172, 4)
                 .addBox(villageBox)
@@ -156,36 +160,38 @@ public class VillagerCategory extends BaseMillCategory<VillagerType> {
 
         Font font = Minecraft.getInstance().font;
         String displayName = recipe.nativeName() != null && !recipe.nativeName().isEmpty() ? recipe.nativeName() : recipe.id().getPath();
-        String culture = recipe.culture() != null ? recipe.culture().getPath() : MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGE_UNKNOWN_CULTURE, "未知文化").getString();
+
+        // [醒目新注释] 提取 Header 文本与全量属性标签为 {@link MillenaireJeimmKeys} 本地化 key 渲染
+        String culture = recipe.culture() != null ? recipe.culture().getPath() : MillenaireJeimmKeys.UnknownCultureValue.asComponent().getString();
 
         drawCommonHeader(guiGraphics, font, displayName, recipe.id().toString(), culture, mouseX, mouseY);
 
-        String genderStr = recipe.gender() != null ? recipe.gender().name() : MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGER_VALUE_UNKNOWN, "未知").getString();
+        String genderStr = recipe.gender() != null ? recipe.gender().name() : MillenaireJeimmKeys.UnknownGenderValue.asComponent().getString();
         String ageStageStr = recipe.isChild() ?
-                MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGER_VALUE_CHILD, "幼年").getString() :
-                MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGER_VALUE_ADULT, "成年").getString();
+                MillenaireJeimmKeys.ChildValue.asComponent().getString() :
+                MillenaireJeimmKeys.AdultValue.asComponent().getString();
         String genderText = genderStr + " (" + ageStageStr + ")";
 
-        drawLabelValue(guiGraphics, font, MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGER_LABEL_GENDER_STAGE, "性别阶段").getString(), genderText, 6, 42);
-        drawLabelValue(guiGraphics, font, MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGER_LABEL_MAX_HEALTH, "最大生命").getString(), "§c" + (int) recipe.maxHealth() + " HP", 6, 52);
-        drawLabelValue(guiGraphics, font, MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGER_LABEL_BASE_ATTACK, "基础攻击").getString(), "§4" + recipe.baseAttackStrength(), 6, 62);
+        drawLabelValue(guiGraphics, font, MillenaireJeimmKeys.GenderStageLabel.asComponent(), genderText, 6, 42);
+        drawLabelValue(guiGraphics, font, MillenaireJeimmKeys.MaxHealthLabel.asComponent(), "§c" + MillenaireJeimmKeys.HpValue_D.asComponent((int) recipe.maxHealth()).getString(), 6, 52);
+        drawLabelValue(guiGraphics, font, MillenaireJeimmKeys.BaseAttackLabel.asComponent(), "§4" + recipe.baseAttackStrength(), 6, 62);
 
         String costStr = recipe.hiringCost() > 0 ?
-                "§6" + recipe.hiringCost() + " " + MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGER_VALUE_HIRABLE_COST, "钱币").getString() :
-                MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGER_VALUE_UNHIRABLE, "不可雇佣").getString();
-        drawLabelValue(guiGraphics, font, MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGER_LABEL_HIRING_COST, "雇佣费用").getString(), costStr, 6, 72);
-        drawLabelValue(guiGraphics, font, MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGER_LABEL_SPAWN_WEIGHT, "生成权重").getString(), "§1" + recipe.spawnWeight(), 6, 82);
+                "§6" + MillenaireJeimmKeys.CoinsValue_D.asComponent(recipe.hiringCost()).getString() :
+                MillenaireJeimmKeys.UnhirableValue.asComponent().getString();
+        drawLabelValue(guiGraphics, font, MillenaireJeimmKeys.HiringCostLabel.asComponent(), costStr, 6, 72);
+        drawLabelValue(guiGraphics, font, MillenaireJeimmKeys.SpawnWeightLabel.asComponent(), "§1" + recipe.spawnWeight(), 6, 82);
 
         StringBuilder tagsText = new StringBuilder();
-        if (recipe.isRaider()) tagsText.append("[").append(MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGER_FLAG_RAIDER, "掠夺").getString()).append("] ");
-        if (recipe.isHostile()) tagsText.append("[").append(MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGER_FLAG_HOSTILE, "敌对").getString()).append("] ");
-        if (recipe.isHelpInAttacks()) tagsText.append("[").append(MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGER_FLAG_HELP_ATTACKS, "协防").getString()).append("] ");
-        if (recipe.isArcher()) tagsText.append("[").append(MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGER_FLAG_ARCHER, "弓手").getString()).append("] ");
-        if (recipe.isNoTeleport()) tagsText.append("[").append(MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGER_FLAG_NO_TELEPORT, "禁传送").getString()).append("] ");
-        if (recipe.isNoResurrect()) tagsText.append("[").append(MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGER_FLAG_NO_RESURRECT, "不可复活").getString()).append("] ");
-        String flagsStr = tagsText.length() > 0 ? tagsText.toString() : MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGER_VALUE_FLAGS_DEFAULT, "平民/日常").getString();
+        if (recipe.isRaider()) tagsText.append(MillenaireJeimmKeys.RaiderValue.asComponent().getString());
+        if (recipe.isHostile()) tagsText.append(MillenaireJeimmKeys.HostileValue.asComponent().getString());
+        if (recipe.isHelpInAttacks()) tagsText.append(MillenaireJeimmKeys.HelpAttacksValue.asComponent().getString());
+        if (recipe.isArcher()) tagsText.append(MillenaireJeimmKeys.ArcherValue.asComponent().getString());
+        if (recipe.isNoTeleport()) tagsText.append(MillenaireJeimmKeys.NoTeleportValue.asComponent().getString());
+        if (recipe.isNoResurrect()) tagsText.append(MillenaireJeimmKeys.NoResurrectValue.asComponent().getString());
+        String flagsStr = tagsText.length() > 0 ? tagsText.toString() : MillenaireJeimmKeys.CivilianValue.asComponent().getString();
 
-        drawHoverableText(guiGraphics, font, MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGER_LABEL_FLAGS, "特性标记").getString(), flagsStr, 6, 92, mouseX, mouseY);
+        drawHoverableText(guiGraphics, font, MillenaireJeimmKeys.FlagsLabel.asComponent(), flagsStr, 6, 92, mouseX, mouseY);
 
         if (villagerLayout != null) {
             updateLayoutData(recipe);

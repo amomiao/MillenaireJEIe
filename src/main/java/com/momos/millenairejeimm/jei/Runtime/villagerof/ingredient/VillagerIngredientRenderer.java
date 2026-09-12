@@ -3,6 +3,7 @@ package com.momos.millenairejeimm.jei.Runtime.villagerof.ingredient;
 import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;
 import com.momos.millenairejeimm.jei.MillenaireJeimmKeys;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillIngredientRenderer;
+import com.momos.millenairejeimm.jei.Runtime.MillIngredientIconResolver;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -18,35 +19,31 @@ import java.util.List;
 public class VillagerIngredientRenderer extends BaseMillIngredientRenderer<VillagerType> {
     @Override
     protected String getBadgeText(VillagerType ingredient) {
-        return MillenaireJeimmKeys.getVillagerBadge().getString();
+        return MillIngredientIconResolver.resolve(ingredient).badgeText();
     }
 
     @Override
     public List<Component> getTooltip(VillagerType ingredient, TooltipFlag tooltipFlag) {
         List<Component> tooltip = new ArrayList<>();
         if (ingredient == null) {
-            tooltip.add(MillenaireJeimmKeys.getVillagerUnknown().copy().withStyle(ChatFormatting.RED));
+            tooltip.add(MillenaireJeimmKeys.UnknownVillagerIng.asComponent().copy().withStyle(ChatFormatting.RED));
             return tooltip;
         }
-
         tooltip.add(MillenaireLocalizeHelper.getVillagerName(ingredient).copy().withStyle(ChatFormatting.WHITE));
-
-        if (ingredient.culture() != null) {
-            tooltip.add(MillenaireJeimmKeys.getVillagerCulture(ingredient.culture().getPath()).copy().withStyle(ChatFormatting.GRAY));
-        }
-
-        if (ingredient.id() != null) {
-            tooltip.add(MillenaireJeimmKeys.getVillagerId(ingredient.id()).copy().withStyle(ChatFormatting.DARK_GRAY));
-        }
-
-        VillagerIngredientHelper helper = new VillagerIngredientHelper();
-        List<ResourceLocation> tags = helper.getTagStream(ingredient).toList();
-        if (!tags.isEmpty()) {
-            tooltip.add(MillenaireJeimmKeys.getVillagerTags().copy().withStyle(ChatFormatting.GRAY));
-            for (ResourceLocation tag : tags) {
-                tooltip.add(Component.literal("  $" + tag).withStyle(ChatFormatting.DARK_GRAY));
-            }
-        }
+//        if (ingredient.culture() != null) {
+//            tooltip.add(MillenaireJeimmKeys.getVillagerCulture(ingredient.culture().getPath()).copy().withStyle(ChatFormatting.GRAY));
+//        }
+//        if (ingredient.id() != null) {
+//            tooltip.add(MillenaireJeimmKeys.getVillagerId(ingredient.id()).copy().withStyle(ChatFormatting.DARK_GRAY));
+//        }
+//        VillagerIngredientHelper helper = new VillagerIngredientHelper();
+//        List<ResourceLocation> tags = helper.getTagStream(ingredient).toList();
+//        if (!tags.isEmpty()) {
+//            tooltip.add(MillenaireJeimmKeys.getVillagerTags().copy().withStyle(ChatFormatting.GRAY));
+//            for (ResourceLocation tag : tags) {
+//                tooltip.add(Component.literal("  $" + tag).withStyle(ChatFormatting.DARK_GRAY));
+//            }
+//        }
 
         return tooltip;
     }

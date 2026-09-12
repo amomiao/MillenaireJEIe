@@ -30,7 +30,7 @@ public class VillagerIngredientHelper implements IIngredientHelper<VillagerType>
     @Override
     public String getDisplayName(VillagerType ingredient) {
         if (ingredient == null) {
-            return MillenaireJeimmKeys.getVillagerUnknown().getString();
+            return MillenaireJeimmKeys.UnknownVillagerIng.asComponent().getString();
         }
         return MillenaireLocalizeHelper.getVillagerName(ingredient).getString();
     }

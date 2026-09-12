@@ -92,7 +92,7 @@ public class VillagerRequiredCategory extends BaseMillCategory<VillagerType> {
         Font font = Minecraft.getInstance().font;
 
         String name = recipe.nativeName() != null && !recipe.nativeName().isEmpty() ? recipe.nativeName() : recipe.id().getPath();
-        Component displayNameComponent = MillenaireJeimmKeys.getVillagerLabelBelongs(name);
+        Component displayNameComponent =  MillenaireJeimmKeys.VillagerRequiredCategoryTitle_S.asComponent(name);
 
         guiGraphics.drawString(font, displayNameComponent, 14, 8, 0x000000, false);
 

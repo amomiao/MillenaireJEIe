@@ -95,7 +95,7 @@ public class CultureVillagesCategory extends BaseMillCategory<Culture> {
         if (recipe != this.lastRecipe) {
             this.lastRecipe = recipe;
             String displayName = recipe.displayName() != null ? recipe.displayName() : recipe.id().getPath();
-            this.cachedDisplayNameComponent = Component.translatable(MillenaireJeimmKeys.BELONGING_CULTURE, displayName);
+            this.cachedDisplayNameComponent =  MillenaireJeimmKeys.CultureVillagesCategoryTitle_S.asComponent(displayName);
         }
 
         guiGraphics.drawString(font, this.cachedDisplayNameComponent, 14, 8, 0x000000, false);

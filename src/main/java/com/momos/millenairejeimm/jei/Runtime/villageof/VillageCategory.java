@@ -30,6 +30,9 @@ import org.millenaire.item.ItemHelper;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 村庄 {@link VillageType} JEI 详情主分类面板。
+ */
 public class VillageCategory extends BaseMillCategory<VillageType> {
 
     // [醒目新注释] 抽离 RecipeType ID、物品 ID 及渲染属性依赖常量
@@ -38,10 +41,6 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
     public static final RecipeType<VillageType> RECIPE_TYPE = RecipeType.create(RECIPE_TYPE_NAMESPACE, RECIPE_TYPE_PATH, VillageType.class);
 
     private static final String ITEM_TRAVEL_BOOK = "millenaire:travel_book";
-
-    private static final String PREFIX_INNER_WALL = "[内城墙] ";
-    private static final String PREFIX_OUTER_WALL = "[外城墙] ";
-    private static final String PREFIX_RAID = "[袭营机制] ";
 
     private static final MillIconOnlyRenderer<VillageType> ICON_RENDERER = new MillIconOnlyRenderer<>(recipe -> {
         if (recipe != null && recipe.icon() != null && !recipe.icon().isEmpty()) {
@@ -59,9 +58,9 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
         super(guiHelper, guiHelper.createDrawableItemStack(
                 new ItemStack(ItemHelper.resolve(ITEM_TRAVEL_BOOK) != null ? ItemHelper.resolve(ITEM_TRAVEL_BOOK) : Items.MAP)));
 
-        // [醒目新注释] 传入 Component 实例而非调用 .getString()，实现语言实时动态刷新
-        this.buildingBox = new JeiLinkBox<BuildingPlanSet>(MillenaireJeimmKeys.getVillageBoxBuildings()).useJeiMode(ingredientManager, MillIngredientTypes.BUILDING);
-        this.villagerBox = new JeiLinkBox<VillagerType>(MillenaireJeimmKeys.getVillageBoxVillagers()).useJeiMode(ingredientManager, MillIngredientTypes.VILLAGER);
+        // [醒目新注释] 传入 Component 实例而非调用静态 Key，结合 {@link MillenaireJeimmKeys} 规范保证语言切换时动态刷新标题
+        this.buildingBox = new JeiLinkBox<BuildingPlanSet>(MillenaireJeimmKeys.BuildingBoxLink.asComponent()).useJeiMode(ingredientManager, MillIngredientTypes.BUILDING);
+        this.villagerBox = new JeiLinkBox<VillagerType>(MillenaireJeimmKeys.VillagerBoxLink.asComponent()).useJeiMode(ingredientManager, MillIngredientTypes.VILLAGER);
         this.villageLayout = new JeiLinkLayout(2, 115, 172, 4)
                 .addBox(buildingBox)
                 .addBox(villagerBox);
@@ -166,34 +165,35 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
         if (recipe == null) return;
         Font font = Minecraft.getInstance().font;
         String displayName = recipe.name() != null && !recipe.name().isEmpty() ? recipe.name() : recipe.id().getPath();
-        // [醒目新注释] 默认文本改用 {@link MillenaireJeimmKeys#VILLAGE_UNKNOWN_CULTURE} 获取
-        String culture = recipe.culture() != null ? recipe.culture().getPath() : MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGE_UNKNOWN_CULTURE, "未知文化").getString();
+
+        // [醒目新注释] 提取 Header 文本与全量属性标签为 {@link MillenaireJeimmKeys} 本地化 key 渲染
+        String culture = recipe.culture() != null ? recipe.culture().getPath() : MillenaireJeimmKeys.UnknownCultureValue.asComponent().getString();
 
         drawCommonHeader(guiGraphics, font, displayName, recipe.id().toString(), culture, mouseX, mouseY);
 
-        // [醒目新注释] 村庄类型描述模板化提取，使用 {@link MillenaireJeimmKeys} 中的 Key
-        String typeStr = recipe.isMarvel() ? MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGE_TYPE_MARVEL, "奇观").getString()
-                : (recipe.isHamlet() ? MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGE_TYPE_HAMLET, "哈姆雷特/子村").getString()
-                : (recipe.loneBuilding() ? MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGE_TYPE_LONE, "独立建筑").getString()
-                : MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGE_TYPE_NORMAL, "常规村庄").getString()));
+        // [醒目新注释] 村庄类型描述模板化提取，严格对照 {@link CultureCategory} 规范统一使用 {@link MillenaireJeimmKeys}
+        String typeStr = recipe.isMarvel() ? MillenaireJeimmKeys.MarvelValue.asComponent().getString()
+                : (recipe.isHamlet() ? MillenaireJeimmKeys.HamletValue.asComponent().getString()
+                : (recipe.loneBuilding() ? MillenaireJeimmKeys.LoneBuildingValue.asComponent().getString()
+                : MillenaireJeimmKeys.NormalVillageValue.asComponent().getString()));
 
-        drawLabelValue(guiGraphics, font, MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGE_TYPE_LABEL, "类型分类").getString(), typeStr, 6, 42);
-        drawLabelValue(guiGraphics, font, MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGE_RADIUS, "作用半径").getString(), "§2" + recipe.radius() + "m", 6, 52);
-        drawLabelValue(guiGraphics, font, MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGE_MAX_CONSTRUCTIONS, "并行建造上限").getString(), "§1" + recipe.maxSimultaneousConstructions(), 6, 62);
-        drawLabelValue(guiGraphics, font, MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGE_WEIGHT, "生成权重").getString(), "§6" + recipe.weight(), 6, 72);
-        drawLabelValue(guiGraphics, font, MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGE_MIN_DISTANCE_SPAWN, "距出生点最小距离").getString(), "§c" + recipe.minDistanceFromSpawn() + "m", 6, 82);
+        drawLabelValue(guiGraphics, font, MillenaireJeimmKeys.TypeLabel.asComponent(), typeStr, 6, 42);
+        drawLabelValue(guiGraphics, font, MillenaireJeimmKeys.RadiusLabel.asComponent(), "§2" + MillenaireJeimmKeys.MeterValue_D.asComponent(recipe.radius()).getString(), 6, 52);
+        drawLabelValue(guiGraphics, font, MillenaireJeimmKeys.MaxConstructionsLabel.asComponent(), "§1" + recipe.maxSimultaneousConstructions(), 6, 62);
+        drawLabelValue(guiGraphics, font, MillenaireJeimmKeys.WeightLabel.asComponent(), "§6" + recipe.weight(), 6, 72);
+        drawLabelValue(guiGraphics, font, MillenaireJeimmKeys.MinDistanceSpawnLabel.asComponent(), "§c" + MillenaireJeimmKeys.MeterValue_D.asComponent(recipe.minDistanceFromSpawn()).getString(), 6, 82);
 
         StringBuilder wallInfo = new StringBuilder();
-        if (recipe.outerWallType() != null) wallInfo.append(MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGE_WALL_OUTER, PREFIX_OUTER_WALL).getString());
-        if (recipe.innerWallType() != null) wallInfo.append(MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGE_WALL_INNER, PREFIX_INNER_WALL).getString());
-        if (recipe.carriesRaid()) wallInfo.append(MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGE_WALL_RAID, PREFIX_RAID).getString());
-        String defenseText = wallInfo.length() > 0 ? wallInfo.toString() : MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGE_WALL_NONE, "无防御结构").getString();
+        if (recipe.outerWallType() != null) wallInfo.append(MillenaireJeimmKeys.OuterWallValue.asComponent().getString());
+        if (recipe.innerWallType() != null) wallInfo.append(MillenaireJeimmKeys.InnerWallValue.asComponent().getString());
+        if (recipe.carriesRaid()) wallInfo.append(MillenaireJeimmKeys.RaidValue.asComponent().getString());
 
-        drawHoverableText(guiGraphics, font, MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGE_DEFENSE, "防御属性").getString(), defenseText, 6, 92, mouseX, mouseY);
+        String defenseText = wallInfo.length() > 0 ? wallInfo.toString() : MillenaireJeimmKeys.NoDefenseValue.asComponent().getString();
+        drawHoverableText(guiGraphics, font, MillenaireJeimmKeys.DefenseLabel.asComponent(), defenseText, 6, 92, mouseX, mouseY);
 
-        String controlText = recipe.playerControlled() ? MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGE_CONTROL_PLAYER, "§d玩家控制").getString()
-                : MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGE_CONTROL_AUTO, "§8自主发展").getString();
-        drawLabelValue(guiGraphics, font, MillenaireJeimmKeys.translatable(MillenaireJeimmKeys.VILLAGE_CONTROL, "控制规则").getString(), controlText, 6, 102);
+        String controlText = recipe.playerControlled() ? "§d" + MillenaireJeimmKeys.PlayerControlledValue.asComponent().getString()
+                : "§8" + MillenaireJeimmKeys.AutoControlledValue.asComponent().getString();
+        drawLabelValue(guiGraphics, font, MillenaireJeimmKeys.ControlLabel.asComponent(), controlText, 6, 102);
 
         // [醒目新注释] 渲染前按当前配方强行同步数据，防止多配方平铺时渲染错位
         if (villageLayout != null) {

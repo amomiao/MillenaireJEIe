@@ -35,8 +35,7 @@ public class VillageIngredientHelper implements IIngredientHelper<VillageType> {
     @Override
     public String getDisplayName(VillageType ingredient) {
         if (ingredient == null) {
-            // [醒目新注释] 使用 {@link MillenaireJeimmKeys#getVillageUnknown()} 提取回退本地化未知村庄名称
-            return MillenaireJeimmKeys.getVillageUnknown().getString();
+            return MillenaireJeimmKeys.UnknownVillageIng.asComponent().getString();
         }
         return ingredient.name() != null ? ingredient.name() : ingredient.id().getPath();
     }

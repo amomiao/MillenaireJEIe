@@ -367,3 +367,44 @@
   * 我去怎么直接写cs了
 * Q128:我让你变量名写VillagerCategory这样的格式，不是让你写cs代码
 * 算了我手改吧
+* Q129:改动BuildingCategory内的`本地化`逻辑，参照另外的两个软件，记住key使用`首字母大写的驼峰格式`，对于`MillenaireJeimmKeys`内的内容只需要输出增量内容，且每行不需要注释。
+* Q130:改动BuildingCategory内的`本地化`逻辑，参照`CultureCategory`和下述`截取的文本内容`
+  * 记住key使用`首字母大写的驼峰格式`，对于文本内容只需要输出增量内容，每行不需要注释此文本的上下文。
+  * Label/Value/Link新建KT是严格遵守(PrefixLabel/Value/Link + "原文名","原文的合理输出")
+  * ```java```[移至下文]
+
+* Q130:改动BuildingCategory内的`本地化`逻辑，参照`CultureCategory`和下述`截取的文本内容`
+  * 记住key使用`首字母大写的驼峰格式`，对于文本内容只需要输出增量内容，每行不需要注释此文本的上下文。
+  * Label/Value/Link新建KT是严格遵守(PrefixLabel/Value/Link + "原文名","原文的合理输出")
+
+* Q130:改动VillageCategory内的`本地化`逻辑，参照`CultureCategory`和下述`截取的文本内容`
+  * 记住key使用`首字母大写的驼峰格式`，对于文本内容只需要输出增量内容，每行不需要注释此文本的上下文，但是`// {CultureCategory} 标签`这个功能文本依旧进行对应输出`{}`内容同输出类名。
+  * Label/Value/Link新建KT是严格遵守(PrefixLabel/Value/Link + "原文名","原文的合理输出")，变量名'_'前的`主名`的后缀必须是对应的Label/Value/Link,变量名在文本有`%`占位符号时后缀大写占位标识
+    * 如`public static final KT MaxCountValue_DS = new KT(PrefixValue + "helloworld", "%d%s");`
+  * getTitle()中的内容已经得到管理无需声明
+      ```java
+        /* CultureCategory 标签 */
+        public static final KT NativeLanguageLabel = new KT(PrefixLabel + "native_language", "Native Language: ");
+        public static final KT KnownCropsLabel = new KT(PrefixLabel + "known_crops", "Known Crops: ");
+        public static final KT HuntingDropsLabel = new KT(PrefixLabel + "hunting_drops", "Hunting Drops: ");
+        public static final KT MapIconLabel = new KT(PrefixLabel + "map_icon", "Map Icon: ");
+        public static final KT CultureBannerLabel = new KT(PrefixLabel + "culture_banner", "Culture Banner: ");
+        public static final KT PanelTextureLabel = new KT(PrefixLabel + "panel_texture", "Panel Texture: ");
+        // 状态/数值及其回退值
+        public static final KT UnsetValue = new KT(PrefixValue + "unset", "Unset");
+        public static final KT ConfiguredValue = new KT(PrefixValue + "configured", "Configured");
+        public static final KT UnconfiguredValue = new KT(PrefixValue + "unconfigured", "Unconfigured");
+        public static final KT HasNbtValue = new KT(PrefixValue + "has_nbt", "Has NBT");
+        public static final KT NoNbtValue = new KT(PrefixValue + "no_nbt", "No NBT");
+        public static final KT DefaultValue = new KT(PrefixValue + "default", "Default");
+        public static final KT CropCountValue_D = new KT(PrefixValue + "crop_count", "%d types");
+        public static final KT DropCountValue_D = new KT(PrefixValue + "drop_count", "%d types");
+        // LayoutBox标题
+        public static final KT VillageBoxLink = new KT(PrefixLink + "village_box", "Village");
+      ```
+* 同样的处理Villager
+* Q131: 根据修正值AbstractBuildingCostCategoryTitle_S，确保第一个参数key准确，参数2填写Belong %S即可，后续再调整
+* Q132: AbstractBuildingCostCategoryTitle_S，他是绝对的正确的，所有页面和他一样都要使用PrefixSecTitle，且不要注释
+* Q133: 根据过时的中文原生，迁移生成一份新的zh_cn
+* Q134: 只取用MillenaireJeimmKeys中有定义的key
+//- 本地化完成，但是现在美国是周六早八，发了也卡审核，再修点bug吧

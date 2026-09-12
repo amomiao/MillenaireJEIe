@@ -4,6 +4,7 @@ package com.momos.millenairejeimm.jei.Runtime.buildingof.ingredient;
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
+import com.momos.millenairejeimm.jei.MillenaireJeimmKeys;
 import mezz.jei.api.ingredients.IIngredientHelper;
 import mezz.jei.api.ingredients.IIngredientType;
 import mezz.jei.api.ingredients.subtypes.UidContext;
@@ -25,7 +26,6 @@ public class BuildingIngredientHelper implements IIngredientHelper<BuildingPlanS
     private static final String MOD_ID = "millenaire";
     private static final String UNKNOWN_BUILDING_ID = "unknown_building";
     private static final String UNKNOWN_PATH = "unknown";
-    private static final String DEFAULT_DISPLAY_NAME = "Unknown Building";
     private static final String ERR_NULL_INGREDIENT = "BuildingPlanSet is null";
     private static final String ERR_BUILDING_PREFIX = "Building: ";
 
@@ -43,7 +43,9 @@ public class BuildingIngredientHelper implements IIngredientHelper<BuildingPlanS
      */
     @Override
     public String getDisplayName(BuildingPlanSet ingredient) {
-        if (ingredient == null) return DEFAULT_DISPLAY_NAME;
+        if (ingredient == null) {
+            return MillenaireJeimmKeys.UnknownBuildingIng.asComponent().getString();
+        }
         return MillenaireLocalizeHelper.getBuildingName(ingredient).getString();
     }
 

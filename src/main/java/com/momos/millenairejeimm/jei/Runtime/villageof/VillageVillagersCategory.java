@@ -117,7 +117,7 @@ public class VillageVillagersCategory extends BaseMillCategory<VillageType> {
         if (recipe != this.lastRecipe) {
             this.lastRecipe = recipe;
             // [醒目新注释] 使用 {@link MillenaireJeimmKeys#getVillageLabelBelongs} 格式化显示所属村庄
-            this.cachedDisplayNameComponent = MillenaireJeimmKeys.getVillageLabelBelongs(recipe.name());
+            this.cachedDisplayNameComponent = MillenaireJeimmKeys.VillageVillagersCategoryTitle_S.asComponent(recipe.name());
         }
 
         guiGraphics.drawString(font, this.cachedDisplayNameComponent, HEADER_X, HEADER_Y, HEADER_COLOR, false);

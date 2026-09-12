@@ -7,7 +7,6 @@ import com.momos.millenairejeimm.jei.Runtime.BaseMillIngredientRenderer;
 import com.momos.millenairejeimm.jei.MillenaireJeimmKeys;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.TooltipFlag;
 import org.millenaire.building.BuildingPlanSet;
 
@@ -46,29 +45,28 @@ public class BuildingIngredientRenderer extends BaseMillIngredientRenderer<Build
     public List<Component> getTooltip(BuildingPlanSet ingredient, TooltipFlag tooltipFlag) {
         List<Component> tooltip = new ArrayList<>();
         if (ingredient == null) {
-            tooltip.add(Component.translatableWithFallback(MillenaireJeimmKeys.UNKNOWN_BUILDING, "Unknown Building").withStyle(ChatFormatting.RED));
+            tooltip.add(MillenaireJeimmKeys.UnknownBuildingIng.asComponent().withStyle(ChatFormatting.RED));
             return tooltip;
         }
 
         tooltip.add(MillenaireLocalizeHelper.getBuildingName(ingredient).copy().withStyle(ChatFormatting.WHITE));
 
         String cultureName = (ingredient.culture() != null) ? ingredient.culture().getPath() : UNKNOWN_CULTURE;
-        tooltip.add(Component.translatableWithFallback(MillenaireJeimmKeys.CULTURE_PREFIX, "Belonging Culture: %s", cultureName)
-                .withStyle(ChatFormatting.GRAY));
+        tooltip.add(MillenaireJeimmKeys.CultureIngR_S.asComponent(cultureName).withStyle(ChatFormatting.GRAY));
 
         // [醒目新注释] 始终输出建筑全路径 ID
         String fullId = cultureName + ":" + (ingredient.buildingId() != null ? ingredient.buildingId() : UNKNOWN_CULTURE);
         tooltip.add(Component.literal(ID_PREFIX + fullId).withStyle(ChatFormatting.DARK_GRAY));
 
-        // [醒目新注释] 调用 {@link BuildingIngredientHelper#getTagStream} 遍历该建筑拥有的所有标签（文化、关联村庄、关联村民等）
-        BuildingIngredientHelper helper = new BuildingIngredientHelper();
-        List<ResourceLocation> tags = helper.getTagStream(ingredient).toList();
-        if (!tags.isEmpty()) {
-            tooltip.add(Component.translatableWithFallback(MillenaireJeimmKeys.ASSOCIATED_TAGS, "Associated Tags ($ Tag):").withStyle(ChatFormatting.GRAY));
-            for (ResourceLocation tag : tags) {
-                tooltip.add(Component.literal("  $" + tag).withStyle(ChatFormatting.DARK_GRAY));
-            }
-        }
+//        // [醒目新注释] 调用 {@link BuildingIngredientHelper#getTagStream} 遍历该建筑拥有的所有标签（文化、关联村庄、关联村民等）
+//        BuildingIngredientHelper helper = new BuildingIngredientHelper();
+//        List<ResourceLocation> tags = helper.getTagStream(ingredient).toList();
+//        if (!tags.isEmpty()) {
+//            tooltip.add(Component.translatableWithFallback(MillenaireJeimmKeys.ASSOCIATED_TAGS, "Associated Tags ($ Tag):").withStyle(ChatFormatting.GRAY));
+//            for (ResourceLocation tag : tags) {
+//                tooltip.add(Component.literal("  $" + tag).withStyle(ChatFormatting.DARK_GRAY));
+//            }
+//        }
 
         return tooltip;
     }
