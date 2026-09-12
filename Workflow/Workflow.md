@@ -408,3 +408,28 @@
 * Q133: 根据过时的中文原生，迁移生成一份新的zh_cn
 * Q134: 只取用MillenaireJeimmKeys中有定义的key
 //- 本地化完成，但是现在美国是周六早八，发了也卡审核，再修点bug吧
+* Bug
+  1. [一级窗口]描述里重复出现的"::"
+  2. [一级窗口]村民详情的JeiLinkBox，其下Item类型的没有正确渲染Item
+  3. [Ingredient]悬浮信息至少把对象简单的能给出的给一下
+* 优化
+  1. [二级窗口]如`村庄出现村民`，过滤空？不过滤显式的告诉玩家这个对象指向空，过滤则是更好的体验
+  2. [二级页面]如`村庄出现村民`，这些汉化不好，等会改一下
+  3. [Ingredient]图标可以更好看一点
+  4. 建材统计好像有API，等会测试一下
+* Bug.1: `代码拼合`和`本地化`各有一个`:`，去掉谁？-`本地化`不再写`:`
+* Bug.2: 不知道为什么，问一下AI
+  * Q135: 对渲染`ItemStack`的JeiLinkBox，`BuildingCategory`正确渲染了，而`VillagerCategory`却没有，查找一下原因。
+  * Q136: 只是JeiLinkBox没有渲染Item数据是好的，VillagerBringBackHomeCategory能正确渲染item
+  * 希望得到`ItemStack`但参数是`Item`
+    * JeiLinkBox.useJeiMode 方法接收的参数类型为 IIngredientType<Object>（或无通配符的泛型定义），而 MillIngredientTypes.VILLAGE 的实际类型是 IIngredientType<VillageType>。在 Java 中，IIngredientType<VillageType> 不能隐式向上转型为 IIngredientType<Object>，导致编译器拒绝匹配该方法。 
+    * 通过对 MillIngredientTypes.VILLAGE 和 MillIngredientTypes.BUILDING 进行原始类型强转（Raw Type Cast） (mezz.jei.api.ingredients.IIngredientType) 绕过泛型检查即可解决
+      * Q137: 这个问题在C#有吗，翻译成C#是什么意思
+        * 哦协变，叽里呱啦不说这俩字没反应过来
+  * Q138：问题没有解决还是空白，你在VillagerCategory加一点客户端输出聊天消息看看什么情况
+    * ItemStack 槽位漏掉了 .useJeiMode(...)
+    * 我擦，抄都能抄歪了，链式调用的孬处就在这
+* Bug.3: 给个`ID(ResourceLocation)`算了，`ID`带文明了，其他的都是一对多的关系
+  * 我去，第一个tooltip.add是名字不能删
+* 优化.4: 现在一个[Ingredient]是由1个可变图标、1小串字组合渲染的
+  * 右上角再渲染一个小图标，文化是钻石，村庄是金锭，建筑是铁锭，村民是绿宝石，主体内容全都尝试从旅行书中获得

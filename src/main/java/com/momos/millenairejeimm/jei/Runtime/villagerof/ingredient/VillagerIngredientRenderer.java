@@ -30,6 +30,10 @@ public class VillagerIngredientRenderer extends BaseMillIngredientRenderer<Villa
             return tooltip;
         }
         tooltip.add(MillenaireLocalizeHelper.getVillagerName(ingredient).copy().withStyle(ChatFormatting.WHITE));
+        if (ingredient.id() != null) {
+            tooltip.add(Component.literal("ID:" + ingredient.id().toString()).withStyle(ChatFormatting.DARK_GRAY));
+        }
+
 //        if (ingredient.culture() != null) {
 //            tooltip.add(MillenaireJeimmKeys.getVillagerCulture(ingredient.culture().getPath()).copy().withStyle(ChatFormatting.GRAY));
 //        }

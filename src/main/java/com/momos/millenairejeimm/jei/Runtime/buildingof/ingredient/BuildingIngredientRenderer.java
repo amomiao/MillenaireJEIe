@@ -51,11 +51,10 @@ public class BuildingIngredientRenderer extends BaseMillIngredientRenderer<Build
 
         tooltip.add(MillenaireLocalizeHelper.getBuildingName(ingredient).copy().withStyle(ChatFormatting.WHITE));
 
-        String cultureName = (ingredient.culture() != null) ? ingredient.culture().getPath() : UNKNOWN_CULTURE;
-        tooltip.add(MillenaireJeimmKeys.CultureIngR_S.asComponent(cultureName).withStyle(ChatFormatting.GRAY));
-
-        // [醒目新注释] 始终输出建筑全路径 ID
-        String fullId = cultureName + ":" + (ingredient.buildingId() != null ? ingredient.buildingId() : UNKNOWN_CULTURE);
+        String cname = (ingredient.culture() != null) ? ingredient.culture().getPath() : UNKNOWN_CULTURE;
+        // tooltip.add(MillenaireJeimmKeys.CultureIngR_S.asComponent(cname).withStyle(ChatFormatting.GRAY));
+        // 始终输出建筑全路径 ID
+        String fullId = cname + ":" + (ingredient.buildingId() != null ? ingredient.buildingId() : UNKNOWN_CULTURE);
         tooltip.add(Component.literal(ID_PREFIX + fullId).withStyle(ChatFormatting.DARK_GRAY));
 
 //        // [醒目新注释] 调用 {@link BuildingIngredientHelper#getTagStream} 遍历该建筑拥有的所有标签（文化、关联村庄、关联村民等）

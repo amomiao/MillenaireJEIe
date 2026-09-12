@@ -31,9 +31,12 @@ public class VillageIngredientRenderer extends BaseMillIngredientRenderer<Villag
             tooltip.add(MillenaireJeimmKeys.UnknownVillagerIng.asComponent().withStyle(ChatFormatting.RED));
             return tooltip;
         }
-
         String displayName = ingredient.name() != null && !ingredient.name().isEmpty() ? ingredient.name() : ingredient.id().getPath();
         tooltip.add(Component.literal(displayName).withStyle(ChatFormatting.WHITE));
+        if (ingredient.id() != null) {
+            tooltip.add(Component.literal("ID:" + ingredient.id().toString()).withStyle(ChatFormatting.DARK_GRAY));
+        }
+
 
 //        if (ingredient.culture() != null) {
 //            // [醒目新注释] 使用 {@link MillenaireJeimmKeys#VILLAGE_CULTURE} 参数化拼装文化提示信息
