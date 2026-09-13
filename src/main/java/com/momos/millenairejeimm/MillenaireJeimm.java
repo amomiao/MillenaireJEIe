@@ -1,13 +1,13 @@
 package com.momos.millenairejeimm;
 
-import com.momos.millenairejeim.gui.widget.MillPlusButtonWidget;
+import com.momos.millenairejeim.gui.MillPlusButtonWidget;
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeim.jei.crafting.MillCraftingCategory;
 import com.momos.millenairejeim.jei.crafting.MillCraftingRecipe;
 import com.momos.millenairejeim.jei.crafting.event.MillRecipeButtonClickEvent;
 import com.momos.millenairejeim.jei.crafting.event.MillRecipeButtonRenderEvent;
 import com.momos.millenairejeim.jei.crafting.event.MillRecipeSetSlotEvent;
-import com.momos.millenairejeim.jei.crafting.type.base.IMillRecipe;
+import com.momos.millenairejeim.jei.IMillRecipe;
 import com.momos.millenairejeimm.debug.DebugGuiUtils;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.MillenaireJeimmPlugin;

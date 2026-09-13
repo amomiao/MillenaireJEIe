@@ -3,7 +3,7 @@ package com.momos.millenairejeimm.jei.event.linkageplusbutton;
 import com.momos.millenairejeim.jei.crafting.MillCraftingCategory;
 import com.momos.millenairejeim.jei.crafting.event.MillRecipeButtonClickEvent;
 import com.momos.millenairejeim.jei.crafting.event.MillRecipeButtonRenderEvent;
-import com.momos.millenairejeim.jei.crafting.type.base.IMillRecipe;
+import com.momos.millenairejeim.jei.IMillRecipe;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.MillenaireJeimmPlugin;
 
