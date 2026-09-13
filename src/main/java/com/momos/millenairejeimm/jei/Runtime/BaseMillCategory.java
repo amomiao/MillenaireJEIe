@@ -9,6 +9,7 @@ import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.category.IRecipeCategory;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
@@ -138,7 +139,8 @@ public abstract class BaseMillCategory<T> implements IRecipeCategory<T> {
                 InputConstants.Key key = input.getKey();
                 if (key.getType() == InputConstants.Type.MOUSE && key.getValue() == 0) {
                     if (!input.isSimulate()) {
-                        DebugGuiUtils.openJsonDumpScreen(recipe, getCustomInspectorLines(recipe));
+                        // [醒目新注释] 传入当前的 Screen (即 JEI 界面 {@link net.minecraft.client.gui.screens.Screen}) 作为父级界面保存
+                        DebugGuiUtils.openJsonDumpScreen(recipe, getCustomInspectorLines(recipe), Minecraft.getInstance().screen);
                     }
                 }
                 return false;

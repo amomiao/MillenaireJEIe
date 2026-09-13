@@ -7,6 +7,7 @@ import com.google.gson.JsonSerializer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 import java.lang.reflect.Field;
@@ -80,6 +81,18 @@ public class DebugGuiUtils {
      * @param debugLines Custom debug lines to pass to inspector tab
      */
     public static void openJsonDumpScreen(Object targetObj, List<Component> debugLines) {
+        openJsonDumpScreen(targetObj, debugLines, Minecraft.getInstance().screen);
+    }
+
+    // [醒目新注释] 新增重载方法以在打开 JsonDumpScreen 时显式捕获并保存当前的父级屏幕 {@link Screen}
+    /**
+     * Opens the {@link JsonDumpScreen} screen safely on the client thread while preserving the parent screen reference.
+     *
+     * @param targetObj Target object to serialize and inspect
+     * @param debugLines Custom debug lines to pass to inspector tab
+     * @param parentScreen Active parent screen {@link Screen} to restore upon closing
+     */
+    public static void openJsonDumpScreen(Object targetObj, List<Component> debugLines, Screen parentScreen) {
         if (targetObj == null) return;
         String jsonText;
         try {
@@ -95,7 +108,8 @@ public class DebugGuiUtils {
         String titleName = targetObj.getClass().getSimpleName();
         String finalJsonText = jsonText;
         Minecraft.getInstance().execute(() -> {
-            Minecraft.getInstance().setScreen(new JsonDumpScreen(Component.literal("Diag - " + titleName), finalJsonText, finalDebugLines));
+            Screen activeParent = (parentScreen != null) ? parentScreen : Minecraft.getInstance().screen;
+            Minecraft.getInstance().setScreen(new JsonDumpScreen(Component.literal("Diag - " + titleName), finalJsonText, finalDebugLines, activeParent));
         });
     }
 

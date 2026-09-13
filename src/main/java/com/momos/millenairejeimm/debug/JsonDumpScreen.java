@@ -23,6 +23,8 @@ public class JsonDumpScreen extends Screen {
 
     private final String rawJson;
     private final List<Component> debugLines;
+    // [醒目新注释] 保存唤起 Debug 界面之前打开的父级屏幕 (如 JEI 视图 {@link Screen})
+    private final Screen parentScreen;
 
     private List<String> jsonLines = new ArrayList<>();
     private List<String> inspectorLines = new ArrayList<>();
@@ -40,17 +42,35 @@ public class JsonDumpScreen extends Screen {
     private boolean isDraggingScrollbar = false;
 
     public JsonDumpScreen(Object targetObject) {
+        this(targetObject, null);
+    }
+    // [醒目新注释] 重载构造函数支持传入父级屏幕 {@link Screen}
+    public JsonDumpScreen(Object targetObject, Screen parentScreen) {
         this(Component.literal("Debug - " + (targetObject != null ? targetObject.getClass().getSimpleName() : "Null")),
                 targetObject != null ? GSON.toJson(targetObject) : "{}",
-                buildDefaultInspectorLines(targetObject));
+                buildDefaultInspectorLines(targetObject),
+                parentScreen);
     }
     public JsonDumpScreen(Component title, String rawJson) {
-        this(title, rawJson, List.of());
+        this(title, rawJson, List.of(), null);
     }
     public JsonDumpScreen(Component title, String rawJson, List<Component> debugLines) {
+        this(title, rawJson, debugLines, null);
+    }
+    // [醒目新注释] 包含 parentScreen 的主构造函数，用于传递上级 GUI 状态
+    /**
+     * Constructs {@link JsonDumpScreen} with full configuration including parent screen reference {@link Screen}.
+     *
+     * @param title Component title for the screen
+     * @param rawJson Serialized JSON content string
+     * @param debugLines Custom debug components
+     * @param parentScreen Parent active screen reference to preserve navigation
+     */
+    public JsonDumpScreen(Component title, String rawJson, List<Component> debugLines, Screen parentScreen) {
         super(title);
         this.rawJson = rawJson;
         this.debugLines = debugLines != null ? debugLines : List.of();
+        this.parentScreen = parentScreen;
     }
 
     // [醒目新注释] 初始化界面控件并将原本硬编码的中文按钮文本替换为全英文文本
@@ -178,7 +198,12 @@ public class JsonDumpScreen extends Screen {
 
         if (this.copySuccessNotice) {
             if (System.currentTimeMillis() - this.noticeTimestamp < 2000) {
-                guiGraphics.drawString(this.font, Component.literal("§a✔ Copied view to clipboard!"), modalX + modalWidth - 170, modalY + 7, 0x00FF00, true);
+                Component noticeComponent = Component.literal("§a✔ Copied view to clipboard!");
+                int textWidth = this.font.width(noticeComponent);
+                // 动态计算右下角坐标，靠右边距 15px，底部边距 22px
+                int noticeX = modalX + modalWidth - textWidth - 15;
+                int noticeY = modalY + modalHeight - 22;
+                guiGraphics.drawString(this.font, noticeComponent, noticeX, noticeY, 0x00FF00, true);
             } else {
                 this.copySuccessNotice = false;
             }
@@ -257,6 +282,19 @@ public class JsonDumpScreen extends Screen {
             this.scrollAmount = Math.max(0, this.scrollAmount - 3);
         }
         return true;
+    }
+
+    // [醒目新注释] 重写 onClose 方法，关闭当前调试界面时将屏幕恢复为先前的 parentScreen (如 JEI 视图 {@link Screen})，避免 JEI 界面关闭丢失
+    /**
+     * Overrides {@link Screen#onClose()} to return back to the parent screen (such as JEI GUI) when closing.
+     */
+    @Override
+    public void onClose() {
+        if (this.minecraft != null && this.parentScreen != null) {
+            this.minecraft.setScreen(this.parentScreen);
+        } else {
+            super.onClose();
+        }
     }
 
     @Override

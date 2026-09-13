@@ -431,5 +431,24 @@
     * 我擦，抄都能抄歪了，链式调用的孬处就在这
 * Bug.3: 给个`ID(ResourceLocation)`算了，`ID`带文明了，其他的都是一对多的关系
   * 我去，第一个tooltip.add是名字不能删
-* 优化.4: 现在一个[Ingredient]是由1个可变图标、1小串字组合渲染的
+* 优化.3: 现在一个[Ingredient]是由1个可变图标、1小串字组合渲染的
   * 右上角再渲染一个小图标，文化是钻石，村庄是金锭，建筑是铁锭，村民是绿宝石，主体内容全都尝试从旅行书中获得
+  * `MillIngredientIconResolver`负责这段代码
+  * 角标两个字溢出太厉害了，缩成一个算了，在`Math.min`后修改
+* 优化.4 现在的资源消耗是从`BuildingPlanSet`中得到`LevelDef`得到`NbtPath`然后计算得到的，但是我发现`LevelDef`有`public Map<ResourceLocation, Integer> requiredResources()`我不确定他是什么
+  * 查阅了`BuildGoal`得知他就是升级材料计数，那么BuildingUpgradeCostHelper就可以过时了
+  * `BuildingUpgradeCostHelper`不再依赖计算器，直接依赖这个API
+* 当前版本只剩下汉化优化了
+* Q137: ("§a✔ Copied view to clipboard!")移动到右下角
+* Q138: 根据zh_cn生成一份en_us，现有的en_us可以作为语义参考
+  * 不对我的失败回调不就是英语写的吗
+* 优化.2: 汉化/英化改善完成
+* Q139: 现在的Debug窗口的唤起会关闭JEI窗口，你能仅简单修改这三个文件就解决问题吗？
+  * Minecraft 的 GUI 渲染机制为单屏幕模式（同时仅有一个 Screen 激活）。当调用 Minecraft.getInstance().setScreen(...) 打开全新的 JsonDumpScreen 时，原有的 JEI 配方界面 (RecipesGui) 会被替换。如果在关闭 JsonDumpScreen 时直接触发默认的 Screen#onClose()，Minecraft 会将屏幕置空（setScreen(null)），导致无法返回 JEI 界面。
+  * JsonDumpScreen：新增 parentScreen 变量与构造函数参数；重写 onClose() 方法，在关闭调试窗口时恢复原先的 parentScreen。 
+  * DebugGuiUtils：在打开 JsonDumpScreen 时传入 Minecraft.getInstance().screen（即当前正在显示的 JEI 界面）。 
+  * BaseMillCategory：唤起 Debug 窗口时将当前激活的 JEI Screen 传递给 DebugGuiUtils。
+* 主模组和子模组进行一个联动
+  * Q140: 我有一个千年工艺配方，我想让千年工艺有个按钮可以进行对村民详情的指向，也就是把村民详情的设置为`RecipeIngredientRole#CATALYST`我具体应该怎么做？现在先只做一件事：建立`RecipeIngredientRole#CATALYST`关系。
+  * Q141: 检查存在模组：millenairejeimm时进行这个行为，且现在书写内容为父模组联动子模组，这样书写会不会出现调用时机错误的问题？
+  * Q142: 父子模组都是我的，你设计一个逻辑安全的实现这个行为，最好不要注入
