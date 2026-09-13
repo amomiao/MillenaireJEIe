@@ -461,6 +461,9 @@
   由于父模组在别处这样制作内容，可以把这个按钮封装成一个控件。
   ```
 * Q144: 按钮不起作用，并且一堆目标图标被放置在奇怪的位置，按钮的目的是跳转到有对应页面，且只有与唤起页面参数相关的条目。
+  * 1. 按钮点击无响应：坐标二次校验冲突
+       原因：在 createRecipeExtras 中，getArea() 返回的 ScreenRectangle 已被 JEI 用于自动拦截点击。但在 handleInput 中又调用了 villagerPlusButton.isHovered(...)，而 handleInput 传入的 mouseX/mouseY 是 配方面板局部坐标，与 isHovered 内部期待的全局坐标不匹配，导致判定始终返回 false。
+       修复：移除 handleInput 内部多余的 isHovered 校验，依赖 ScreenRectangle 完成区域拦截。
 * Q145: 修改，这个三个方法都在此类吗？
 * Q146: 回忆整理代码，准备再做一组相同用法的按钮
   ```text
@@ -475,3 +478,10 @@
   * 按钮点击失效且位置错位的根本原因在于：JEI 的槽位图标与加号按钮坐标重叠。之前 JEI 槽位设在 (140, 72)，加号按钮设在 (142, 74)，使得 JEI 槽位的鼠标判定覆盖了按钮，点击时直接被 JEI 的“按 R/U 查配方”逻辑拦截，导致点击事件无法传递到按钮。  只需将 JEI 槽位图标左移至 128，并将 加号按钮移至右侧外面 148（错开坐标），即可恢复按钮点击并解决排版重叠。
 * Q150: 交易页面同样需要把按钮移到框外
 * Q151: 进行修改，注意当前`MillTradeCategory`是无报错的，确保不要调用到错误的API
+* Q152: 按钮还是不能按，你写一点客户端聊天栏输出看看到底怎么回事
+* Q153: 你得想办法找到事件为什么不触发，渲染是正常的。 [Q144]这是之前不触发的原因及其解决方案，看看有没有帮助
+  * 缺失 getBackground() 重写：MillTradeCategory 中声明了 178 宽度的 background，但未重写 IRecipeCategory#getBackground() 方法。JEI 19.x+ 依赖 getBackground() 获取配方卡片的裁剪与点击判定区域（ScreenRectangle），缺失该方法会导致 JEI 将点击有效区裁剪回默认尺寸（160px），导致位于 X=163 的框外按钮直接被 JEI 拦截过滤。
+    * 这一条不用测肯定是假的，getBackground() 已经过时了。
+  * 控件局部坐标与全局 isHovered 冲突：若 MillPlusButtonWidget 内部包含了 isHovered 或全局坐标校验，JEI 传递给 createRecipeExtras 控件的 mouseX/mouseY 是配方卡片相对坐标（0~178），会导致控件内部坐标判定失效。
+* 找不到原因，回到可用的版本看看
+  
