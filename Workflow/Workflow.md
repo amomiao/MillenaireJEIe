@@ -449,6 +449,25 @@
   * DebugGuiUtils：在打开 JsonDumpScreen 时传入 Minecraft.getInstance().screen（即当前正在显示的 JEI 界面）。 
   * BaseMillCategory：唤起 Debug 窗口时将当前激活的 JEI Screen 传递给 DebugGuiUtils。
 * 主模组和子模组进行一个联动
-  * Q140: 我有一个千年工艺配方，我想让千年工艺有个按钮可以进行对村民详情的指向，也就是把村民详情的设置为`RecipeIngredientRole#CATALYST`我具体应该怎么做？现在先只做一件事：建立`RecipeIngredientRole#CATALYST`关系。
-  * Q141: 检查存在模组：millenairejeimm时进行这个行为，且现在书写内容为父模组联动子模组，这样书写会不会出现调用时机错误的问题？
-  * Q142: 父子模组都是我的，你设计一个逻辑安全的实现这个行为，最好不要注入
+* Q140: 我有一个千年工艺配方，我想让千年工艺有个按钮可以进行对村民详情的指向，也就是把村民详情的设置为`RecipeIngredientRole#CATALYST`我具体应该怎么做？现在先只做一件事：建立`RecipeIngredientRole#CATALYST`关系。
+* Q141: 检查存在模组：millenairejeimm时进行这个行为，且现在书写内容为父模组联动子模组，这样书写会不会出现调用时机错误的问题？
+* Q142: 父子模组都是我的，你设计一个逻辑安全的实现这个行为，最好不要注入
+* Q143
+  ```text
+  在MillCraftingCategory中绘制一个原生的GUI，以按钮的样式绘制，上面有个绿色的`＋`，只需要绘制一个，为村民唤起村民详情的查看。
+  按钮也是提供事件以运行，提供给子模组。
+  事件1：是否绘制
+  事件2：触发内容
+  由于父模组在别处这样制作内容，可以把这个按钮封装成一个控件。
+  ```
+* Q144: 按钮不起作用，并且一堆目标图标被放置在奇怪的位置，按钮的目的是跳转到有对应页面，且只有与唤起页面参数相关的条目。
+* Q145: 修改，这个三个方法都在此类吗？
+* Q146: 回忆整理代码，准备再做一组相同用法的按钮
+  ```text
+  复用开发时的避坑清单
+  Role 规范匹配： 跳转 Focus (createFocus) 与目标 Category (setRecipe) 使用的 Role 必须完全一致（通常为 RecipeIngredientRole.OUTPUT），否则 JEI 无法准确过滤目标 Category。
+  禁用负坐标： 切勿设置 (-100, -100) 这类视口外坐标，JEI 会将其安全裁剪限制在屏幕左上角 (0, 0) 处渲染出浮空图案。
+  多焦点接口： 现代 JEI 版本的 {@link mezz.jei.api.runtime.IRecipesGui#show} 接受的是 List<IFocus<?>>，使用 Stream 映射时必须加上 .<IFocus<?>>map(...) 显式泛型标记。
+  ```
+* Q147: 这个按钮没有检查可用性，移除了子模组仍然存在，且应当和轮播对象有一定关联，没有轮播对象的时候也不要显示，重构中修复这部分问题。
+* Q148: 同样的结构，增加唤起的建筑的搜索
