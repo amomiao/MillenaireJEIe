@@ -168,8 +168,8 @@ public class MillenaireJeimm {
     ///     会话1: 给予本节文本，至少读取:
     ///         [MillenaireAPIHelper]
     ///         [MillCraftingCategory]、[MillCraftingRecipe]
-    ///         [MillVillagerDetailButtonHandler]、[MillCraftingRecipeSlotEventListener]
     ///         [MillRecipeButtonRenderEvent] [MillRecipeButtonClickEvent] [MillRecipeSetSlotEvent]
+    ///         [MillVillagerDetailButtonHandler]、[MillCraftingRecipeSlotEventListener]
     ///         => 读取文本及文件，准备对相关功能进行开发;
     ///     会话2: 给予目标开始运行,请求时带上对应的[MillCraftingRecipe],且告知其应当继承[IMillRecipe]
     public MillenaireJeimm(IEventBus modEventBus, ModContainer modContainer) {

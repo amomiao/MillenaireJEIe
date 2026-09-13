@@ -13,69 +13,78 @@ import mezz.jei.api.recipe.RecipeIngredientRole;
 
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import org.millenaire.building.BuildingPlanSet;
 import org.millenaire.culture.VillagerType;
 
 import java.util.List;
 
 /**
- * [醒目新注释] 子模组村民详情按钮事件订阅器。
- * 绑定 JEI 轮播数据源 {@link VillagerType}，动态控制按钮渲染可用性与多焦点跳转。
+ * [醒目新注释] 子模组详情按钮事件订阅器。
+ * 绑定 JEI 轮播数据源 {@link VillagerType} 与 {@link BuildingPlanSet}，动态控制按钮渲染可用性与多焦点跳转。
  */
 @EventBusSubscriber(modid = "millenairejeimm")
 public class MillVillagerDetailButtonHandler {
     /**
-     * [醒目新注释] 校验按钮可用性与渲染状态。
+     * [醒目新注释] 校验按钮可用性与渲染状态（区分村民按钮与建筑按钮）。
      *
      * @param event 父模组发出的按钮渲染事件 {@link MillRecipeButtonRenderEvent}
      */
     @SubscribeEvent
     public static void onCheckButtonRender(MillRecipeButtonRenderEvent event) {
+        IMillRecipe recipe = event.getRecipe();
+        if (recipe == null) return;
+
+        // 1. 村民详情按钮校验
         if (MillCraftingCategory.BUTTON_ID_VILLAGER_DETAIL.equals(event.getButtonId())) {
-            IMillRecipe recipe = event.getRecipe();
-
-            /* =========================================================================================
-             * [醒目新注释] 轮播数据源联锁校验：
-             * 1. 严格获取该配方提供给 JEI 轮播槽位的村民列表 {@link IMillRecipe#getVillagerTypes()}。
-             * 2. 仅当配方不为空且关联的轮播村民数量 > 0 时，才允许将渲染状态置为 true。
-             * 3. 无轮播对象时保持 false，不进行渲染。
-             * ========================================================================================= */
-            List<VillagerType> carouselVillagers = (recipe != null) ? recipe.getVillagerTypes() : null;
+            List<VillagerType> carouselVillagers = recipe.getVillagerTypes();
             boolean hasCarouselObjects = carouselVillagers != null && !carouselVillagers.isEmpty();
-
+            event.setShouldRender(hasCarouselObjects);
+        }
+        // 2. [醒目新注释] 建筑详情按钮校验
+        else if (MillCraftingCategory.BUTTON_ID_BUILDING_DETAIL.equals(event.getButtonId())) {
+            List<BuildingPlanSet> carouselBuildings = recipe.getAssociatedBuildingIds();
+            boolean hasCarouselObjects = carouselBuildings != null && !carouselBuildings.isEmpty();
             event.setShouldRender(hasCarouselObjects);
         }
     }
 
     /**
-     * [醒目新注释] 处理按钮点击并唤起 JEI 多焦点查询。
+     * [醒目新注释] 处理按钮点击并唤起 JEI 多焦点查询（区分村民与建筑跳转）。
      *
      * @param event 父模组发出的按钮点击事件 {@link MillRecipeButtonClickEvent}
      */
     @SubscribeEvent
     public static void onButtonClick(MillRecipeButtonClickEvent event) {
-        if (MillCraftingCategory.BUTTON_ID_VILLAGER_DETAIL.equals(event.getButtonId())) {
-            IMillRecipe recipe = event.getRecipe();
-            if (recipe == null) return;
+        IMillRecipe recipe = event.getRecipe();
+        if (recipe == null || MillenaireJeimmPlugin.JeiRuntime == null) return;
 
-            /* =========================================================================================
-             * [醒目新注释] 点击安全阻断校验：
-             * 直接基于轮播数据源 {@link IMillRecipe#getVillagerTypes()} 进行二次防护，
-             * 若没有轮播对象或 JEI 运行时 {@link MillenaireJeimmPlugin#JeiRuntime} 未就绪则直接拦截。
-             * ========================================================================================= */
+        IFocusFactory focusFactory = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory();
+
+        // 1. 处理村民详情按钮点击：跳转至对应村民要素
+        if (MillCraftingCategory.BUTTON_ID_VILLAGER_DETAIL.equals(event.getButtonId())) {
             List<VillagerType> villagers = recipe.getVillagerTypes();
-            if (villagers == null || villagers.isEmpty() || MillenaireJeimmPlugin.JeiRuntime == null) {
-                return;
-            }
-            IFocusFactory focusFactory = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory();
-            /* =========================================================================================
-             * [醒目新注释] 生成多焦点列表：
-             * 将轮播数据源中的全部 {@link VillagerType} 映射为 {@link IFocus} 并提交至 {@link mezz.jei.api.runtime.IRecipesGui#show(List)}。
-             * ========================================================================================= */
+            if (villagers == null || villagers.isEmpty()) return;
+
             List<IFocus<?>> focusList = villagers.stream()
                     .<IFocus<?>>map(villager -> focusFactory.createFocus(
-                            RecipeIngredientRole.OUTPUT,
+                            RecipeIngredientRole.INPUT,
                             MillIngredientTypes.VILLAGER,
                             villager
+                    ))
+                    .toList();
+
+            MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(focusList);
+        }
+        // 2. [醒目新注释] 处理建筑详情按钮点击：跳转至对应建筑要素
+        else if (MillCraftingCategory.BUTTON_ID_BUILDING_DETAIL.equals(event.getButtonId())) {
+            List<BuildingPlanSet> buildings = recipe.getAssociatedBuildingIds();
+            if (buildings == null || buildings.isEmpty()) return;
+
+            List<IFocus<?>> focusList = buildings.stream()
+                    .<IFocus<?>>map(building -> focusFactory.createFocus(
+                            RecipeIngredientRole.INPUT,
+                            MillIngredientTypes.BUILDING,
+                            building
                     ))
                     .toList();
 
