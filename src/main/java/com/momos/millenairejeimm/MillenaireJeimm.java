@@ -23,10 +23,8 @@ import com.momos.millenairejeimm.jei.Runtime.JeiLinkLayout;
 import com.momos.millenairejeimm.jei.Runtime.villageof.VillageBuildingsCategory;
 import com.momos.millenairejeimm.jei.Runtime.villageof.VillageCategory;
 import com.momos.millenairejeimm.jei.Runtime.villageof.VillageVillagersCategory;
-import com.momos.millenairejeimm.jei.event.linkageplusbutton.ILinkagePlusButtonHandler;
-import com.momos.millenairejeimm.jei.event.linkageslot.ILinkageSlotEventListener;
-import com.momos.millenairejeimm.jei.event.linkageslot.MillCraftingRecipeSlotEventListener;
 import com.momos.millenairejeimm.jei.event.linkageplusbutton.MillVillagerDetailButtonHandler;
+import com.momos.millenairejeimm.jei.event.linkageslot.MillCraftingRecipeSlotEventListener;
 import mezz.jei.api.gui.inputs.IJeiInputHandler;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.ingredients.IIngredientHelper;
@@ -158,15 +156,19 @@ public class MillenaireJeimm {
     ///     [MillCraftingRecipeSlotEventListener]`1对象:1声明`:事件逻辑=执行事件-绘制Recipe时做
     ///         声明[MillCraftingRecipeSlotEventListener#BUILDING_ICON_X]这样成员变量,设置`按钮的绘制位置`
     ///         声明[MillCraftingRecipeSlotEventListener#onSetRecipeSlots]内的逻辑,创建轮播`JEI要素`
-    /// (更新)
+    /// [废弃]
     ///     [MillVillagerDetailButtonHandler]现在遵循了接口[ILinkagePlusButtonHandler]
     ///     [MillCraftingRecipeSlotEventListener]现在遵循了接口[ILinkageSlotEventListener]
+    /// (更新)
+    ///     [MillVillagerDetailButtonHandler]现在不再遵循接口
+    ///     [MillCraftingRecipeSlotEventListener]现在不再遵循接口
+    ///     因为(Q176): NeoForge 的 @EventBusSubscriber 注解要求类中所有声明了 @SubscribeEvent 的方法必须是 static（静态）方法
+    ///     注意: JeiRuntime直接从单例拿`MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers()`
     /// 通过AI改动此节逻辑:
     ///     会话1: 给予本节文本，至少读取:
     ///         [MillenaireAPIHelper]
     ///         [MillCraftingCategory]、[MillCraftingRecipe]
-    ///         [MillVillagerDetailButtonHandler]、[ILinkagePlusButtonHandler]、
-    ///         [MillCraftingRecipeSlotEventListener]、[ILinkageSlotEventListener]
+    ///         [MillVillagerDetailButtonHandler]、[MillCraftingRecipeSlotEventListener]
     ///         [MillRecipeButtonRenderEvent] [MillRecipeButtonClickEvent] [MillRecipeSetSlotEvent]
     ///         => 读取文本及文件，准备对相关功能进行开发;
     ///     会话2: 给予目标开始运行,请求时带上对应的[MillCraftingRecipe],且告知其应当继承[IMillRecipe]

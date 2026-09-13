@@ -588,4 +588,13 @@
 * Q177: 重写Trade模块
 * Q178: 爆了，破坏性修改太多代码没法维护了
 * 回档
-* AIGC真好玩
+* Q179: [带截图]为MillTradeCategory创建一组同样的代码，来创建轮播与加号，注意`包名`特别是`m和mm后缀`
+  * 给我参数炸没一个感觉没戏
+* Q180: 我让你用类里自己有的API，缺什么告诉我
+* Q181: MillTradeRecipe哪里来的getAssociatedBuildingIds我不是说了缺API告诉我吗
+* Q182: 你干嘛了
+  * 这是由于在标注了 @EventBusSubscriber 的类中，@SubscribeEvent 事件监听方法没有声明为 static 导致的。
+* 取缔了mm.event中的接口化，他们两个处理器依赖 IJeiRuntime 运行时实例，它们不能改写为 static 静态类影响了上面的static,把接口的逻辑还给了子类
+* 我得缓缓
+* 二战
+* 
