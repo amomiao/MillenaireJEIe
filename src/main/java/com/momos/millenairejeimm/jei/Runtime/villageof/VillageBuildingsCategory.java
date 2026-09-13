@@ -29,10 +29,7 @@ import java.util.List;
  */
 public class VillageBuildingsCategory extends BaseMillCategory<VillageType> {
 
-    // [醒目新注释] 抽取 RecipeType ID 常量与 GUI 布局常量
-    private static final String RECIPE_TYPE_NAMESPACE = "millenaire";
-    private static final String RECIPE_TYPE_PATH = "village_buildings_full";
-    public static final RecipeType<VillageType> RECIPE_TYPE = RecipeType.create(RECIPE_TYPE_NAMESPACE, RECIPE_TYPE_PATH, VillageType.class);
+    public static final RecipeType<VillageType> RECIPE_TYPE = RecipeType.create(MillIngredientTypes.MOD_ID, MillIngredientTypes.VillageBuildingsCategoryPath, VillageType.class);
 
     private static final int SLOT_SIZE = 18;
     private static final int COLUMNS = 8;
@@ -94,8 +91,7 @@ public class VillageBuildingsCategory extends BaseMillCategory<VillageType> {
             int slotX = GUI_START_X + (col * SLOT_SIZE);
             int slotY = GUI_START_Y + (row * SLOT_SIZE);
 
-            builder.addSlot(RecipeIngredientRole.INPUT, slotX + 1, slotY + 1)
-                    .addIngredient(MillIngredientTypes.BUILDING, building);
+            builder.addSlot(RecipeIngredientRole.INPUT, slotX + 1, slotY + 1).addIngredient(MillIngredientTypes.BUILDING, building);
         }
     }
 

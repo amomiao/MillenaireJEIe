@@ -17,6 +17,32 @@ import java.util.Locale;
  * 千年百科 JEI 自定义成分类型 {@link IIngredientType} 与 {@link Codec} 编解码器注册表。
  */
 public final class MillIngredientTypes {
+    public static final String MOD_ID = "millenaire";
+    // region 槽位与分类 ID 常量声明
+    // 文化及其详细信息
+    public static final String CultureCategoryPath = "aa_culture_category";
+    public static final String CultureVillagesCategoryPath = "ab_culture_villages_category";
+    // 建筑及其详细信息
+    public static final String BuildingCategoryPath = "ba_building_category";
+    public static final String BuildingVillageCategoryPath = "bb_building_village_category";
+    public static final String BuildingVillagerCategoryPath = "bc_building_villager_category";
+    public static final String BuildingCostCategoryAPath = "bd_building_cost_category_a";
+    public static final String BuildingCostCategoryBPath = "be_building_cost_category_b";
+    public static final String BuildingCostCategoryCPath = "bf_building_cost_category_c";
+    // 村庄及其详细信息
+    public static final String VillageCategoryPath = "ca_village_category";
+    public static final String VillageBuildingsCategoryPath = "cb_village_buildings_category";
+    public static final String VillageVillagersCategoryPath = "cc_village_villagers_category";
+    // 村民及其详细信息
+    public static final String VillagerCategoryPath = "da_villager_category";
+    public static final String VillagerVillageCategoryPath = "db_villager_village_category";
+    public static final String VillagerBuildingCategoryPath = "dc_villager_building_category";
+    public static final String VillagerBringBackHomeCategoryPath = "dd_villager_bring_back_home_category";
+    public static final String VillagerCollectCategoryPath = "de_villager_collect_category";
+    public static final String VillagerRequiredCategoryPath = "df_villager_required_category";
+    // endregion 槽位与分类 ID 常量声明
+
+
     public static final IIngredientType<Culture> CULTURE = () -> Culture.class;
     public static final IIngredientType<BuildingPlanSet> BUILDING = () -> BuildingPlanSet.class;
     public static final IIngredientType<VillagerType> VILLAGER = () -> VillagerType.class;

@@ -76,7 +76,6 @@ public class MillCraftingRecipeSlotEventListener {
      * @param <T> 成分类型
      */
     private static <T> void registerSlot(MillRecipeSetSlotEvent event, SlotBinding<T> binding) {
-        event.getBuilder().addSlot(RecipeIngredientRole.INPUT, binding.x(), binding.y())
-                .addIngredients(binding.ingredientType(), binding.ingredients());
+        event.getBuilder().addSlot(RecipeIngredientRole.OUTPUT, binding.x(), binding.y()).addIngredients(binding.ingredientType(), binding.ingredients());
     }
 }

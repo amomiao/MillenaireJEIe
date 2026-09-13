@@ -29,10 +29,7 @@ import java.util.List;
  */
 public class VillageVillagersCategory extends BaseMillCategory<VillageType> {
 
-    // [醒目新注释] 抽取 RecipeType 字符串常量与 GUI 颜色/边距数值常量
-    private static final String RECIPE_TYPE_NAMESPACE = "millenaire";
-    private static final String RECIPE_TYPE_PATH = "village_villagers_full";
-    public static final RecipeType<VillageType> RECIPE_TYPE = RecipeType.create(RECIPE_TYPE_NAMESPACE, RECIPE_TYPE_PATH, VillageType.class);
+    public static final RecipeType<VillageType> RECIPE_TYPE = RecipeType.create(MillIngredientTypes.MOD_ID, MillIngredientTypes.VillageVillagersCategoryPath, VillageType.class);
 
     private static final int SLOT_SIZE = 18;
     private static final int COLUMNS = 8;

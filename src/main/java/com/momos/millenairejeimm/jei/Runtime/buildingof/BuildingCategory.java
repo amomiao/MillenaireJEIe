@@ -36,16 +36,13 @@ import java.util.*;
  * 建筑 {@link BuildingPlanSet} JEI 详情主分类面板。
  */
 public class BuildingCategory extends BaseMillCategory<BuildingPlanSet> {
-
-    private static final String MOD_ID = "millenaire";
-    private static final String RECIPE_TYPE_ID = "building_details";
     private static final String FALLBACK_ITEM_GLASS_BOTTLE = "minecraft:glass_bottle";
     private static final String COLOR_GOLD = "§6";
     private static final String COLOR_GREEN = "§2";
     private static final String COLOR_BLUE = "§1";
     private static final String COLOR_PURPLE = "§d";
 
-    public static final RecipeType<BuildingPlanSet> RECIPE_TYPE = RecipeType.create(MOD_ID, RECIPE_TYPE_ID, BuildingPlanSet.class);
+    public static final RecipeType<BuildingPlanSet> RECIPE_TYPE = RecipeType.create(MillIngredientTypes.MOD_ID, MillIngredientTypes.BuildingCategoryPath, BuildingPlanSet.class);
 
     private static final MillIconOnlyRenderer<BuildingPlanSet> ICON_RENDERER = new MillIconOnlyRenderer<>(recipe -> {
         if (recipe != null && recipe.icon() != null && !recipe.icon().isEmpty()) {

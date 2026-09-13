@@ -57,17 +57,14 @@ public class MillVillagerDetailButtonHandler {
     public static void onButtonClick(MillRecipeButtonClickEvent event) {
         IMillRecipe recipe = event.getRecipe();
         if (recipe == null || MillenaireJeimmPlugin.JeiRuntime == null) return;
-
         IFocusFactory focusFactory = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory();
-
         // 1. 处理村民详情按钮点击：跳转至对应村民要素
         if (MillCraftingCategory.BUTTON_ID_VILLAGER_DETAIL.equals(event.getButtonId())) {
             List<VillagerType> villagers = recipe.getVillagerTypes();
             if (villagers == null || villagers.isEmpty()) return;
-
             List<IFocus<?>> focusList = villagers.stream()
                     .<IFocus<?>>map(villager -> focusFactory.createFocus(
-                            RecipeIngredientRole.INPUT,
+                            RecipeIngredientRole.OUTPUT,
                             MillIngredientTypes.VILLAGER,
                             villager
                     ))
@@ -82,7 +79,7 @@ public class MillVillagerDetailButtonHandler {
 
             List<IFocus<?>> focusList = buildings.stream()
                     .<IFocus<?>>map(building -> focusFactory.createFocus(
-                            RecipeIngredientRole.INPUT,
+                            RecipeIngredientRole.OUTPUT,
                             MillIngredientTypes.BUILDING,
                             building
                     ))

@@ -27,7 +27,7 @@ import java.util.List;
  * 展示村民向村庄中心调拨物资的白名单 ({@link VillagerType#resolvedCollectGoods()}) 的 JEI 全景大窗口分类。
  */
 public class VillagerCollectCategory extends BaseMillCategory<VillagerType> {
-    public static final RecipeType<VillagerType> RECIPE_TYPE = RecipeType.create("millenaire", "villager_collect_goods_full", VillagerType.class);
+    public static final RecipeType<VillagerType> RECIPE_TYPE = RecipeType.create(MillIngredientTypes.MOD_ID, MillIngredientTypes.VillagerCollectCategoryPath, VillagerType.class);
 
     private static final int SLOT_SIZE = 18;
     private static final int COLUMNS = 8;

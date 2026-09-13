@@ -27,7 +27,7 @@ import java.util.List;
  * 点击 "+" 后唤起的全景大窗口 JEI 分类 {@link CultureVillagesCategory}。
  */
 public class CultureVillagesCategory extends BaseMillCategory<Culture> {
-    public static final RecipeType<Culture> RECIPE_TYPE = RecipeType.create("millenaire", "culture_villages_full", Culture.class);
+    public static final RecipeType<Culture> RECIPE_TYPE = RecipeType.create(MillIngredientTypes.MOD_ID, MillIngredientTypes.CultureVillagesCategoryPath, Culture.class);
 
     private static final int SLOT_SIZE = 18;
     private static final int COLUMNS = 8;

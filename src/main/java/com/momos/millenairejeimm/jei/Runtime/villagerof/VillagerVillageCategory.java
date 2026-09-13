@@ -27,7 +27,7 @@ import java.util.List;
  * 展示村民类型 {@link VillagerType} 居住/生成的村庄类型 {@link VillageType} 的 JEI 全景大窗口分类。
  */
 public class VillagerVillageCategory extends BaseMillCategory<VillagerType> {
-    public static final RecipeType<VillagerType> RECIPE_TYPE = RecipeType.create("millenaire", "villager_villages_full", VillagerType.class);
+    public static final RecipeType<VillagerType> RECIPE_TYPE = RecipeType.create(MillIngredientTypes.MOD_ID, MillIngredientTypes.VillagerVillageCategoryPath, VillagerType.class);
 
     private static final int SLOT_SIZE = 18;
     private static final int COLUMNS = 8;

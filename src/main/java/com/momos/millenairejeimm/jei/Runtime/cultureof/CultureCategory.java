@@ -33,7 +33,7 @@ import java.util.List;
  * 文化 {@link Culture} JEI 详情主分类面板。
  */
 public class CultureCategory extends BaseMillCategory<Culture> {
-    public static final RecipeType<Culture> RECIPE_TYPE = RecipeType.create("millenaire", "culture_details", Culture.class);
+    public static final RecipeType<Culture> RECIPE_TYPE = RecipeType.create(MillIngredientTypes.MOD_ID, MillIngredientTypes.CultureCategoryPath, Culture.class);
 
     private static final MillIconOnlyRenderer<Culture> ICON_RENDERER = new MillIconOnlyRenderer<>(recipe -> {
         if (recipe != null && recipe.mapIcon().isPresent()) {

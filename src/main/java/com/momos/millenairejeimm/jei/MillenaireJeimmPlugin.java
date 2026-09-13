@@ -224,22 +224,22 @@ public class MillenaireJeimmPlugin implements IModPlugin {
         IIngredientManager ingredientManager = registration.getJeiHelpers().getIngredientManager();
         // [醒目新注释] 注册 VillageCategory 分类页面
         registration.addRecipeCategories(
-                // 文化及其详细信息
                 new CultureCategory(guiHelper, ingredientManager),
+                new BuildingCategory(guiHelper,ingredientManager),
+                new VillageCategory(guiHelper,ingredientManager),
+                new VillagerCategory(guiHelper, ingredientManager),
+                // 文化及其详细信息
                 new CultureVillagesCategory(guiHelper,ingredientManager),
                 // 建筑及其详细信息
-                new BuildingCategory(guiHelper,ingredientManager),
                 new BuildingVillageCategory(guiHelper,ingredientManager),
                 new BuildingVillagerCategory(guiHelper,ingredientManager),
                 new BuildingCostCategoryA(guiHelper, ingredientManager),
                 new BuildingCostCategoryB(guiHelper, ingredientManager),
                 new BuildingCostCategoryC(guiHelper, ingredientManager),
                 // 村庄及其详细信息
-                new VillageCategory(guiHelper,ingredientManager),
                 new VillageBuildingsCategory(guiHelper,ingredientManager),
                 new VillageVillagersCategory(guiHelper,ingredientManager),
                 // 村民及其详细信息
-                new VillagerCategory(guiHelper, ingredientManager),
                 new VillagerVillageCategory(guiHelper, ingredientManager),
                 new VillagerBuildingCategory(guiHelper, ingredientManager),
                 new VillagerBringBackHomeCategory(guiHelper, ingredientManager),

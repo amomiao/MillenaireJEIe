@@ -40,7 +40,7 @@ public class VillagerCategory extends BaseMillCategory<VillagerType> {
 
     // region 静态字段与调试输出辅助方法
 
-    public static final RecipeType<VillagerType> RECIPE_TYPE = RecipeType.create("millenaire", "villager_details", VillagerType.class);
+    public static final RecipeType<VillagerType> RECIPE_TYPE = RecipeType.create(MillIngredientTypes.MOD_ID, MillIngredientTypes.VillagerCategoryPath, VillagerType.class);
 
     private static final MillIconOnlyRenderer<VillagerType> ICON_RENDERER = new MillIconOnlyRenderer<>(recipe -> {
         if (recipe != null && recipe.icon() != null && !recipe.icon().isEmpty()) {

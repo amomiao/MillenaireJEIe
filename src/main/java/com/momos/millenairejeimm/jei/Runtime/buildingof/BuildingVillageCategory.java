@@ -28,11 +28,7 @@ import java.util.List;
  * 展示建筑计划集 {@link BuildingPlanSet} 所属/允许包含的所有村庄类型 {@link VillageType} 的 JEI 全景大窗口分类。
  */
 public class BuildingVillageCategory extends BaseMillCategory<BuildingPlanSet> {
-
-    private static final String MOD_ID = "millenaire";
-    private static final String RECIPE_TYPE_ID = "building_villages_full";
-
-    public static final RecipeType<BuildingPlanSet> RECIPE_TYPE = RecipeType.create(MOD_ID, RECIPE_TYPE_ID, BuildingPlanSet.class);
+    public static final RecipeType<BuildingPlanSet> RECIPE_TYPE = RecipeType.create(MillIngredientTypes.MOD_ID, MillIngredientTypes.BuildingVillageCategoryPath, BuildingPlanSet.class);
 
     private static final int SLOT_SIZE = 18;
     private static final int COLUMNS = 8;

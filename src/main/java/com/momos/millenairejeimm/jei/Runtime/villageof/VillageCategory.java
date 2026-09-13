@@ -34,11 +34,7 @@ import java.util.List;
  * 村庄 {@link VillageType} JEI 详情主分类面板。
  */
 public class VillageCategory extends BaseMillCategory<VillageType> {
-
-    // [醒目新注释] 抽离 RecipeType ID、物品 ID 及渲染属性依赖常量
-    private static final String RECIPE_TYPE_NAMESPACE = "millenaire";
-    private static final String RECIPE_TYPE_PATH = "village_details";
-    public static final RecipeType<VillageType> RECIPE_TYPE = RecipeType.create(RECIPE_TYPE_NAMESPACE, RECIPE_TYPE_PATH, VillageType.class);
+    public static final RecipeType<VillageType> RECIPE_TYPE = RecipeType.create(MillIngredientTypes.MOD_ID, MillIngredientTypes.VillageCategoryPath, VillageType.class);
 
     private static final String ITEM_TRAVEL_BOOK = "millenaire:travel_book";
 
@@ -113,9 +109,7 @@ public class VillageCategory extends BaseMillCategory<VillageType> {
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, VillageType recipe, IFocusGroup focuses) {
         if (recipe == null) return;
-        builder.addSlot(RecipeIngredientRole.OUTPUT, 6, 6)
-                .addIngredient(MillIngredientTypes.VILLAGE, recipe)
-                .setCustomRenderer(MillIngredientTypes.VILLAGE, ICON_RENDERER);
+        builder.addSlot(RecipeIngredientRole.OUTPUT, 6, 6).addIngredient(MillIngredientTypes.VILLAGE, recipe).setCustomRenderer(MillIngredientTypes.VILLAGE, ICON_RENDERER);
 
         List<BuildingPlanSet> buildings = MillenaireAPIHelper.getBuildingFormVillage(recipe);
         List<VillagerType> villagers = MillenaireAPIHelper.getVillagerFormVillage(recipe);

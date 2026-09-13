@@ -598,4 +598,13 @@
 * 我得缓缓
 * 二战
 * Q183: 把现在的建筑按钮移到建筑要素右边，然后为村民要素新建一个按钮指向它
-* 除了把我的Input改成Output都还好，赶紧提交
+* 按钮的参数穿错了，首先焦点应该是input，其次上方的按钮指向了建筑而非村民，下方的按钮指向了错误页签，但还好，自己改了赶紧提交吧
+* 页签顺序怎么变了，毁了
+* Q184: 怎么指定页签更靠前？
+  * RecipeCategorySortingConfig#getDefaultSortOrder
+  * 我日jei有config能自定义排序，之前报错排序文件也错了
+  * 好像是按RECIPE_TYPE排的，参数1是modid不能变，改参数2
+  * 修复了排序问题，清除了部分冗余字符串，`MillIngredientTypes`现在负责模组所有的CategoryID，之前的正常可能是开发期间配置没刷新，而不正常源自崩溃后配置刷新，总之忙这一阵是好事。
+* 为MillTradeCategory图上位置预留轮播和加号按钮，只加写，你想要改动的内容列个清单后面的对话一次次执行
+* `VILLAGER_BUTTON_Y`值更小的位置在更上面
+  * `MillCraftingCategory`中按钮的位置是没错的，但是功能错了，村民的按钮调用了建筑的`r`，而建筑的按钮调用了村庄的`r`,也就是应该改回output

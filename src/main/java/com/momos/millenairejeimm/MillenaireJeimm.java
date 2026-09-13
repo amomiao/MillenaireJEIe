@@ -23,8 +23,6 @@ import com.momos.millenairejeimm.jei.Runtime.JeiLinkLayout;
 import com.momos.millenairejeimm.jei.Runtime.villageof.VillageBuildingsCategory;
 import com.momos.millenairejeimm.jei.Runtime.villageof.VillageCategory;
 import com.momos.millenairejeimm.jei.Runtime.villageof.VillageVillagersCategory;
-import com.momos.millenairejeimm.jei.event.linkageplusbutton.MillVillagerDetailButtonHandler;
-import com.momos.millenairejeimm.jei.event.linkageslot.MillCraftingRecipeSlotEventListener;
 import mezz.jei.api.gui.inputs.IJeiInputHandler;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.ingredients.IIngredientHelper;
