@@ -483,5 +483,11 @@
   * 缺失 getBackground() 重写：MillTradeCategory 中声明了 178 宽度的 background，但未重写 IRecipeCategory#getBackground() 方法。JEI 19.x+ 依赖 getBackground() 获取配方卡片的裁剪与点击判定区域（ScreenRectangle），缺失该方法会导致 JEI 将点击有效区裁剪回默认尺寸（160px），导致位于 X=163 的框外按钮直接被 JEI 拦截过滤。
     * 这一条不用测肯定是假的，getBackground() 已经过时了。
   * 控件局部坐标与全局 isHovered 冲突：若 MillPlusButtonWidget 内部包含了 isHovered 或全局坐标校验，JEI 传递给 createRecipeExtras 控件的 mouseX/mouseY 是配方卡片相对坐标（0~178），会导致控件内部坐标判定失效。
-* 找不到原因，回到可用的版本看看
-  
+* Q154: 找不到原因，回到可用的版本看看
+  控件定位混淆（渲染与事件注册解耦缺失）
+  MillPlusButtonWidget 只是一个普通的 2D 绘制与碰撞检测辅助类，并非 JEI 原生的 IRecipeWidget。在 MillCraftingCategory 中：  视觉渲染：在 draw(...) 方法中由 villagerPlusButton.render(...) 显式完成绘制。  点击拦截：在 createRecipeExtras(...) 中显式调用 builder.addInputHandler(...)，使用 IJeiInputHandler 的 getArea() 返回 ScreenRectangle 告知 JEI 碰撞矩形。
+  在最新的 MillTradeCategory 中，直接尝试将 MillPlusButtonWidget 注册至 builder.addWidget(...) 或在 createRecipeExtras 内挂载回调，导致 JEI 无法感知该区域的鼠标点击，从而完全拦截了事件。  缺少 IJeiInputHandler 的 ScreenRectangle 显式绑定
+  JEI 19.x+ 的交互拦截严重依赖 IJeiInputHandler#getArea() 返回的 ScreenRectangle 矩形区域。MillCraftingCategory 能够精确拦截点击，正是因为使用匿名类实现了 getArea() 并校验了 InputConstants.Type.MOUSE 点击按键。
+* Q155: 这个新版本的按钮类，你觉得旧的好还是新的好？
+* Q156: MillTradeCategory中如何使用他
+* Q157: 还是没修好，抛弃当前分支，回到可用版本从长计议
