@@ -1,5 +1,13 @@
 package com.momos.millenairejeimm;
 
+import com.momos.millenairejeim.gui.widget.MillPlusButtonWidget;
+import com.momos.millenairejeim.helper.MillenaireAPIHelper;
+import com.momos.millenairejeim.jei.crafting.MillCraftingCategory;
+import com.momos.millenairejeim.jei.crafting.MillCraftingRecipe;
+import com.momos.millenairejeim.jei.crafting.event.MillRecipeButtonClickEvent;
+import com.momos.millenairejeim.jei.crafting.event.MillRecipeButtonRenderEvent;
+import com.momos.millenairejeim.jei.crafting.event.MillRecipeSetSlotEvent;
+import com.momos.millenairejeim.jei.crafting.type.base.IMillRecipe;
 import com.momos.millenairejeimm.debug.DebugGuiUtils;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.MillenaireJeimmPlugin;
@@ -15,21 +23,23 @@ import com.momos.millenairejeimm.jei.Runtime.JeiLinkLayout;
 import com.momos.millenairejeimm.jei.Runtime.villageof.VillageBuildingsCategory;
 import com.momos.millenairejeimm.jei.Runtime.villageof.VillageCategory;
 import com.momos.millenairejeimm.jei.Runtime.villageof.VillageVillagersCategory;
-import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import com.momos.millenairejeimm.jei.event.linkageplusbutton.ILinkagePlusButtonHandler;
+import com.momos.millenairejeimm.jei.event.linkageslot.ILinkageSlotEventListener;
+import com.momos.millenairejeimm.jei.event.linkageslot.MillCraftingRecipeSlotEventListener;
+import com.momos.millenairejeimm.jei.event.linkageplusbutton.MillVillagerDetailButtonHandler;
+import mezz.jei.api.gui.inputs.IJeiInputHandler;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.ingredients.IIngredientHelper;
 import mezz.jei.api.ingredients.IIngredientRenderer;
-import mezz.jei.api.ingredients.IIngredientType;
-import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import mezz.jei.api.runtime.IIngredientManager;
-import mezz.jei.api.runtime.IJeiRuntime;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import org.millenaire.building.BuildingPlanSet;
-import org.millenaire.culture.VillageType;
 
 @Mod(MillenaireJeimm.MODID)
 public class MillenaireJeimm {
@@ -110,6 +120,56 @@ public class MillenaireJeimm {
     /// 4.3.7.2c.3 (Q79)开始使用了另一种方案，添加NBT标签
     /// (更新)4.3.7.2d 所有的尝试都失败了，不可能去进行那种破坏性行为，现在的方案是所有内容被注册到Output，玩家自己通过点击页签切换查看，最初方案只有少量改动
     /// 4.3.8 `MillenaireJeimmPlugin.JeiRuntime.getRecipesGui().show(focus);` 传入焦点，调用`Jei运行时`，产生页面跳转。
+    /// ================
+    /// AIReadme: 此为MC模组开发内容，训练集的数据难以保证API的存在性、可用性(标记为废弃)，约定文件中存在的API是绝对正确的，作为优先调用接口。
+    /// 5.0a 联动逻辑-加号按钮
+    /// 5.1 前置里封装了一个(加号按钮)[MillPlusButtonWidget]
+    ///     尺寸为12x12[MillPlusButtonWidget#MillPlusButtonWidget()]
+    ///     检测鼠标悬浮[MillPlusButtonWidget#isHovered]
+    ///     外部调用渲染[MillPlusButtonWidget#render(GuiGraphics, Font, int, int, double, double)]，其中`int int`是`按钮位置`
+    /// 5.2 [MillCraftingCategory]中创建了一个对象[MillPlusButtonWidget]
+    ///     [MillCraftingCategory#VILLAGER_BUTTON_X]和[MillCraftingCategory#VILLAGER_BUTTON_Y]定义了他的位置
+    ///     [MillCraftingCategory#draw]在末尾调用了[MillPlusButtonWidget#render]
+    ///     [MillPlusButtonWidget#render]之上,有检测事件[MillRecipeButtonRenderEvent]的发布,[MillVillagerDetailButtonHandler#onCheckButtonRender]在监听着此事件
+    ///         检测源是否为期望的目标: `MillCraftingCategory.BUTTON_ID_VILLAGER_DETAIL.equals(event.getButtonId())`
+    ///         符合则准许(加号按钮)的绘制，此绘制也包含着`Jei要素轮播`
+    /// 5.3 [MillCraftingCategory#createRecipeExtras] 再次确认渲染性，通过后传入一个[IJeiInputHandler]控制实际的控件逻辑(按钮作用域、按钮事件)
+    ///     当点击触发时,投送[MillRecipeButtonClickEvent]事件，由[MillVillagerDetailButtonHandler#onButtonClick]捕获
+    ///     触发`focusFactory.createFocus(RecipeIngredientRole.OUTPUT, MillIngredientTypes.VILLAGER, villager)`，即对`千年村民`(要素)触发(右键Output)点击事件
+    /// 5.0b 联动逻辑-轮播要素
+    /// 5.1 [MillCraftingCategory#setRecipe]在末尾发布了[MillRecipeSetSlotEvent]事件
+    ///     [MillCraftingRecipeSlotEventListener#onSetRecipeSlots(MillRecipeSetSlotEvent)]监听到了事件，其后在硬编码的位置上创建轮播`JEI要素栏位`，参数带了轮播对象
+    ///     其后构造即可`event.getBuilder().addSlot(RecipeIngredientRole.INPUT, VILLAGER_ICON_X, VILLAGER_ICON_Y).addIngredients(MillIngredientTypes.VILLAGER, villagers);`
+    /// 总结:
+    /// 对象:[MillCraftingCategory]
+    /// 公共类(1:n):
+    ///     [MillPlusButtonWidget]:按钮控件,完全封装不应修改
+    ///     [MillRecipeButtonRenderEvent]:请求事件-绘制按钮,完全封装不应修改
+    ///     [MillRecipeButtonClickEvent]:请求事件-按钮点击后做,完全封装不应修改
+    ///     [MillRecipeSetSlotEvent]:请求事件-绘制Recipe时做,完全封装不应修改
+    /// 专职类(1:1):
+    ///     注意:[MillVillagerDetailButtonHandler]与[MillCraftingRecipeSlotEventListener]被声明在后置模组中，上面的类在前置模组中无法直接访问他们
+    ///     [MillVillagerDetailButtonHandler]`1对象中=>n加号(+):n声明`:事件逻辑
+    ///         执行事件-判断绘制按钮
+    ///             声明[MillVillagerDetailButtonHandler#onCheckButtonRender],是否有要素后调用`event.setShouldRender(hasCarouselObjects);`
+    ///             注意: 子模组未实装则根本没有此监听，而导致的加号不被渲染
+    ///         执行事件-按钮点击后做
+    ///             声明[MillVillagerDetailButtonHandler],对自己职能的目标进行跳转
+    ///     [MillCraftingRecipeSlotEventListener]`1对象:1声明`:事件逻辑=执行事件-绘制Recipe时做
+    ///         声明[MillCraftingRecipeSlotEventListener#BUILDING_ICON_X]这样成员变量,设置`按钮的绘制位置`
+    ///         声明[MillCraftingRecipeSlotEventListener#onSetRecipeSlots]内的逻辑,创建轮播`JEI要素`
+    /// (更新)
+    ///     [MillVillagerDetailButtonHandler]现在遵循了接口[ILinkagePlusButtonHandler]
+    ///     [MillCraftingRecipeSlotEventListener]现在遵循了接口[ILinkageSlotEventListener]
+    /// 通过AI改动此节逻辑:
+    ///     会话1: 给予本节文本，至少读取:
+    ///         [MillenaireAPIHelper]
+    ///         [MillCraftingCategory]、[MillCraftingRecipe]
+    ///         [MillVillagerDetailButtonHandler]、[ILinkagePlusButtonHandler]、
+    ///         [MillCraftingRecipeSlotEventListener]、[ILinkageSlotEventListener]
+    ///         [MillRecipeButtonRenderEvent] [MillRecipeButtonClickEvent] [MillRecipeSetSlotEvent]
+    ///         => 读取文本及文件，准备对相关功能进行开发;
+    ///     会话2: 给予目标开始运行,请求时带上对应的[MillCraftingRecipe],且告知其应当继承[IMillRecipe]
     public MillenaireJeimm(IEventBus modEventBus, ModContainer modContainer) {
     }
 }

@@ -8,54 +8,54 @@
 # 重要记录
 * 注解`@SuppressWarnings("removal")`可以屏蔽
   1. [IRecipeCategory#handleInput]被`JEI 19.x+废弃移除`
-    * 替代方案是同类成员`default void createRecipeExtras(IRecipeExtrasBuilder builder, T recipe, IFocusGroup focuses)`
-    * 通过[IRecipeExtrasBuilder#addInputHandler]`void addInputHandler(IJeiInputHandler var1)`向配方面板挂载声明式的`IJeiInputHandler`
-      ```java
-      /// 重写 [#createRecipeExtras] 以替代废弃的 `handleInput`。
-      /// 使用具备区域定义 [ScreenRectangle] 的 [IJeiInputHandler] 与包含 [IJeiUserInput] 的点击方法。
-      @Override
-      public void createRecipeExtras(IRecipeExtrasBuilder builder, T recipe, IFocusGroup focuses) {
-          builder.addInputHandler(new IJeiInputHandler() {
-              @Override
-              public ScreenRectangle getArea() { return new ScreenRectangle(3, 26, 22, 10);}
-              @Override
-              public boolean handleInput(double mouseX, double mouseY, IJeiUserInput input) {
-                  InputConstants.Key key = input.getKey();
-                  if (key.getType() == InputConstants.Type.MOUSE && key.getValue() == 0) {
-                      // 统一处理图标正下方按钮坐标 (3, 26) 的点击响应
-                      if (DebugGuiUtils.handleDetailsButtonClick(recipe, mouseX, mouseY, 3, 26)) {
-                          return true;
-                      }
-                  }
-                  return false;
-              }
-          });
-      }
-      ```
+  * 替代方案是同类成员`default void createRecipeExtras(IRecipeExtrasBuilder builder, T recipe, IFocusGroup focuses)`
+  * 通过[IRecipeExtrasBuilder#addInputHandler]`void addInputHandler(IJeiInputHandler var1)`向配方面板挂载声明式的`IJeiInputHandler`
+    ```java
+    /// 重写 [#createRecipeExtras] 以替代废弃的 `handleInput`。
+    /// 使用具备区域定义 [ScreenRectangle] 的 [IJeiInputHandler] 与包含 [IJeiUserInput] 的点击方法。
+    @Override
+    public void createRecipeExtras(IRecipeExtrasBuilder builder, T recipe, IFocusGroup focuses) {
+        builder.addInputHandler(new IJeiInputHandler() {
+            @Override
+            public ScreenRectangle getArea() { return new ScreenRectangle(3, 26, 22, 10);}
+            @Override
+            public boolean handleInput(double mouseX, double mouseY, IJeiUserInput input) {
+                InputConstants.Key key = input.getKey();
+                if (key.getType() == InputConstants.Type.MOUSE && key.getValue() == 0) {
+                    // 统一处理图标正下方按钮坐标 (3, 26) 的点击响应
+                    if (DebugGuiUtils.handleDetailsButtonClick(recipe, mouseX, mouseY, 3, 26)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
+    }
+    ```
   2. [IRecipeExtrasBuilder#addTooltip]已被取缔
-    * 由组件化的 IRecipeWidget 统一管理，或者交由 UI 渲染阶段的 GuiGraphics 原生处理
-    * 最轻量且不依赖额外的 IRecipeWidget 封装的方式是：移除 createRecipeExtras 中的 addTooltip 注册，直接在 render 方法的悬浮判断中通过 guiGraphics.renderComponentTooltip 绘制 Tooltip。
-      ```text
-       boolean isHovered = mouseX >= plusX && mouseX <= plusX + 18 && mouseY >= startY && mouseY <= startY + 18;
-       // JEI 19+ 替代方案：在 render 阶段判断悬浮并使用原生 GuiGraphics 绘制 Component 悬浮提示
-       if (isHovered) {
-           guiGraphics.renderComponentTooltip(
-                   font,
-                   List.of(
-                           Component.literal("§a查看全部/深度诊断 (" + totalSize + " 个)"),
-                           Component.literal("§7单击以打开 JSON 诊断大窗口")
-                   ),
-                   (int) mouseX,
-                   (int) mouseY
-           );
-       }
-      ```
+  * 由组件化的 IRecipeWidget 统一管理，或者交由 UI 渲染阶段的 GuiGraphics 原生处理
+  * 最轻量且不依赖额外的 IRecipeWidget 封装的方式是：移除 createRecipeExtras 中的 addTooltip 注册，直接在 render 方法的悬浮判断中通过 guiGraphics.renderComponentTooltip 绘制 Tooltip。
+    ```text
+     boolean isHovered = mouseX >= plusX && mouseX <= plusX + 18 && mouseY >= startY && mouseY <= startY + 18;
+     // JEI 19+ 替代方案：在 render 阶段判断悬浮并使用原生 GuiGraphics 绘制 Component 悬浮提示
+     if (isHovered) {
+         guiGraphics.renderComponentTooltip(
+                 font,
+                 List.of(
+                         Component.literal("§a查看全部/深度诊断 (" + totalSize + " 个)"),
+                         Component.literal("§7单击以打开 JSON 诊断大窗口")
+                 ),
+                 (int) mouseX,
+                 (int) mouseY
+         );
+     }
+    ```
   3. [IJeiRuntime#getFocusFactory] 没有`方法`
-    * 应该是[IJeiHelpers#getFocusFactory]即`IJeiRuntime#getJeiHelpers#getFocusFactory`
+  * 应该是[IJeiHelpers#getFocusFactory]即`IJeiRuntime#getJeiHelpers#getFocusFactory`
   4. [IJeiRuntime#getRecipeManager#getRecipeCategory#ifPresent] 不能`ifPresent`,返回值错误
-    * 直接对`IJeiRuntime#getRecipeManager#getRecipeCategory`的`返回值`判断`!=null`
+  * 直接对`IJeiRuntime#getRecipeManager#getRecipeCategory`的`返回值`判断`!=null`
   5. [IRecipeLayoutBuilder#addSlot#addIngredient#setInvisible] 没有方法
-    * 被`IRecipeLayoutBuilder#addInvisibleIngredients`的`addIngredient`取缔
+  * 被`IRecipeLayoutBuilder#addInvisibleIngredients`的`addIngredient`取缔
 # 开始
 * Q1: 给文化生成一个对应页面(对应类)
 * 得到`CultureCategory`，修改
@@ -72,7 +72,7 @@
 * Q10: 改一下，每页页签就只有查询对象自己，直接占满页签，然后Debug信息最直接给到icon-标题行，先不用生成代码，告诉我增加一个按钮打开一个巨大的预览页面查看JsonDump简单吗？
 * Q11：`DebugGuiUtils.JsonDumpScreen`模糊，是别的东西覆盖了一层并且是在文本框和按钮渲染时机之间
   * 真凶就是 super.render() 内部隐式调用的第二次 renderBackground()
-* Q12: 这四个页签的单元格有统一声明的地方吗？ 
+* Q12: 这四个页签的单元格有统一声明的地方吗？
   * 总之设定一个规则，每个页签就是占满一整页了，未来可能还有新的信息想要写，然后不要设置`|`同行了都换行，标记这样可能会很长的可变行另起一行，增加悬浮，Json按钮改叫细节，放置在现在ID行到类别新起行之间。
   * 能搭起通用区域优先通用，部分通用可以拆成组件/方法，最后再每个重新自己。
 * Q13：Inspector信息没传进来啊，你还记得要传什么吗，忘了我去找找
@@ -88,10 +88,10 @@
 * Q17: Category是`单例对象`且`draw方法`每帧调用，数据调用应该在`setRecipe`中进行
 * Q18: 使用你新写的方法让`JeiLinkBox`为控件默认实现JEI原版的RU点击事件
 * Q19: RU点击事件没触发
-  * 在 JEI 的交互架构中，IRecipeCategory.handleInput 是接收不到原生 R/U 键事件的。  
+  * 在 JEI 的交互架构中，IRecipeCategory.handleInput 是接收不到原生 R/U 键事件的。
   * 当玩家在 JEI 界面中按下 R 键、U 键或 A 键（添加书签）时，JEI 内部的 RecipesGui 会在最顶层优先拦截按键，并主动调用 IRecipeCategory.getIngredientUnderMouse(...)：
   * 若该方法返回了有效成分，JEI 会自动接管并打开配方/用途/添加书签（且能完美兼容玩家自定义的按键绑定）。
-  * 若未实现该方法（默认返回 Optional.empty()），JEI 会判定当前鼠标悬停区域为“空白背景”，直接截断按键事件，导致事件根本不会下发到 handleInput 中。  
+  * 若未实现该方法（默认返回 Optional.empty()），JEI 会判定当前鼠标悬停区域为“空白背景”，直接截断按键事件，导致事件根本不会下发到 handleInput 中。
   * 必须重写 JEI 的 getIngredientUnderMouse 接口，以下是适配后的完整代码实现。
 * Q20: JeiLinkBox的上下小按钮失效了
 * Q21: 别编了，你要什么类的源码告诉我再写
@@ -124,7 +124,7 @@
 * Q39: createRecipeExtras必须在BaseMillIngredientRenderer有声明，细节按钮的点击要调用`DebugGuiUtils#openJsonDumpScreen(Object)`事件
 * Q40: 你写什么，我给错了,createRecipeExtras必须在BaseMillCategory有声明，细节按钮的点击要调用`DebugGuiUtils#openJsonDumpScreen(Object)`事件
 * AI一直在尝试`第九格`打开`DebugGuiUtils.openJsonDumpScreen`，但是应该打开的是`CultureVillagesCategory`
-* Q41: 在`registerInputHandler`单独声明一个监听第九格被点击事件方法 
+* Q41: 在`registerInputHandler`单独声明一个监听第九格被点击事件方法
 * Q42: 你加一个被点击客户端输出1给我看看
 * Q43: 我说怎么找不到哪里注册事件，我让你加事件监听是让外部传入的，this.villageBox = new JeiLinkBox的时候注册一个第九格监听输出123456
 * Q44: 点击按钮没反应，并且下面的dispalyClientMessage也没反应，方法里增加多个displayClientMessage全路径测试看看到底是为什么
@@ -150,7 +150,7 @@
 * Q51: BaseMillCategory#createRecipeExtras中的按钮没有触发DebugGuiUtils#openJsonDumpScreen(Object)的窗口，但是CultureCategory#createRecipeExtras注册的成功调用了
   * JEI 的 IRecipeExtrasBuilder#addInputHandler 中，IJeiInputHandler#getArea() 已经向 JEI 注册了配方相对坐标范围 new ScreenRectangle(3, 26, 22, 10)，
   * JEI 内部会自动进行点击碰撞检测，只有点击命中该区域时，JEI 才会调用 handleInput 方法。
-  * 但 JEI 传入 handleInput(double mouseX, double mouseY, ...) 的 mouseX 与 mouseY 参数是屏幕绝对坐标（例如 X=480.0, Y=320.0）。 
+  * 但 JEI 传入 handleInput(double mouseX, double mouseY, ...) 的 mouseX 与 mouseY 参数是屏幕绝对坐标（例如 X=480.0, Y=320.0）。
   * BaseMillCategory 中的二次判断恒为 false
   * DebugGuiUtils.isMouseOver(mouseX, mouseY, 3, 26, ...) 进行二次校验。
   * 这里拿屏幕绝对坐标（如 480）去和配方相对坐标（3 至 25）做比较，导致条件判定恒为 false，使得 DebugGuiUtils#openJsonDumpScreen 永远不会被触发。
@@ -163,14 +163,14 @@
 * Q57: 为`VillageCategory`补充如`CultureVillagesCategory`的内容，村庄需要展示建筑与村民,
   * `MillenaireJeimm`中有帮助性内容
   * 数据源自`MillenaireAPIHelper#getBuildingFormVillage`和`MillenaireAPIHelper#getVillagerFormVillage`
-// 页签调用Bug流程起点
+    // 页签调用Bug流程起点
 * Q58: 聚焦了但是只聚焦了一半，与之关联的四个页签出来了，但是比如点击`村庄的村民`的加号，默认指向了第一个文化页签
 * Q59: 应该指向的页签对象在这里面，你看看是不是简单的填错了对象
-  * 确实是传入 JEI 的 RecipeType 列表顺序或目标 Category 对象填错导致的。 
-  * 原因诊断 
+  * 确实是传入 JEI 的 RecipeType 列表顺序或目标 Category 对象填错导致的。
+  * 原因诊断
     * 当调用 JEI 的 IJeiRuntime.getRecipesGui().showTypes(List<RecipeType<?>> recipeTypes) 打开多页签全景视图时，JEI 的底层逻辑是默认激活并展示传入 List 中索引为 0（第 1 个）的 RecipeType。
-    * 如果各个 + 按钮在触发跳转时，传给 JEI 的都是同一个静态 List（例如 [文化, 建筑, 物品, 村民]），且 CULTURE_TYPE（文化页签）固定排在第 0 位，JEI 就会成功加载全部 4 个关联页签，但无论点哪个 + 号都必定默认停留于第 1 个文化页签。 
-  * 解决方案 
+    * 如果各个 + 按钮在触发跳转时，传给 JEI 的都是同一个静态 List（例如 [文化, 建筑, 物品, 村民]），且 CULTURE_TYPE（文化页签）固定排在第 0 位，JEI 就会成功加载全部 4 个关联页签，但无论点哪个 + 号都必定默认停留于第 1 个文化页签。
+  * 解决方案
     * 在 + 按钮的点击事件响应代码中，需要将该按钮真正对应的目标 RecipeType（如村民大窗口页签）调整到传入 List 的第 0 位（首位）。
 * Q60: 哦还没给你上下文
 * Q61: 额，原来另一个会话的你偷懒了，借用了别的模块的单元，声明村庄自己的LinkLayout
@@ -180,13 +180,13 @@
 * Q64: 类都在你手里，你想怎么改怎么改
   * 解决方案
   * 无需修改两个全景大窗口类（它们内部通过 addInvisibleIngredients 注册的 INPUT 槽位已经完全正确），只需要修正 VillageCategory.java 中的点击事件：
-  * 点击“村庄包含建筑”时，直接使用列表中的第一个 BUILDING (INPUT) 发起 Focus；点击“村庄出现村民”时，使用第一个 VILLAGER (INPUT) 发起 Focus。 
+  * 点击“村庄包含建筑”时，直接使用列表中的第一个 BUILDING (INPUT) 发起 Focus；点击“村庄出现村民”时，使用第一个 VILLAGER (INPUT) 发起 Focus。
   * 这样 JEI 只能匹配到对应的唯一全景分类，顶上有且仅有 1 个页签，且直接高亮当前村庄。
 * Q65: 多个页签聚焦点击+对应的页签难吗？
 * Q66: 村民的事件调用错了，打开的是村庄自己的这个窗口
 * Q67: 页签聚焦了，但是又聚焦不到页签里的对象了，output不能删，你解决一下，整体结构可以改
   * 此前点击 + 后“页签能切过去，但页面里的对象取消了高亮/聚焦”的根本原因是：调用 recipesGui.showTypes(...) 会直接清空 JEI 刚刚建立的 Focus 检索状态。showTypes 仅用于无过滤的分类展示，它覆盖掉了对象的筛选上下文。  为了在绝对保留 VillageCategory 中 VillageType 的 OUTPUT 槽位前提下，同时实现 “直接切到目标全景大窗口” + “精准高亮当前村庄对象” + “顶栏只有一个目标页签”，架构层面的最佳解法是利用 CATALYST（催化剂）角色协同检索。
-  * VillageCategory (保持 OUTPUT 不变)：村庄图标槽位继续保留 RecipeIngredientRole.OUTPUT。  点击 + 发起 Focus 时，使用 RecipeIngredientRole.CATALYST 角色标记当前 VillageType。由于 VillageCategory 本身没注册 CATALYST 槽位，JEI 会自动排除当前页面，不再原地跳回。  结合 VILLAGER / BUILDING 的 INPUT 焦点，精准剔除另一个不相干的全景大窗口，使顶部页签数量降为 1 个。  全景大窗口（VillageVillagersCategory & VillageBuildingsCategory）：将 addInvisibleIngredients 扩充为包含 INPUT, OUTPUT, CATALYST 全角色。无论外部以何种 Focus 角色传入，JEI 都能成功匹配并高亮锁定对应的村庄对象。 
+  * VillageCategory (保持 OUTPUT 不变)：村庄图标槽位继续保留 RecipeIngredientRole.OUTPUT。  点击 + 发起 Focus 时，使用 RecipeIngredientRole.CATALYST 角色标记当前 VillageType。由于 VillageCategory 本身没注册 CATALYST 槽位，JEI 会自动排除当前页面，不再原地跳回。  结合 VILLAGER / BUILDING 的 INPUT 焦点，精准剔除另一个不相干的全景大窗口，使顶部页签数量降为 1 个。  全景大窗口（VillageVillagersCategory & VillageBuildingsCategory）：将 addInvisibleIngredients 扩充为包含 INPUT, OUTPUT, CATALYST 全角色。无论外部以何种 Focus 角色传入，JEI 都能成功匹配并高亮锁定对应的村庄对象。
 * Q68: 没生效，但是别慌我有一份生效了的文件，大概可以借鉴
 * Q69: 你再去修改一下VillageBuildingsCategory和VillageVillagersCategory看看你是真会了吗
 * Q70: 全乱套了怎么办，不仅没解决问题原本修好的单页签现在也变成双页签了
@@ -211,7 +211,7 @@
   * 建筑全景（VillageBuildingsCategory）：RENDER_ONLY 角色。
   * 由于全局没有任何其他 Category 将 VILLAGE 设为 RENDER_ONLY，发送该焦点时 JEI 只会精准命中 VillageBuildingsCategory 这唯一一个页签，且过滤 100% 正确。
 * 修好了，可以少做功了
-//: Village
+  //: Village
 * Q76:村民属性里有没有显式的承接bring_back_home_goods的成员
   * [VillagerType#bringBackHomeGoods]返回的是`List<String>`,实际运行中这个参数绑定了一个可能需要的对象:会把小屋的{什么}材料带到市政厅
   * 这两个Goal可能与之有关:"millenaire:deliver_resources_shop","millenaire:get_resources_for_shops",
@@ -255,8 +255,8 @@
 * 不对不对就该Output，输出三个页签可以是对的，这三个就是相关链接一起出来是合理的，现在的问题是想办法让加号比变成切换页签，哪怕是像`user32`一样让玩家点一下，页签就在固定的位置，完全可以做到，但是这个API的安全性...
 * Q100: 你还真用鼠标点击啊，JEI真没API吗
 * Q101: 肯定不能鼠标模拟啊，拉倒吧让用户多点一下
-//- 页签调用Bug流程终点
-//- 投降感言，感觉回到了我刚入行做二次开发的时候，不过这花了一天得到的结果还算可以，`MillenaireJeimm`上面注解了分析
+  //- 页签调用Bug流程终点
+  //- 投降感言，感觉回到了我刚入行做二次开发的时候，不过这花了一天得到的结果还算可以，`MillenaireJeimm`上面注解了分析
 * 处理: 按钮现在只提供悬浮提示功能，`setOnPlusClick`标记为[废弃]
 * 用到的字符串用变量/模板提取出来并替换
 * 书写一个获得`升满建筑等级的道具用量`的方法,这个方法暂时不要写在`MillenaireAPIHelper`里
@@ -269,7 +269,7 @@
     * `public ResourceLocation planId();`:得到`BuildingPlan`
       * `BuildingPlan`:有`public String nbtPath()` 留作备用应该是`variants`的nbtPath
     * 但是我们并不知道这个`nbtPath`对象的值及其可用性，打一个客户端消息监听一下
-  * `MillenaireAPIHelper`:有`public static Map<ResourceLocation, BuildingPlan> getAllBuildingPlans() { return ModCultures.getAllBuildingPlans(); }` 
+  * `MillenaireAPIHelper`:有`public static Map<ResourceLocation, BuildingPlan> getAllBuildingPlans() { return ModCultures.getAllBuildingPlans(); }`
   * `BuildingCostCalculator`:有`public static Map<ResourceLocation, Integer> computeCost(CompoundTag templateNbt)`
     * 尝试使用一种`nbtPath()`的用法生成`CompoundTag`访问一下
   * 最终返回做一个`Map<String variants.key,List<ItemStack>> sum(computeCost({nbtPath()}))`
@@ -283,8 +283,8 @@
 * Q105: setRecipe里面列个分割线和材料输出，我要看看这个空格是什么
 * Q106: 唉果然是空气
 * Q107: 抽一个基类先硬编码支持三个变体，使用abc识别三个窗口
-//- 建筑模块结束
-// 村民模块
+  //- 建筑模块结束
+  // 村民模块
 * 村民模块的基础功能链接到`村庄`和`建筑`,这一段可以参照`CultureCategory`和`CultureVillagesCategory`文档资料很齐了
   * 高级功能参照:[行为](村民行为调查.md),简单来说是四种物品流向的展示:
     * bring_back_home: `身上的物品`放入`所属建筑`
@@ -306,7 +306,7 @@
         }
         ```
   * `VillagerType`:获得的难度基本属于直接拿
-    * `VillagerType`有: 
+    * `VillagerType`有:
       * public List<String> bringBackHomeGoods()
       * public Set<Item> resolvedBringBackHomeGoods()
       * public Set<ResourceLocation> resolvedCollectGoods()
@@ -319,13 +319,13 @@
       * `public ResourceLocation culture()`
       * 使用这八个API使用客户端聊天栏进行debug内容输出。
 * 取样调查报告[VillagerType调查](VillagerType调查.md)
-    * resolved语义就是safe，直接`三个方法resolved`调用即可,编写代码时需要遵循调查报告 
+  * resolved语义就是safe，直接`三个方法resolved`调用即可,编写代码时需要遵循调查报告
 * Q108: 其中`BuildingCategory和CultureCategory`包下的内容是编写参考，除`VillagerCategory`都是基类上下文，以及一个助手类，参考他们，生成最终的方案。
 * 唉击穿上下文了
 * Q109: 根据文字及文件要求，生成最终的VillagerCategory及其二级页面：VillagerVillageCategory/VillagerBuildingCategory/VillagerBringBackHomeCategory/VillagerCollectCategory/VillagerRequiredCategory，并将代码补充进MillenaireJeimmPlugin。
 * Q110: 参照这些二级页签重构五个VillagerXXXCategory页签，你现在为这五个套用了一级页签的格式，这不对。
   * 我说registerCategories里构造方法没有要求ingredientManager
-//- 功能完成
+    //- 功能完成
 * 现在开始修Bug
   * 1.建筑书签每次进入游戏会消失,且只有建筑书签有这个问题，但好像有一个报告
     * 日志显示 JEI 在从 bookmarks.json 读取建筑书签 "seljuk:toolsmith" 时抛出了 NullPointerException: ingredient must not be null。这是由于 BUILDING_CODEC 在反序列化建筑对象失败时返回了 null 结果，导致 JEI 校验崩溃并丢弃了整份书签配置。
@@ -333,7 +333,7 @@
     * 查阅`BuildingPlanSetLoader`解决
       * `MillenaireAPIHelper#getAllBuildingPlanSets` 返回的是 Map<ResourceLocation, BuildingPlanSet>，
       * 但在之前的 BUILDING_CODEC 里一直直接拿着 String 去调用 Map.get(Object)。
-      * 由于 Java 中 String 和 ResourceLocation 类型不同，Map.get 比较 equals 时必定永远返回 null！  
+      * 由于 Java 中 String 和 ResourceLocation 类型不同，Map.get 比较 equals 时必定永远返回 null！
       * 修改 MillIngredientTypes.java 中的 BUILDING_CODEC，将传入的 String 正确解析/转换为 ResourceLocation 后再进行 Map 查询
   * 2.通过全局页签查看的方式，查看一个页签的所有对象时，CultureCategory、VillageCategory、BuildingCategory、VillagerCategory，这四个一级页签里的Layout框架不会得到更新，且内容会更新导致有一定错乱、闪烁，Layout错误的作为了内容载体。
 * 进行多语言优化收尾
@@ -350,8 +350,8 @@
 * Q121: JEI能不能做到一个页签里的一个展示框里再增加一个左右箭头显示自己的翻页内容？
 * Q122: 太麻烦翻页先不做了，你改动后的JEILink让BuildingCostCategory系列页面的ABC没了
 * Q123: 卡片隐藏是特意设计，是不是你给他们仨复用Key了
-//- 1.0结束
-// 开始本地化
+  //- 1.0结束
+  // 开始本地化
 * 你把下面的内容像上面一样放进一行里
 * Q124: Keys太臃肿了重构一下，现在没有任何key要以`gui.millenairejeim.`为前缀，所有key的前缀都要多一个m为`gui.millenairejeimm.`
 * Q125: 我受不了Java的静态(常量)命名方式了，你以C#的静态变量标准，首字母大写的驼峰格式重构Keys
@@ -407,7 +407,7 @@
 * Q132: AbstractBuildingCostCategoryTitle_S，他是绝对的正确的，所有页面和他一样都要使用PrefixSecTitle，且不要注释
 * Q133: 根据过时的中文原生，迁移生成一份新的zh_cn
 * Q134: 只取用MillenaireJeimmKeys中有定义的key
-//- 本地化完成，但是现在美国是周六早八，发了也卡审核，再修点bug吧
+  //- 本地化完成，但是现在美国是周六早八，发了也卡审核，再修点bug吧
 * Bug
   1. [一级窗口]描述里重复出现的"::"
   2. [一级窗口]村民详情的JeiLinkBox，其下Item类型的没有正确渲染Item
@@ -422,7 +422,7 @@
   * Q135: 对渲染`ItemStack`的JeiLinkBox，`BuildingCategory`正确渲染了，而`VillagerCategory`却没有，查找一下原因。
   * Q136: 只是JeiLinkBox没有渲染Item数据是好的，VillagerBringBackHomeCategory能正确渲染item
   * 希望得到`ItemStack`但参数是`Item`
-    * JeiLinkBox.useJeiMode 方法接收的参数类型为 IIngredientType<Object>（或无通配符的泛型定义），而 MillIngredientTypes.VILLAGE 的实际类型是 IIngredientType<VillageType>。在 Java 中，IIngredientType<VillageType> 不能隐式向上转型为 IIngredientType<Object>，导致编译器拒绝匹配该方法。 
+    * JeiLinkBox.useJeiMode 方法接收的参数类型为 IIngredientType<Object>（或无通配符的泛型定义），而 MillIngredientTypes.VILLAGE 的实际类型是 IIngredientType<VillageType>。在 Java 中，IIngredientType<VillageType> 不能隐式向上转型为 IIngredientType<Object>，导致编译器拒绝匹配该方法。
     * 通过对 MillIngredientTypes.VILLAGE 和 MillIngredientTypes.BUILDING 进行原始类型强转（Raw Type Cast） (mezz.jei.api.ingredients.IIngredientType) 绕过泛型检查即可解决
       * Q137: 这个问题在C#有吗，翻译成C#是什么意思
         * 哦协变，叽里呱啦不说这俩字没反应过来
@@ -445,8 +445,8 @@
 * 优化.2: 汉化/英化改善完成
 * Q139: 现在的Debug窗口的唤起会关闭JEI窗口，你能仅简单修改这三个文件就解决问题吗？
   * Minecraft 的 GUI 渲染机制为单屏幕模式（同时仅有一个 Screen 激活）。当调用 Minecraft.getInstance().setScreen(...) 打开全新的 JsonDumpScreen 时，原有的 JEI 配方界面 (RecipesGui) 会被替换。如果在关闭 JsonDumpScreen 时直接触发默认的 Screen#onClose()，Minecraft 会将屏幕置空（setScreen(null)），导致无法返回 JEI 界面。
-  * JsonDumpScreen：新增 parentScreen 变量与构造函数参数；重写 onClose() 方法，在关闭调试窗口时恢复原先的 parentScreen。 
-  * DebugGuiUtils：在打开 JsonDumpScreen 时传入 Minecraft.getInstance().screen（即当前正在显示的 JEI 界面）。 
+  * JsonDumpScreen：新增 parentScreen 变量与构造函数参数；重写 onClose() 方法，在关闭调试窗口时恢复原先的 parentScreen。
+  * DebugGuiUtils：在打开 JsonDumpScreen 时传入 Minecraft.getInstance().screen（即当前正在显示的 JEI 界面）。
   * BaseMillCategory：唤起 Debug 窗口时将当前激活的 JEI Screen 传递给 DebugGuiUtils。
 * 主模组和子模组进行一个联动
 * Q140: 我有一个千年工艺配方，我想让千年工艺有个按钮可以进行对村民详情的指向，也就是把村民详情的设置为`RecipeIngredientRole#CATALYST`我具体应该怎么做？现在先只做一件事：建立`RecipeIngredientRole#CATALYST`关系。
@@ -461,6 +461,9 @@
   由于父模组在别处这样制作内容，可以把这个按钮封装成一个控件。
   ```
 * Q144: 按钮不起作用，并且一堆目标图标被放置在奇怪的位置，按钮的目的是跳转到有对应页面，且只有与唤起页面参数相关的条目。
+  * 1. 按钮点击无响应：坐标二次校验冲突
+       原因：在 createRecipeExtras 中，getArea() 返回的 ScreenRectangle 已被 JEI 用于自动拦截点击。但在 handleInput 中又调用了 villagerPlusButton.isHovered(...)，而 handleInput 传入的 mouseX/mouseY 是 配方面板局部坐标，与 isHovered 内部期待的全局坐标不匹配，导致判定始终返回 false。
+       修复：移除 handleInput 内部多余的 isHovered 校验，依赖 ScreenRectangle 完成区域拦截。
 * Q145: 修改，这个三个方法都在此类吗？
 * Q146: 回忆整理代码，准备再做一组相同用法的按钮
   ```text
@@ -471,3 +474,118 @@
   ```
 * Q147: 这个按钮没有检查可用性，移除了子模组仍然存在，且应当和轮播对象有一定关联，没有轮播对象的时候也不要显示，重构中修复这部分问题。
 * Q148: 同样的结构，增加唤起的建筑的搜索
+* Q149: 差不多到预定位置了，千年工艺这个框移到外面，且按钮事件还是没有生效
+  * 按钮点击失效且位置错位的根本原因在于：JEI 的槽位图标与加号按钮坐标重叠。之前 JEI 槽位设在 (140, 72)，加号按钮设在 (142, 74)，使得 JEI 槽位的鼠标判定覆盖了按钮，点击时直接被 JEI 的“按 R/U 查配方”逻辑拦截，导致点击事件无法传递到按钮。  只需将 JEI 槽位图标左移至 128，并将 加号按钮移至右侧外面 148（错开坐标），即可恢复按钮点击并解决排版重叠。
+* Q150: 交易页面同样需要把按钮移到框外
+* Q151: 进行修改，注意当前`MillTradeCategory`是无报错的，确保不要调用到错误的API
+* Q152: 按钮还是不能按，你写一点客户端聊天栏输出看看到底怎么回事
+* Q153: 你得想办法找到事件为什么不触发，渲染是正常的。 [Q144]这是之前不触发的原因及其解决方案，看看有没有帮助
+  * 缺失 getBackground() 重写：MillTradeCategory 中声明了 178 宽度的 background，但未重写 IRecipeCategory#getBackground() 方法。JEI 19.x+ 依赖 getBackground() 获取配方卡片的裁剪与点击判定区域（ScreenRectangle），缺失该方法会导致 JEI 将点击有效区裁剪回默认尺寸（160px），导致位于 X=163 的框外按钮直接被 JEI 拦截过滤。
+    * 这一条不用测肯定是假的，getBackground() 已经过时了。
+  * 控件局部坐标与全局 isHovered 冲突：若 MillPlusButtonWidget 内部包含了 isHovered 或全局坐标校验，JEI 传递给 createRecipeExtras 控件的 mouseX/mouseY 是配方卡片相对坐标（0~178），会导致控件内部坐标判定失效。
+* Q154: 找不到原因，回到可用的版本看看
+  控件定位混淆（渲染与事件注册解耦缺失）
+  MillPlusButtonWidget 只是一个普通的 2D 绘制与碰撞检测辅助类，并非 JEI 原生的 IRecipeWidget。在 MillCraftingCategory 中：  视觉渲染：在 draw(...) 方法中由 villagerPlusButton.render(...) 显式完成绘制。  点击拦截：在 createRecipeExtras(...) 中显式调用 builder.addInputHandler(...)，使用 IJeiInputHandler 的 getArea() 返回 ScreenRectangle 告知 JEI 碰撞矩形。
+  在最新的 MillTradeCategory 中，直接尝试将 MillPlusButtonWidget 注册至 builder.addWidget(...) 或在 createRecipeExtras 内挂载回调，导致 JEI 无法感知该区域的鼠标点击，从而完全拦截了事件。  缺少 IJeiInputHandler 的 ScreenRectangle 显式绑定
+  JEI 19.x+ 的交互拦截严重依赖 IJeiInputHandler#getArea() 返回的 ScreenRectangle 矩形区域。MillCraftingCategory 能够精确拦截点击，正是因为使用匿名类实现了 getArea() 并校验了 InputConstants.Type.MOUSE 点击按键。
+* Q155: 这个新版本的按钮类，你觉得旧的好还是新的好？
+* Q156: MillTradeCategory中如何使用他
+* Q157: 还是没修好，抛弃当前分支，回到可用版本从长计议
+* Q158: 帮我梳理一下声明加号和轮播JEI图标的流程 => MillenaireJeimm
+* 理清楚了:在`联动逻辑注释`提及处查看`MillenaireJeimm`以了解详细代码
+  ```text
+    /// 5.0a 联动逻辑-加号按钮
+    /// 5.1 前置里封装了一个(加号按钮)[MillPlusButtonWidget]
+    ///     尺寸为12x12[MillPlusButtonWidget#MillPlusButtonWidget()]
+    ///     检测鼠标悬浮[MillPlusButtonWidget#isHovered]
+    ///     外部调用渲染[MillPlusButtonWidget#render(GuiGraphics, Font, int, int, double, double)]，其中`int int`是`按钮位置`
+    /// 5.2 [MillCraftingCategory]中创建了一个对象[MillPlusButtonWidget]
+    ///     [MillCraftingCategory#VILLAGER_BUTTON_X]和[MillCraftingCategory#VILLAGER_BUTTON_Y]定义了他的位置
+    ///     [MillCraftingCategory#draw]在末尾调用了[MillPlusButtonWidget#render]
+    ///     [MillPlusButtonWidget#render]之上,有检测事件[MillRecipeButtonRenderEvent]的发布,[MillVillagerDetailButtonHandler#onCheckButtonRender]在监听着此事件
+    ///         检测源是否为期望的目标: `MillCraftingCategory.BUTTON_ID_VILLAGER_DETAIL.equals(event.getButtonId())`
+    ///         符合则准许(加号按钮)的绘制，此绘制也包含着`Jei要素轮播`
+    /// 5.3 [MillCraftingCategory#createRecipeExtras] 再次确认渲染性，通过后传入一个[IJeiInputHandler]控制实际的控件逻辑(按钮作用域、按钮事件)
+    ///     当点击触发时,投送[MillRecipeButtonClickEvent]事件，由[MillVillagerDetailButtonHandler#onButtonClick]捕获
+    ///     触发`focusFactory.createFocus(RecipeIngredientRole.OUTPUT, MillIngredientTypes.VILLAGER, villager)`，即对`千年村民`(要素)触发(右键Output)点击事件
+    /// 5.0b 联动逻辑-轮播要素
+    /// 5.1 [MillCraftingCategory#setRecipe]在末尾发布了[MillRecipeSetSlotEvent]事件
+    ///     [MillRecipeSlotEventListener#onSetRecipeSlots(MillRecipeSetSlotEvent)]监听到了事件，其后在硬编码的位置上创建轮播`JEI要素栏位`，参数带了轮播对象
+    ///     其后构造即可`event.getBuilder().addSlot(RecipeIngredientRole.INPUT, VILLAGER_ICON_X, VILLAGER_ICON_Y).addIngredients(MillIngredientTypes.VILLAGER, villagers);`
+    /// 总结:
+    /// 对象:[MillCraftingCategory]
+    /// 公共类(1:n):
+    ///     [MillPlusButtonWidget]:按钮控件,完全封装不应修改
+    ///     [MillRecipeButtonRenderEvent]:请求事件-绘制按钮,完全封装不应修改
+    ///     [MillRecipeButtonClickEvent]:请求事件-按钮点击后做,完全封装不应修改
+    ///     [MillRecipeSetSlotEvent]:请求事件-绘制Recipe时做,完全封装不应修改
+    /// 专职类(1:1):
+    ///     [MillRecipeSlotEventListener]`1对象:1声明`:事件逻辑=执行事件-绘制Recipe时做
+    ///         声明[MillRecipeSlotEventListener#BUILDING_ICON_X]这样成员变量,设置`按钮的绘制位置`
+    ///         声明[MillRecipeSlotEventListener#onSetRecipeSlots]内的逻辑,创建轮播`JEI要素`
+    ///     [MillVillagerDetailButtonHandler]`1对象中=>n加号:n声明`:事件逻辑
+    ///         执行事件-判断绘制按钮
+    ///             声明[MillVillagerDetailButtonHandler#onCheckButtonRender],是否有要素后调用`event.setShouldRender(hasCarouselObjects);`
+    ///             注意: 子模组未实装则根本没有此监听，而导致的加号不被渲染
+    ///         执行事件-按钮点击后做
+    ///             声明[MillVillagerDetailButtonHandler],对自己职能的目标进行跳转
+  ```
+* Q159: 对1:1的专职类抽象基类或接口
+* Q160: 我让你给MillVillagerDetailButtonHandler抽个接口，你怎么弄出这么多东西你在干什么
+* Q161: 你写default是嫌自己工作量太少了吗
+* Q162: 你把default改成get接口啊
+* Q163: 你知道写default你为什么不知道把声明抹了全改成必须要实现的成员
+* 气死我了，要不是java看着头晕我要每个类跟十个接口
+* Q164: 如上提取接口，注意每x、y变量和一组list是一个逻辑关联
+* Q165: 我有一瞬间以为你听懂了要把xy get提取为小元组
+* Q166: `MillenaireJeimm`的第五章节内容
+* Q167: 我要把现在的建筑按钮移到建筑要素右边，然后为村民要素新建一个按钮指向它
+* Q168: MillRecipeSlotEventListener被更名为了MillCraftingRecipeSlotEventListener，
+* 提示词没有告知清楚类位于`前置-后置`的信息
+* Q169: 为MillTradeCategory创建一组同样的代码，来创建轮播与加号，注意`包名`特别是`m和mm后缀`
+* Q170: 又偷偷造API
+* Q171: 你再想想MillTradeRecipeli怎么用MillenaireAPIHelper.getBuildingPlanSet
+* 提示词还得改
+* Q172: 为MillTradeCategory创建一组同样的代码，来创建轮播与加号，注意`包名`特别是`m和mm后缀`
+* 我擦忘说控件位置在那了，看看位置合适吗
+* Q173: 怎么炸了
+  * 崩溃原因在于 NeoForge 的 @EventBusSubscriber 注解要求类中所有声明了 @SubscribeEvent 的方法必须是 static（静态）方法。
+* Q174: 那Crafting为什么没注册静态也没炸？
+* Q175: 不可能，这份代码之前100%正常运行
+  * [此份回答错误]
+    ```text
+    1. 手动注册 vs 自动扫描注册 的底层差异
+    NeoForge 的事件总线有两种完全不同的注册途径：
+    手动注册对象实例（NeoForge.EVENT_BUS.register(new MyListener())）：
+    允许非静态方法。因为你把 new 出来的对象传进去了，NeoForge 反射时知道该用哪个实例（this）去调用 @SubscribeEvent 方法。
+    注解自动扫描（@EventBusSubscriber）：
+    强制要求 static 静态方法。因为 FML 加载器在游戏启动阶段反射扫描字节码时，根本不会（也不能）去实例化你的类。它底层调用的是 EVENT_BUS.register(Class<?>)，没有对象实例，就只能去调用静态方法。
+    2. 为什么你之前测试 100% 正常？
+       之前 Crafting 能够正常运行，通常是因为满足了以下两种情况之一：
+    之前使用的是手动注册：在之前的代码提交里，Crafting 的监听器类头上并没有标注 @EventBusSubscriber 注解，而是在 JEI 插件初始化（如 onRuntimeAvailable）或模组构造器里写了 NeoForge.EVENT_BUS.register(new MillCraftingRecipeSlotEventListener())。这种情况下，非静态方法是 100% 合法且能正常运行的。
+    重构/复制时顺手加了注解：在本次引入 Trade 模块、重构统一接口（如 ILinkageSlotEventListener）的过程中，给类头上统一补上了 @EventBusSubscriber(modid = "millenairejeimm")。这一加，就直接触发了 FML 的 AutomaticEventSubscriber 静态校验。
+    ```
+* Q176: 代码都给你了，找出证据
+  ```text
+  给米仔细比对了你给出的这三份源码，确实是我之前的推断有误！Crafting 模块之前能 100% 正常运行 绝非偶然，源码中存在非常确凿的架构设计证据：
+  1. Crafting 模块完全没有触发 @EventBusSubscriber 的自动扫描雷区
+     查看 MillCraftingCategory_3.java 可以发现，MillCraftingCategory 根本没有在类头上标记 @EventBusSubscriber。它在架构中担当的是事件发布者（Publisher）的角色：
+  在 setRecipe 中调用 NeoForge.EVENT_BUS.post(new MillRecipeSetSlotEvent(...))；
+  在 draw 和 createRecipeExtras 中主动 post MillRecipeButtonRenderEvent 与 MillRecipeButtonClickEvent。
+  它并没有让 FML 在启动阶段通过反射去自动扫描注册它的方法，因此完全不会触发 NeoForge AutomaticEventSubscriber 对静态方法的强制校验。
+ 
+  2. 按钮交互使用了 JEI 19.x 标准的 createRecipeExtras
+     在 MillCraftingCategory_3.java 的 createRecipeExtras 方法中，加号按钮的点击是直接通过 IRecipeExtrasBuilder.addInputHandler(...) 挂载 IJeiInputHandler 内部类处理的。这是 JEI 19.x+ 官方推荐的 GUI 交互机制，生命周期完全由 JEI 托管，根本不需要挂载全局 NeoForge 事件监听。
+  3. 配方解析器使用纯 Java 静态注册表
+     查看 MillCraftingRecipe.java，配方解析采用的是标准的面向对象设计模式：
+     private static final List<AbstractMillCraftingType> PARSERS = new ArrayList<>();
+     通过 registerParser 手动维护列表，完全不依赖任何 NeoForge 的注解或反射加载器。
+  4. Plugin 入口使用动态高级注册
+     在 MillenaireJeimPlugin.java 中，Crafting 模块通过 registerAdvanced 向 JEI 注册了 MillCraftingRecipeManagerPlugin，接管了按需懒加载逻辑，注册链路非常清晰干净。
+  Crafting 模块的底层逻辑从配方解析、界面绘制到 GUI 交互，全都严格遵循了 JEI 规范与纯 Java 实例模式，之前能够 100% 稳定运行是完全合理且必然的。崩溃确实只源于 Trade 监听器类误加了 @EventBusSubscriber 注解。给米向你道歉，这次以这份源码证据为准！
+  ```
+* 就是没有读到[MillCraftingRecipe]导致选择了不同的实现路线。
+* Q177: 重写Trade模块
+* Q178: 爆了，破坏性修改太多代码没法维护了
+* 回档
+* AIGC真好玩
