@@ -640,3 +640,9 @@
 * Q191: `recipe`的对象是`BuildingPlan`而非`BuildingPlanSet`,`BuildingCostCategory`改叫`BuildingPlanCostCategory`并修改相关逻辑;
   * 配方内标题的本地化在编码调用`BuildingPlanSet#nativeName()`:`BuildingPlan#id()`
   * BuildingPlan在Helper有getall方法,BuildingPlanSet通过BuildingPlan参数调用Helper反查获取，id的`在BuildingPlan的实现`是`public ResourceLocation id()`
+* Q192: `Buildingplan`没有自己的消耗表，所以要通过反查`BuildingPlanSet`进行资源统计
+* Q193: 哦不对，我要统计每个变体之和，传入的参数应该是LevelDef，按照当前代码改编一下，同时给出注册实现
+  * 暂时保留原名`BuildingPlanCostCategory`; 
+  * LevelDef是BuildingPlanSet的内部类;
+  * `BuildingPlanSet#variants()`=>public Map<String, List<LevelDef>> variants():通过BuildingPlanSet的成员构造;
+  * `LevelDef#planId()`=>ResourceLocation planId():配方内标题的本地化在编码调用`LevelDef#nativeName()`:`Level#id()`;

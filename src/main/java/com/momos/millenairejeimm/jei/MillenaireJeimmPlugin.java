@@ -4,7 +4,7 @@ package com.momos.millenairejeimm.jei;
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeim.util.MMLog;
 import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingCategory;
-import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingCostCategory;
+import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingPlanCostCategory;
 import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingVillageCategory;
 import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingVillagerCategory;
 import com.momos.millenairejeimm.jei.Runtime.buildingof.ingredient.BuildingIngredientHelper;
@@ -30,7 +30,6 @@ import mezz.jei.api.registration.IRecipeRegistration;
 import mezz.jei.api.runtime.IIngredientManager;
 import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.resources.ResourceLocation;
-import org.checkerframework.checker.units.qual.A;
 import org.millenaire.building.BuildingPlanSet;
 import org.millenaire.culture.Culture;
 import org.millenaire.culture.VillageType;
@@ -39,7 +38,6 @@ import org.millenaire.culture.VillagerType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 千年百科高级 JEI 扩展主插件 {@link IModPlugin}。
@@ -231,7 +229,7 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                 // 建筑及其详细信息
                 new BuildingVillageCategory(guiHelper,ingredientManager),
                 new BuildingVillagerCategory(guiHelper,ingredientManager),
-                new BuildingCostCategory(guiHelper,ingredientManager),
+                new BuildingPlanCostCategory(guiHelper,ingredientManager),
                 // 村庄及其详细信息
                 new VillageBuildingsCategory(guiHelper,ingredientManager),
                 new VillageVillagersCategory(guiHelper,ingredientManager),
@@ -289,7 +287,6 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                 registration.addRecipes(BuildingCategory.RECIPE_TYPE, buildings);
                 registration.addRecipes(BuildingVillageCategory.RECIPE_TYPE, buildings);
                 registration.addRecipes(BuildingVillagerCategory.RECIPE_TYPE, buildings);
-
                 List<BuildingPlanSet> buildingsA = buildings.stream()
                         .filter(b -> b.variants() != null && b.variants().size() > 0)
                         .toList();
@@ -299,9 +296,10 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                 List<BuildingPlanSet> buildingsC = buildingsB.stream()
                         .filter(b -> b.variants().size() > 2)
                         .toList();
-                registration.addRecipes(BuildingCostCategory.RECIPE_TYPE, buildingsA);
-
                 MMLog.info(LOG_BUILDING_RECIPE_SUCCESS_ZH, LOG_BUILDING_RECIPE_SUCCESS_EN, LOG_BUILDING_RECIPE_SUCCESS_FR, buildings.size());
+
+                // BuildingPlans页面
+                registration.addRecipes(BuildingPlanCostCategory.RECIPE_TYPE, new ArrayList<>(MillenaireAPIHelper.getAllBuildingPlans().values()));
             } else {
                 MMLog.warn(LOG_BUILDING_RECIPE_EMPTY_ZH, LOG_BUILDING_RECIPE_EMPTY_EN, LOG_BUILDING_RECIPE_EMPTY_FR);
             }
