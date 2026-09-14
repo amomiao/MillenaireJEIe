@@ -650,4 +650,11 @@
   * 并且`LevelDef#planId`已查明格式为`xx_a_0`,你从倒数第二个`_`截断，拼合`LevelDef#nativeName()`:`a_0`;
 * 没有遵循保留`BuildingPlanCostCategory`的约定写为了`BuildingCostCategory`,改为了`BuildingLevelCostCategory`
 * 逻辑完成，构造本地化，de_de.json en_us.json es_es.json fr_fr.json ja_jp.json pt_br.json ru_ru.json zh_cn.json zh_tw.json
-* Q195[重复]结合:zh_cn与en_us编写de_de的本地化
+* Q195: 交叉对比zh_cn和en_us有没有大的语义差别
+  * 英文中所属所在这样关系逆位都可以继续Belong吗？
+    * 使用 Part of %s 或 Related %s 会比 Belong 更具包容性；如果可以区分，建议细化： 
+    * 正向（属于...）：Belongs to %s 
+    * 逆向（包含/拥有...）：In %s / Of %s / Belonging Villages
+  * 中文无冒号是对的，删除英文中的冒号。
+* Q196: [重复]结合:zh_cn与en_us编写de_de的本地化 es_es fr_fr ja_jp pt_br ru_ru zh_tw
+* Q197: 以zh_cn和en_us为锚定，校对其他语言的翻译有没有大的语义差别
