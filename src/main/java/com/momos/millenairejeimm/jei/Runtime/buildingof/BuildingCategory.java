@@ -2,6 +2,7 @@
 package com.momos.millenairejeimm.jei.Runtime.buildingof;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
+import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;
 import com.momos.millenairejeimm.jei.BuildingUpgradeCostHelper;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
@@ -161,9 +162,8 @@ public class BuildingCategory extends BaseMillCategory<BuildingPlanSet> {
         if (recipe == null) return;
 
         Font font = Minecraft.getInstance().font;
-        String displayName = recipe.nativeName() != null && !recipe.nativeName().isEmpty() ? recipe.nativeName() : recipe.buildingId();
 
-        drawCommonHeader(guiGraphics, font, displayName, recipe.buildingId(), recipe.category(), mouseX, mouseY);
+        drawCommonHeader(guiGraphics, font, MillenaireLocalizeHelper.getBuildingName(recipe).getString(), recipe.buildingId(), recipe.category(), mouseX, mouseY);
 
         // 1. Price
         drawLabelValue(guiGraphics, font, MillenaireJeimmKeys.PriceLabel.asComponent(), COLOR_GOLD + recipe.price(), 6, 42);

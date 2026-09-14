@@ -1,6 +1,7 @@
 package com.momos.millenairejeimm.jei.Runtime.villagerof;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
+import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;
 import com.momos.millenairejeimm.jei.MillenaireJeimmKeys;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
@@ -219,11 +220,9 @@ public class VillagerCategory extends BaseMillCategory<VillagerType> {
         if (recipe == null) return;
 
         Font font = Minecraft.getInstance().font;
-        String displayName = recipe.nativeName() != null && !recipe.nativeName().isEmpty() ? recipe.nativeName() : recipe.id().getPath();
-
         String culture = recipe.culture() != null ? recipe.culture().getPath() : MillenaireJeimmKeys.UnknownCultureValue.asComponent().getString();
 
-        drawCommonHeader(guiGraphics, font, displayName, recipe.id().toString(), culture, mouseX, mouseY);
+        drawCommonHeader(guiGraphics, font, MillenaireLocalizeHelper.getVillagerName(recipe).getString(), recipe.id().toString(), culture, mouseX, mouseY);
 
         String genderStr = recipe.gender() != null ? recipe.gender().name() : MillenaireJeimmKeys.UnknownGenderValue.asComponent().getString();
         String ageStageStr = recipe.isChild() ?

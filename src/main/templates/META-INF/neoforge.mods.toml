@@ -119,7 +119,7 @@ side="CLIENT"
 [[dependencies.${mod_id}]]
 modId = "millenairejeim"       # 目标外部模组的 modId
 type = "required"         # 必需依赖设为 "required"，可选依赖设为 "optional"
-versionRange = "[1.1.0,)" # 支持的版本区间
+versionRange = "[1.2.0,)" # 支持的版本区间
 ordering = "AFTER"        # 极为关键：确保目标模组在你的模组之前先完成初始化
 side = "BOTH"
 
