@@ -621,3 +621,8 @@
     * 移除[MillTradeCategory#extractBaseBuildingKey]
     * 直接调用[BuildingPlanSet]的`public String nativeName()`
   3. 给出代码改动量，不需要全量输出
+* Q185: 实现MillTradeRecipe对IMillRecipe的继承，MillCraftingRecipe是参考文件
+* Q186: 别编接口，字符串拼接都敢编你想害死我吗
+* 坏了IMillCraftingRecipe不是一个全局接口，是工艺自己的，但也是好事BuildingPlanSet不需要一个容器，传自己的就能运行
+* Q187: Review发现[MillRecipeButtonRenderEvent] [MillRecipeButtonClickEvent] [MillRecipeSetSlotEvent]所`依赖的重要成员`[IMillCraftingRecipe]`旧名IMillRecipe`是专职服务于Crafting的各个细分的,根据[MillVillagerDetailButtonHandler]、[MillCraftingRecipeSlotEventListener]的实现尝试让[MillRecipeButtonRenderEvent] [MillRecipeButtonClickEvent] [MillRecipeSetSlotEvent]支持泛型
+* Q188: [重复Q166]不争馒头争口气，再次尝试AIGC

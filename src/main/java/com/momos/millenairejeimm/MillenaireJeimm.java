@@ -7,7 +7,7 @@ import com.momos.millenairejeim.jei.crafting.MillCraftingRecipe;
 import com.momos.millenairejeim.jei.crafting.event.MillRecipeButtonClickEvent;
 import com.momos.millenairejeim.jei.crafting.event.MillRecipeButtonRenderEvent;
 import com.momos.millenairejeim.jei.crafting.event.MillRecipeSetSlotEvent;
-import com.momos.millenairejeim.jei.IMillRecipe;
+import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
 import com.momos.millenairejeimm.debug.DebugGuiUtils;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.MillenaireJeimmPlugin;
@@ -23,6 +23,8 @@ import com.momos.millenairejeimm.jei.Runtime.JeiLinkLayout;
 import com.momos.millenairejeimm.jei.Runtime.villageof.VillageBuildingsCategory;
 import com.momos.millenairejeimm.jei.Runtime.villageof.VillageCategory;
 import com.momos.millenairejeimm.jei.Runtime.villageof.VillageVillagersCategory;
+import com.momos.millenairejeimm.jei.event.linkageplusbutton.MillVillagerDetailButtonHandler;
+import com.momos.millenairejeimm.jei.event.linkageslot.MillCraftingRecipeSlotEventListener;
 import mezz.jei.api.gui.inputs.IJeiInputHandler;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.ingredients.IIngredientHelper;
@@ -169,7 +171,7 @@ public class MillenaireJeimm {
     ///         [MillRecipeButtonRenderEvent] [MillRecipeButtonClickEvent] [MillRecipeSetSlotEvent]
     ///         [MillVillagerDetailButtonHandler]、[MillCraftingRecipeSlotEventListener]
     ///         => 读取文本及文件，准备对相关功能进行开发;
-    ///     会话2: 给予目标开始运行,请求时带上对应的[MillCraftingRecipe],且告知其应当继承[IMillRecipe]
+    ///     会话2: 给予目标开始运行,请求时带上对应的[MillCraftingRecipe],且告知其应当继承[IMillCraftingRecipe]
     public MillenaireJeimm(IEventBus modEventBus, ModContainer modContainer) {
     }
 }

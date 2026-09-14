@@ -3,7 +3,7 @@ package com.momos.millenairejeimm.jei.event.linkageplusbutton;
 import com.momos.millenairejeim.jei.crafting.MillCraftingCategory;
 import com.momos.millenairejeim.jei.crafting.event.MillRecipeButtonClickEvent;
 import com.momos.millenairejeim.jei.crafting.event.MillRecipeButtonRenderEvent;
-import com.momos.millenairejeim.jei.IMillRecipe;
+import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.MillenaireJeimmPlugin;
 
@@ -31,8 +31,8 @@ public class MillVillagerDetailButtonHandler {
      */
     @SubscribeEvent
     public static void onCheckButtonRender(MillRecipeButtonRenderEvent event) {
-        IMillRecipe recipe = event.getRecipe();
-        if (recipe == null) return;
+        Object rawRecipe = event.getRecipe();
+        if (!(rawRecipe instanceof IMillCraftingRecipe recipe)) return;
 
         // 1. 村民详情按钮校验
         if (MillCraftingCategory.BUTTON_ID_VILLAGER_DETAIL.equals(event.getButtonId())) {
@@ -55,8 +55,8 @@ public class MillVillagerDetailButtonHandler {
      */
     @SubscribeEvent
     public static void onButtonClick(MillRecipeButtonClickEvent event) {
-        IMillRecipe recipe = event.getRecipe();
-        if (recipe == null || MillenaireJeimmPlugin.JeiRuntime == null) return;
+        Object rawRecipe = event.getRecipe();
+        if (!(rawRecipe instanceof IMillCraftingRecipe recipe) || MillenaireJeimmPlugin.JeiRuntime == null) return;
         IFocusFactory focusFactory = MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers().getFocusFactory();
         // 1. 处理村民详情按钮点击：跳转至对应村民要素
         if (MillCraftingCategory.BUTTON_ID_VILLAGER_DETAIL.equals(event.getButtonId())) {

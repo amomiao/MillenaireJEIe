@@ -1,7 +1,7 @@
 package com.momos.millenairejeimm.jei.event.linkageslot;
 
 import com.momos.millenairejeim.jei.crafting.event.MillRecipeSetSlotEvent;
-import com.momos.millenairejeim.jei.IMillRecipe;
+import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -31,10 +31,10 @@ public class MillCraftingRecipeSlotEventListener {
     /**
      * [醒目新注释] 获取当前配方对应的所有槽位元组集合 {@link SlotBinding}
      *
-     * @param recipe 配方对象 {@link IMillRecipe}
+     * @param recipe 配方对象 {@link IMillCraftingRecipe}
      * @return 槽位元组集合
      */
-    public static List<SlotBinding<?>> getSlotBindings(IMillRecipe recipe) {
+    public static List<SlotBinding<?>> getSlotBindings(IMillCraftingRecipe recipe) {
         List<SlotBinding<?>> bindings = new ArrayList<>();
         if (recipe == null) return bindings;
 
@@ -58,8 +58,8 @@ public class MillCraftingRecipeSlotEventListener {
     @SubscribeEvent
     public static void onSetRecipeSlots(MillRecipeSetSlotEvent event) {
         if (event == null) return;
-        IMillRecipe recipe = event.getRecipe();
-        if (recipe == null) return;
+        Object rawRecipe = event.getRecipe();
+        if (!(rawRecipe instanceof IMillCraftingRecipe recipe)) return;
 
         for (SlotBinding<?> binding : getSlotBindings(recipe)) {
             if (binding.isValid()) {
