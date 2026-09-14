@@ -43,8 +43,9 @@ public class CultureIngredientRenderer extends BaseMillIngredientRenderer<Cultur
             return tooltip;
         }
 
-        //String cname = ingredient.displayName() != null ? ingredient.displayName() : MillenaireJeimmKeys.UnknownCultureIng.asComponent().getString();
-        // tooltip.add(MillenaireJeimmKeys.CultureIngR_S.asComponent(cname).withStyle(ChatFormatting.GOLD));
+        String cname = ingredient.displayName() != null ? ingredient.displayName() : MillenaireJeimmKeys.UnknownCultureIng.asComponent().getString();
+        tooltip.add(MillenaireJeimmKeys.CultureIngR_S.asComponent(cname).withStyle(ChatFormatting.GOLD));
+
         // 始终渲染 ResourceLocation 内部 ID
         if (ingredient.id() != null) {
             tooltip.add(Component.literal("ID:" + ingredient.id().toString()).withStyle(ChatFormatting.DARK_GRAY));
