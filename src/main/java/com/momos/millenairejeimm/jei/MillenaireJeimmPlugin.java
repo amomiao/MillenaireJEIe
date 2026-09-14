@@ -4,9 +4,7 @@ package com.momos.millenairejeimm.jei;
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeim.util.MMLog;
 import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingCategory;
-import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingCostCategoryA;
-import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingCostCategoryB;
-import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingCostCategoryC;
+import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingCostCategory;
 import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingVillageCategory;
 import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingVillagerCategory;
 import com.momos.millenairejeimm.jei.Runtime.buildingof.ingredient.BuildingIngredientHelper;
@@ -233,9 +231,7 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                 // 建筑及其详细信息
                 new BuildingVillageCategory(guiHelper,ingredientManager),
                 new BuildingVillagerCategory(guiHelper,ingredientManager),
-                new BuildingCostCategoryA(guiHelper, ingredientManager),
-                new BuildingCostCategoryB(guiHelper, ingredientManager),
-                new BuildingCostCategoryC(guiHelper, ingredientManager),
+                new BuildingCostCategory(guiHelper,ingredientManager),
                 // 村庄及其详细信息
                 new VillageBuildingsCategory(guiHelper,ingredientManager),
                 new VillageVillagersCategory(guiHelper,ingredientManager),
@@ -303,10 +299,7 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                 List<BuildingPlanSet> buildingsC = buildingsB.stream()
                         .filter(b -> b.variants().size() > 2)
                         .toList();
-
-                registration.addRecipes(BuildingCostCategoryA.RECIPE_TYPE, buildingsA);
-                registration.addRecipes(BuildingCostCategoryB.RECIPE_TYPE, buildingsB);
-                registration.addRecipes(BuildingCostCategoryC.RECIPE_TYPE, buildingsC);
+                registration.addRecipes(BuildingCostCategory.RECIPE_TYPE, buildingsA);
 
                 MMLog.info(LOG_BUILDING_RECIPE_SUCCESS_ZH, LOG_BUILDING_RECIPE_SUCCESS_EN, LOG_BUILDING_RECIPE_SUCCESS_FR, buildings.size());
             } else {

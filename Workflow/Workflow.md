@@ -636,3 +636,7 @@
   * `BuildingCategory`的`JEILayoutBox`保持原逻辑不变
   * 移除`AbstractBuildingCostCategory`及其ABC子类，转而声明一个`recipe`统计`BuildingPlan`的`BuildingCostCategory`
   * `BuildingCostCategory`配方内标题的本地化在编码中拼合`BuildingPlanSet#nativeName()`:`public ResourceLocation id()`的字符串，查看实际输出后再处理
+* Q190: 你参照AbstractBuildingCostCategory的页面实现方式，不存在MillIngredientTypes.BUILDING_PLAN这类要素，你也不能去实现这个要素
+* Q191: `recipe`的对象是`BuildingPlan`而非`BuildingPlanSet`,`BuildingCostCategory`改叫`BuildingPlanCostCategory`并修改相关逻辑;
+  * 配方内标题的本地化在编码调用`BuildingPlanSet#nativeName()`:`BuildingPlan#id()`
+  * BuildingPlan在Helper有getall方法,BuildingPlanSet通过BuildingPlan参数调用Helper反查获取，id的`在BuildingPlan的实现`是`public ResourceLocation id()`

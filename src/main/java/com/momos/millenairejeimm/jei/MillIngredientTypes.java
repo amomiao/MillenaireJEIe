@@ -26,9 +26,7 @@ public final class MillIngredientTypes {
     public static final String BuildingCategoryPath = "ba_building_category";
     public static final String BuildingVillageCategoryPath = "bb_building_village_category";
     public static final String BuildingVillagerCategoryPath = "bc_building_villager_category";
-    public static final String BuildingCostCategoryAPath = "bd_building_cost_category_a";
-    public static final String BuildingCostCategoryBPath = "be_building_cost_category_b";
-    public static final String BuildingCostCategoryCPath = "bf_building_cost_category_c";
+    public static final String BuildingCostCategoryPath = "bd_building_cost_category";
     // 村庄及其详细信息
     public static final String VillageCategoryPath = "ca_village_category";
     public static final String VillageBuildingsCategoryPath = "cb_village_buildings_category";

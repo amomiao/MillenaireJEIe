@@ -57,9 +57,7 @@ public final class MillenaireJeimmKeys {
     public static final KT VillageVillagersCategory = new KT(PrefixCategory + "village_villagers", "Village's Villagers");
     // 建筑: 6 个分类
     public static final KT BuildingCategory = new KT(PrefixCategory + "building", "Building Info");
-    public static final KT BuildingCostCategoryA = new KT(PrefixCategory + "building_cost_a", "Building Construction Costs (Stage A)");
-    public static final KT BuildingCostCategoryB = new KT(PrefixCategory + "building_cost_b", "Building Construction Costs (Stage B)");
-    public static final KT BuildingCostCategoryC = new KT(PrefixCategory + "building_cost_c", "Building Construction Costs (Stage C)");
+    public static final KT BuildingCostCategory = new KT(PrefixCategory + "building_cost", "Building Construction Costs");
     public static final KT BuildingVillageCategory = new KT(PrefixCategory + "building_village", "Building Belongs To Village");
     public static final KT BuildingVillagerCategory = new KT(PrefixCategory + "building_villager", "Building Inhabited Villagers");
     // 村民: 6 个分类
