@@ -4,7 +4,7 @@ package com.momos.millenairejeimm.jei;
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeim.util.MMLog;
 import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingCategory;
-import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingCostCategory;
+import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingLevelCostCategory;
 import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingVillageCategory;
 import com.momos.millenairejeimm.jei.Runtime.buildingof.BuildingVillagerCategory;
 import com.momos.millenairejeimm.jei.Runtime.buildingof.ingredient.BuildingIngredientHelper;
@@ -229,7 +229,7 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                 // 建筑及其详细信息
                 new BuildingVillageCategory(guiHelper,ingredientManager),
                 new BuildingVillagerCategory(guiHelper,ingredientManager),
-                new BuildingCostCategory(guiHelper,ingredientManager),
+                new BuildingLevelCostCategory(guiHelper,ingredientManager),
                 // 村庄及其详细信息
                 new VillageBuildingsCategory(guiHelper,ingredientManager),
                 new VillageVillagersCategory(guiHelper,ingredientManager),
@@ -309,7 +309,7 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                         }
                     }
                 }
-                registration.addRecipes(BuildingCostCategory.RECIPE_TYPE, allLevelDefs);
+                registration.addRecipes(BuildingLevelCostCategory.RECIPE_TYPE, allLevelDefs);
 
             } else {
                 MMLog.warn(LOG_BUILDING_RECIPE_EMPTY_ZH, LOG_BUILDING_RECIPE_EMPTY_EN, LOG_BUILDING_RECIPE_EMPTY_FR);

@@ -30,12 +30,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 针对单个 {@link BuildingPlanSet.LevelDef} 变体等级的资源消耗 JEI 分类窗口。
- * <p>
- * 保留类名 {@link BuildingCostCategory}，配方泛型调整为内部类 {@link BuildingPlanSet.LevelDef}。
- * </p>
+ * 针对单个 {@link BuildingPlanSet.LevelDef} 变体等级独立资源消耗的 JEI 分类窗口。
  */
-public class BuildingCostCategory extends BaseMillCategory<BuildingPlanSet.LevelDef> {
+public class BuildingLevelCostCategory extends BaseMillCategory<BuildingPlanSet.LevelDef> {
 
     // [醒目新注释] 8x5 网格布局参数
     private static final int SLOT_SIZE = 18;
@@ -60,7 +57,7 @@ public class BuildingCostCategory extends BaseMillCategory<BuildingPlanSet.Level
      */
     private Component cachedDisplayNameComponent;
 
-    public BuildingCostCategory(IGuiHelper guiHelper, IIngredientManager ingredientManager) {
+    public BuildingLevelCostCategory(IGuiHelper guiHelper, IIngredientManager ingredientManager) {
         super(guiHelper, guiHelper.createDrawableItemStack(new ItemStack(Items.CHEST)));
     }
 
@@ -75,10 +72,29 @@ public class BuildingCostCategory extends BaseMillCategory<BuildingPlanSet.Level
     }
 
     /**
-     * 根据传入的 {@link BuildingPlanSet.LevelDef} 提取其所需的资源消耗映射。
+     * [醒目新注释] 从 ResourceLocation 的 Path 中提取从倒数第二个 '_' 开始截断的变体与等级标识（如从 xx_a_0 截取 a_0）。
      *
-     * @param levelDef 当前建筑等级定义对象 {@link BuildingPlanSet.LevelDef}
-     * @return 物品资源标识符 {@link ResourceLocation} 到所需数量 {@link Integer} 的映射表
+     * @param planId 建筑等级配方标识符 {@link ResourceLocation}
+     * @return 截取后的变体与等级后缀（例如 "a_0"）
+     */
+    public static String extractVariantAndLevelSuffix(ResourceLocation planId) {
+        if (planId == null) return "";
+        String path = planId.getPath();
+        int lastUnderscore = path.lastIndexOf('_');
+        if (lastUnderscore > 0) {
+            int secondLastUnderscore = path.lastIndexOf('_', lastUnderscore - 1);
+            if (secondLastUnderscore >= 0) {
+                return path.substring(secondLastUnderscore + 1);
+            }
+        }
+        return path;
+    }
+
+    /**
+     * [醒目新注释] 提取当前 {@link BuildingPlanSet.LevelDef} 自身的独立资源消耗映射（不再计算前面等级的累加）。
+     *
+     * @param levelDef 当前目标建筑等级定义对象 {@link BuildingPlanSet.LevelDef}
+     * @return 物品资源标识符 {@link ResourceLocation} 到当前等级所需数量 {@link Integer} 的映射表
      */
     public static Map<ResourceLocation, Integer> getAggregatedResources(BuildingPlanSet.LevelDef levelDef) {
         Map<ResourceLocation, Integer> totalResources = new LinkedHashMap<>();
@@ -86,7 +102,7 @@ public class BuildingCostCategory extends BaseMillCategory<BuildingPlanSet.Level
             return totalResources;
         }
 
-        // [醒目新注释] 直接提取 LevelDef#requiredResources() 中的资源并按需合并汇总
+        // [醒目新注释] 仅提取当前 LevelDef 自身的 requiredResources
         levelDef.requiredResources().forEach((resLoc, count) -> {
             if (resLoc != null && count != null && count > 0) {
                 totalResources.merge(resLoc, count, Integer::sum);
@@ -97,7 +113,7 @@ public class BuildingCostCategory extends BaseMillCategory<BuildingPlanSet.Level
     }
 
     /**
-     * 根据 {@link BuildingPlanSet.LevelDef} 实例反查其所属的父级 {@link BuildingPlanSet}。
+     * [醒目新注释] 根据 {@link BuildingPlanSet.LevelDef} 实例反查其所属的父级 {@link BuildingPlanSet}。
      *
      * @param levelDef 等级定义对象 {@link BuildingPlanSet.LevelDef}
      * @return 所属的 {@link BuildingPlanSet} 实例，若未匹配成功则返回 null
@@ -116,17 +132,10 @@ public class BuildingCostCategory extends BaseMillCategory<BuildingPlanSet.Level
         return null;
     }
 
-    /**
-     * 设置 JEI 槽位布局并填充统计后的资源物品成分。
-     *
-     * @param builder JEI 配方布局构建器 {@link IRecipeLayoutBuilder}
-     * @param recipe  当前建筑等级定义配方对象 {@link BuildingPlanSet.LevelDef}
-     * @param focuses 当前 JEI 焦点组 {@link IFocusGroup}
-     */
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, BuildingPlanSet.LevelDef recipe, IFocusGroup focuses) {
         if (recipe == null) return;
-        // [醒目新注释] 通过 LevelDef 反查其父级 BuildingPlanSet，并绑定 MillIngredientTypes.BUILDING 不可见输出
+
         BuildingPlanSet planSet = getParentBuildingPlanSet(recipe);
         if (planSet != null) {
             builder.addInvisibleIngredients(RecipeIngredientRole.OUTPUT)
@@ -147,7 +156,6 @@ public class BuildingCostCategory extends BaseMillCategory<BuildingPlanSet.Level
         allCosts.removeIf(stack -> stack == null || stack.isEmpty());
         if (allCosts.isEmpty()) return;
 
-        // [醒目新注释] 针对输入焦点进行筛选重排，置顶玩家点击的 {@link ItemStack}
         if (focuses != null && !focuses.isEmpty()) {
             List<ItemStack> focusedItems = focuses.getFocuses(VanillaTypes.ITEM_STACK)
                     .map(f -> f.getTypedValue().getIngredient())
@@ -176,35 +184,26 @@ public class BuildingCostCategory extends BaseMillCategory<BuildingPlanSet.Level
         }
     }
 
-    /**
-     * 绘制 JEI 界面标题及槽位背景网格。
-     *
-     * @param recipe           当前建筑等级定义配方对象 {@link BuildingPlanSet.LevelDef}
-     * @param recipeSlotsView  JEI 槽位视图 {@link IRecipeSlotsView}
-     * @param guiGraphics      GUI 渲染工具 {@link GuiGraphics}
-     * @param mouseX           鼠标 X 坐标
-     * @param mouseY           鼠标 Y 坐标
-     */
     @Override
     public void draw(BuildingPlanSet.LevelDef recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
         if (recipe == null) return;
         Font font = Minecraft.getInstance().font;
 
-        // [醒目新注释] 调用 LevelDef#nativeName() 与 LevelDef#planId() 拼合标题格式 nativeName:planId
         if (recipe != this.lastRecipe) {
             this.lastRecipe = recipe;
+
             String nativeName = recipe.nativeName();
-            if (nativeName == null || nativeName.isEmpty()) {
-                BuildingPlanSet parentSet = getParentBuildingPlanSet(recipe);
-                if (parentSet != null && parentSet.nativeName() != null) {
-                    nativeName = parentSet.nativeName();
-                } else {
-                    nativeName = "";
-                }
+            BuildingPlanSet parentSet = getParentBuildingPlanSet(recipe);
+            if ((nativeName == null || nativeName.isEmpty()) && parentSet != null) {
+                nativeName = parentSet.nativeName();
             }
-            ResourceLocation planId = recipe.planId();
-            String resIdStr = planId != null ? planId.toString() : "";
-            String titleStr = nativeName + ":" + resIdStr;
+            if (nativeName == null) {
+                nativeName = "";
+            }
+
+            String suffix = extractVariantAndLevelSuffix(recipe.planId());
+            String titleStr = nativeName.isEmpty() ? suffix : nativeName + ":" + suffix;
+
             this.cachedDisplayNameComponent = Component.literal(titleStr);
         }
 

@@ -646,5 +646,8 @@
   * LevelDef是BuildingPlanSet的内部类;
   * `BuildingPlanSet#variants()`=>public Map<String, List<LevelDef>> variants():通过BuildingPlanSet的成员构造;
   * `LevelDef#planId()`=>ResourceLocation planId():配方内标题的本地化在编码调用`LevelDef#nativeName()`:`Level#id()`;
-* Q194: 根据实际效果可以断定`LevelDef`就是1:1的封装了`BuildingPlan`，我们保留现在的设计，只是进行优化他就需要对资源进行合并统计了;
+* Q194: 根据实际效果可以断定`LevelDef`就是1:1的封装了`BuildingPlan`，我们保留现在的设计，只是进行优化，不需要对资源进行合并统计了;
   * 并且`LevelDef#planId`已查明格式为`xx_a_0`,你从倒数第二个`_`截断，拼合`LevelDef#nativeName()`:`a_0`;
+* 没有遵循保留`BuildingPlanCostCategory`的约定写为了`BuildingCostCategory`,改为了`BuildingLevelCostCategory`
+* 逻辑完成，构造本地化，de_de.json en_us.json es_es.json fr_fr.json ja_jp.json pt_br.json ru_ru.json zh_cn.json zh_tw.json
+* Q195[重复]结合:zh_cn与en_us编写de_de的本地化
