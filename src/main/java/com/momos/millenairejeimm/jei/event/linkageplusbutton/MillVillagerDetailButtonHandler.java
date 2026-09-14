@@ -1,8 +1,8 @@
 package com.momos.millenairejeimm.jei.event.linkageplusbutton;
 
 import com.momos.millenairejeim.jei.crafting.MillCraftingCategory;
-import com.momos.millenairejeim.jei.crafting.event.MillRecipeButtonClickEvent;
-import com.momos.millenairejeim.jei.crafting.event.MillRecipeButtonRenderEvent;
+import com.momos.millenairejeim.event.MillRecipeButtonClickEvent;
+import com.momos.millenairejeim.event.MillRecipeButtonRenderEvent;
 import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.MillenaireJeimmPlugin;

@@ -625,4 +625,6 @@
 * Q186: 别编接口，字符串拼接都敢编你想害死我吗
 * 坏了IMillCraftingRecipe不是一个全局接口，是工艺自己的，但也是好事BuildingPlanSet不需要一个容器，传自己的就能运行
 * Q187: Review发现[MillRecipeButtonRenderEvent] [MillRecipeButtonClickEvent] [MillRecipeSetSlotEvent]所`依赖的重要成员`[IMillCraftingRecipe]`旧名IMillRecipe`是专职服务于Crafting的各个细分的,根据[MillVillagerDetailButtonHandler]、[MillCraftingRecipeSlotEventListener]的实现尝试让[MillRecipeButtonRenderEvent] [MillRecipeButtonClickEvent] [MillRecipeSetSlotEvent]支持泛型
-* Q188: [重复Q166]不争馒头争口气，再次尝试AIGC
+* [重复Q166]不争馒头争口气，再次尝试AIGC
+* Q188: 为MillTradeCategory创建一组同样的代码，来创建轮播与加号按钮(水平位置在配方框右侧，垂直位置在建筑文本同高处)，注意`包名`特别是`m和mm后缀`，注意调用Helper里的API
+* 成了，加号我自己给他往上挪挪，但是还有一个问题，资源消耗总和应该通过`BuildingPlan`来创建一个总查询而不是现在的ABC分流，争取200Q以内结束

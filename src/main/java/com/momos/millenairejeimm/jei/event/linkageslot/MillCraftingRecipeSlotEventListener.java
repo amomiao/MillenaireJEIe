@@ -1,6 +1,6 @@
 package com.momos.millenairejeimm.jei.event.linkageslot;
 
-import com.momos.millenairejeim.jei.crafting.event.MillRecipeSetSlotEvent;
+import com.momos.millenairejeim.event.MillRecipeSetSlotEvent;
 import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import mezz.jei.api.recipe.RecipeIngredientRole;

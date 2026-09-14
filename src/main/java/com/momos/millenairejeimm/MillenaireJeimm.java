@@ -3,11 +3,9 @@ package com.momos.millenairejeimm;
 import com.momos.millenairejeim.gui.MillPlusButtonWidget;
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeim.jei.crafting.MillCraftingCategory;
-import com.momos.millenairejeim.jei.crafting.MillCraftingRecipe;
-import com.momos.millenairejeim.jei.crafting.event.MillRecipeButtonClickEvent;
-import com.momos.millenairejeim.jei.crafting.event.MillRecipeButtonRenderEvent;
-import com.momos.millenairejeim.jei.crafting.event.MillRecipeSetSlotEvent;
-import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
+import com.momos.millenairejeim.event.MillRecipeButtonClickEvent;
+import com.momos.millenairejeim.event.MillRecipeButtonRenderEvent;
+import com.momos.millenairejeim.event.MillRecipeSetSlotEvent;
 import com.momos.millenairejeimm.debug.DebugGuiUtils;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.MillenaireJeimmPlugin;
@@ -140,7 +138,7 @@ public class MillenaireJeimm {
     ///     其后构造即可`event.getBuilder().addSlot(RecipeIngredientRole.INPUT, VILLAGER_ICON_X, VILLAGER_ICON_Y).addIngredients(MillIngredientTypes.VILLAGER, villagers);`
     /// 总结:
     /// 对象:[MillCraftingCategory]
-    /// 公共类(1:n):
+    /// 公共类(1:n): 其中泛型与Category中的recipe的类型同步
     ///     [MillPlusButtonWidget]:按钮控件,完全封装不应修改
     ///     [MillRecipeButtonRenderEvent]:请求事件-绘制按钮,完全封装不应修改
     ///     [MillRecipeButtonClickEvent]:请求事件-按钮点击后做,完全封装不应修改
@@ -166,12 +164,10 @@ public class MillenaireJeimm {
     ///     注意: JeiRuntime直接从单例拿`MillenaireJeimmPlugin.JeiRuntime.getJeiHelpers()`
     /// 通过AI改动此节逻辑:
     ///     会话1: 给予本节文本，至少读取:
-    ///         [MillenaireAPIHelper]
-    ///         [MillCraftingCategory]、[MillCraftingRecipe]
+    ///         [MillenaireAPIHelper] [MillCraftingCategory]
     ///         [MillRecipeButtonRenderEvent] [MillRecipeButtonClickEvent] [MillRecipeSetSlotEvent]
-    ///         [MillVillagerDetailButtonHandler]、[MillCraftingRecipeSlotEventListener]
+    ///         [MillVillagerDetailButtonHandler] [MillCraftingRecipeSlotEventListener]
     ///         => 读取文本及文件，准备对相关功能进行开发;
-    ///     会话2: 给予目标开始运行,请求时带上对应的[MillCraftingRecipe],且告知其应当继承[IMillCraftingRecipe]
     public MillenaireJeimm(IEventBus modEventBus, ModContainer modContainer) {
     }
 }
