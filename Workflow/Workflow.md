@@ -609,3 +609,15 @@
 * `VILLAGER_BUTTON_Y`值更小的位置在更上面
   * `MillCraftingCategory`中按钮的位置是没错的，但是功能错了，村民的按钮调用了建筑的`r`，而建筑的按钮调用了村庄的`r`,也就是应该改回output
 * 联动1彻底修好了
+* [MillTradeCategory#buildShopSummaryComponent]负责商店->建筑(string)，支持一下他对负责商店->建筑(buildingPlanSet)的支持
+  * 新增了[MillenaireAPIHelper]为`public static Set<BuildingPlan> getBuildingsByShopId(ResourceLocation cultureId, String shopId)`
+* 之前的问题很大的原因是Helper没有提供一个`BuildingPlan->BuildingPlanSet`
+  * [MillenaireAPIHelper]有`public Map<ResourceLocation, BuildingPlanSet> getAllBuildingPlanSets()`
+    * [BuildingPlanSet]有`Map<String, List<LevelDef>> variants()`
+    * [LevelDef]有`public ResourceLocation planId()`
+  * [BuildingPlan]有`public ResourceLocation id()`
+  1.新建一个Map懒加载`BuildingPlan到BuildingPlanSet`的反查
+  2.更新[MillTradeCategory#getBuildingKeysByShopId]
+    * 移除[MillTradeCategory#extractBaseBuildingKey]
+    * 直接调用[BuildingPlanSet]的`public String nativeName()`
+  3. 给出代码改动量，不需要全量输出
