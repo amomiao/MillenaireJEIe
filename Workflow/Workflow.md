@@ -627,4 +627,12 @@
 * Q187: Review发现[MillRecipeButtonRenderEvent] [MillRecipeButtonClickEvent] [MillRecipeSetSlotEvent]所`依赖的重要成员`[IMillCraftingRecipe]`旧名IMillRecipe`是专职服务于Crafting的各个细分的,根据[MillVillagerDetailButtonHandler]、[MillCraftingRecipeSlotEventListener]的实现尝试让[MillRecipeButtonRenderEvent] [MillRecipeButtonClickEvent] [MillRecipeSetSlotEvent]支持泛型
 * [重复Q166]不争馒头争口气，再次尝试AIGC
 * Q188: 为MillTradeCategory创建一组同样的代码，来创建轮播与加号按钮(水平位置在配方框右侧，垂直位置在建筑文本同高处)，注意`包名`特别是`m和mm后缀`，注意调用Helper里的API
-* 成了，加号我自己给他往上挪挪，但是还有一个问题，资源消耗总和应该通过`BuildingPlan`来创建一个总查询而不是现在的ABC分流，争取200Q以内结束
+* 成了，加号我自己给他往上挪挪，但是还有一个问题，争取200Q以内结束
+* Q189: 资源消耗总和应该通过`BuildingPlan`来创建一个总查询而不是现在的ABC分流
+  * [MillenaireAPIHelper]有`public Map<ResourceLocation, BuildingPlanSet> getAllBuildingPlanSets()`
+    * [BuildingPlanSet]有`Map<String, List<LevelDef>> variants()`
+    * [LevelDef]有`public ResourceLocation planId()`以及`public Map<ResourceLocation, Integer> requiredResources()`(当前代码已提供用例)
+  * [BuildingPlan]有`public ResourceLocation id()`
+  * `BuildingCategory`的`JEILayoutBox`保持原逻辑不变
+  * 移除`AbstractBuildingCostCategory`及其ABC子类，转而声明一个`recipe`统计`BuildingPlan`的`BuildingCostCategory`
+  * `BuildingCostCategory`配方内标题的本地化在编码中拼合`BuildingPlanSet#nativeName()`:`public ResourceLocation id()`的字符串，查看实际输出后再处理
