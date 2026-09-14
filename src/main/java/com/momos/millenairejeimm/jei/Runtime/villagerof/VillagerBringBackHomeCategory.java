@@ -1,5 +1,6 @@
 package com.momos.millenairejeimm.jei.Runtime.villagerof;
 
+import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;
 import com.momos.millenairejeimm.jei.MillenaireJeimmKeys;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
@@ -91,7 +92,7 @@ public class VillagerBringBackHomeCategory extends BaseMillCategory<VillagerType
         if (recipe == null) return;
         Font font = Minecraft.getInstance().font;
 
-        String name = recipe.nativeName() != null && !recipe.nativeName().isEmpty() ? recipe.nativeName() : recipe.id().getPath();
+        String name = MillenaireLocalizeHelper.getVillagerName(recipe).getString();
         Component displayNameComponent =  MillenaireJeimmKeys.VillagerBringBackHomeCategoryTitle_S.asComponent(name);
 
         guiGraphics.drawString(font, displayNameComponent, 14, 8, 0x000000, false);

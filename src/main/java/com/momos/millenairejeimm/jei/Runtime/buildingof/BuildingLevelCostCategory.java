@@ -2,6 +2,7 @@
 package com.momos.millenairejeimm.jei.Runtime.buildingof;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
+import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.MillenaireJeimmKeys;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
@@ -192,17 +193,9 @@ public class BuildingLevelCostCategory extends BaseMillCategory<BuildingPlanSet.
         if (recipe != this.lastRecipe) {
             this.lastRecipe = recipe;
 
-            String nativeName = recipe.nativeName();
             BuildingPlanSet parentSet = getParentBuildingPlanSet(recipe);
-            if ((nativeName == null || nativeName.isEmpty()) && parentSet != null) {
-                nativeName = parentSet.nativeName();
-            }
-            if (nativeName == null) {
-                nativeName = "";
-            }
-
             String suffix = extractVariantAndLevelSuffix(recipe.planId());
-            String titleStr = nativeName.isEmpty() ? suffix : nativeName + ":" + suffix;
+            String titleStr = MillenaireLocalizeHelper.getBuildingName(parentSet).getString() + ":" + suffix;
 
             this.cachedDisplayNameComponent = Component.literal(titleStr);
         }

@@ -2,6 +2,7 @@
 package com.momos.millenairejeimm.jei.Runtime.buildingof;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
+import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
 import com.momos.millenairejeimm.jei.MillenaireJeimmKeys;
@@ -108,7 +109,7 @@ public class BuildingVillageCategory extends BaseMillCategory<BuildingPlanSet> {
 
         if (recipe != this.lastRecipe) {
             this.lastRecipe = recipe;
-            String name = recipe.nativeName() != null && !recipe.nativeName().isEmpty() ? recipe.nativeName() : recipe.buildingId();
+            String name = MillenaireLocalizeHelper.getBuildingName(recipe).getString();
             this.cachedDisplayNameComponent = MillenaireJeimmKeys.BuildingVillageCategoryTitle_S.asComponent(name);
         }
 

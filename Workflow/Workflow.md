@@ -658,3 +658,5 @@
   * 中文无冒号是对的，删除英文中的冒号。
 * Q196: [重复]结合:zh_cn与en_us编写de_de的本地化 es_es fr_fr ja_jp pt_br ru_ru zh_tw
 * Q197: 以zh_cn和en_us为锚定，校对其他语言的翻译有没有大的语义差别
+* AI编写时所有的名称都没有走`MillenaireLocalizeHelper`所有页签都要纠正
+  * 文化是最初的污染源，千年村庄没有为文化和村庄提供本地化Key的应用,因此纠正只发生在建筑和村民页签中。

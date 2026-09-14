@@ -221,7 +221,6 @@ public class VillagerCategory extends BaseMillCategory<VillagerType> {
 
         Font font = Minecraft.getInstance().font;
         String culture = recipe.culture() != null ? recipe.culture().getPath() : MillenaireJeimmKeys.UnknownCultureValue.asComponent().getString();
-
         drawCommonHeader(guiGraphics, font, MillenaireLocalizeHelper.getVillagerName(recipe).getString(), recipe.id().toString(), culture, mouseX, mouseY);
 
         String genderStr = recipe.gender() != null ? recipe.gender().name() : MillenaireJeimmKeys.UnknownGenderValue.asComponent().getString();
