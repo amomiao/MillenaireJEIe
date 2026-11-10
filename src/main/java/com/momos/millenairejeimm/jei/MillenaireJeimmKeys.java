@@ -46,7 +46,6 @@ public final class MillenaireJeimmKeys {
     public static final KT VillagerIngR_S = new KT(PrefixIngredien + "villager", "%s");
 
     /* 页签-类别(Category) */
-    /// 此类key调用位置在:[BuildingCategory#getTitle()]
     public static final String PrefixCategory = Prefix + "category.";
     // 文化: 2 个分类
     public static final KT CultureCategory = new KT(PrefixCategory + "culture", "Culture Info");
@@ -71,20 +70,21 @@ public final class MillenaireJeimmKeys {
     /* 二级页签的第二标题 */
     public static final String PrefixSecTitle = Prefix + "sec_title.";
     // 文化
-    public static final KT CultureVillagesCategoryTitle_S = new KT(PrefixSecTitle + "culture_villages", "Belong %S");
+    public static final KT CultureVillagesCategoryTitle_S = new KT(PrefixSecTitle + "culture_villages", "Belong %s");
     // 村庄
-    public static final KT VillageBuildingsCategoryTitle_S = new KT(PrefixSecTitle + "village_buildings", "Belong %S");
-    public static final KT VillageVillagersCategoryTitle_S = new KT(PrefixSecTitle + "village_villagers", "Belong %S");
+    public static final KT VillageBuildingsCategoryTitle_S = new KT(PrefixSecTitle + "village_buildings", "Belong %s");
+    public static final KT VillageVillagersCategoryTitle_S = new KT(PrefixSecTitle + "village_villagers", "Belong %s");
     // 建筑
-    public static final KT AbstractBuildingCostCategoryTitle_S = new KT(PrefixSecTitle + "building_cost", "Belong %S");
-    public static final KT BuildingVillageCategoryTitle_S = new KT(PrefixSecTitle + "building_village", "Belong %S");
-    public static final KT BuildingVillagerCategoryTitle_S = new KT(PrefixSecTitle + "building_villager", "Belong %S");
+    public static final KT AbstractBuildingCostCategoryTitle_S = new KT(PrefixSecTitle + "building_cost", "Belong %s");
+    public static final KT BuildingVillageCategoryTitle_S = new KT(PrefixSecTitle + "building_village", "Belong %s");
+    public static final KT BuildingVillagerCategoryTitle_S = new KT(PrefixSecTitle + "building_villager", "Belong %s");
+    public static final KT VariantCostSummarySuffix_S = new KT(PrefixSecTitle + "variant_cost_summary", "%s_All (Total)");
     // 村民
-    public static final KT VillagerBuildingCategoryTitle_S = new KT(PrefixSecTitle + "villager_building", "Belong %S");
-    public static final KT VillagerVillageCategoryTitle_S = new KT(PrefixSecTitle + "villager_village", "Belong %S");
-    public static final KT VillagerBringBackHomeCategoryTitle_S = new KT(PrefixSecTitle + "villager_bring_back_home", "Belong %S");
-    public static final KT VillagerCollectCategoryTitle_S = new KT(PrefixSecTitle + "villager_collect", "Belong %S");
-    public static final KT VillagerRequiredCategoryTitle_S = new KT(PrefixSecTitle + "villager_required", "Belong %S");
+    public static final KT VillagerBuildingCategoryTitle_S = new KT(PrefixSecTitle + "villager_building", "Belong %s");
+    public static final KT VillagerVillageCategoryTitle_S = new KT(PrefixSecTitle + "villager_village", "Belong %s");
+    public static final KT VillagerBringBackHomeCategoryTitle_S = new KT(PrefixSecTitle + "villager_bring_back_home", "Belong %s");
+    public static final KT VillagerCollectCategoryTitle_S = new KT(PrefixSecTitle + "villager_collect", "Belong %s");
+    public static final KT VillagerRequiredCategoryTitle_S = new KT(PrefixSecTitle + "villager_required", "Belong %s");
 
     /* 一级页面的具体文本 */
     public static final String PrefixLabel = Prefix + "label.";
@@ -104,8 +104,8 @@ public final class MillenaireJeimmKeys {
     public static final KT HasNbtValue = new KT(PrefixValue + "has_nbt", "Has NBT");
     public static final KT NoNbtValue = new KT(PrefixValue + "no_nbt", "No NBT");
     public static final KT DefaultValue = new KT(PrefixValue + "default", "Default");
-    public static final KT CropCountValue_D = new KT(PrefixValue + "crop_count", "%d types");
-    public static final KT DropCountValue_D = new KT(PrefixValue + "drop_count", "%d types");
+    public static final KT CropCountValue_D = new KT(PrefixValue + "crop_count", "%s types");
+    public static final KT DropCountValue_D = new KT(PrefixValue + "drop_count", "%s types");
     // LayoutBox标题
     public static final KT VillageBoxLink = new KT(PrefixLink + "village_box", "Village");
     /* BuildignCategory 标签 */
@@ -116,7 +116,7 @@ public final class MillenaireJeimmKeys {
     public static final KT CultureLabel = new KT(PrefixLabel + "culture", "Culture: ");
     public static final KT FlagsLabel = new KT(PrefixLabel + "flags", "Flags: ");
     // 状态/数值及其回退值
-    public static final KT MaxCountValue_D = new KT(PrefixValue + "max_count", "%d");
+    public static final KT MaxCountValue_D = new KT(PrefixValue + "max_count", "%s");
     public static final KT CommonCultureValue = new KT(PrefixValue + "common_culture", "Common");
     public static final KT TownHallFlag = new KT(PrefixValue + "town_hall", "Town Hall");
     public static final KT ResidentialFlag = new KT(PrefixValue + "residential", "Residential");
@@ -127,6 +127,7 @@ public final class MillenaireJeimmKeys {
     public static final KT VillagesBoxLink = new KT(PrefixLink + "villages_box", "Villages");
     public static final KT VillagersBoxLink = new KT(PrefixLink + "villagers_box", "Villagers");
     public static final KT VariantCostBoxLink_S = new KT(PrefixLink + "variant_cost", "Variant %s Cost");
+    public static final KT VariantCostBoxWithCount_S = new KT(PrefixLink + "variant_cost_with_count", "Variant Costs (%s variants)");
     /* VillageCategory 标签 */
     public static final KT TypeLabel = new KT(PrefixLabel + "type", "Type: ");
     public static final KT RadiusLabel = new KT(PrefixLabel + "radius", "Radius: ");
@@ -147,7 +148,7 @@ public final class MillenaireJeimmKeys {
     public static final KT NoDefenseValue = new KT(PrefixValue + "no_defense", "No Defense");
     public static final KT PlayerControlledValue = new KT(PrefixValue + "player_controlled", "Player Controlled");
     public static final KT AutoControlledValue = new KT(PrefixValue + "auto_controlled", "Auto Development");
-    public static final KT MeterValue_D = new KT(PrefixValue + "meter_d", "%dm");
+    public static final KT MeterValue_D = new KT(PrefixValue + "meter_d", "%sm");
     // LayoutBox标题
     public static final KT BuildingBoxLink = new KT(PrefixLink + "building_box", "Buildings");
     public static final KT VillagerBoxLink = new KT(PrefixLink + "villager_box", "Villagers");
@@ -157,13 +158,12 @@ public final class MillenaireJeimmKeys {
     public static final KT BaseAttackLabel = new KT(PrefixLabel + "base_attack", "Base Attack: ");
     public static final KT HiringCostLabel = new KT(PrefixLabel + "hiring_cost", "Hiring Cost: ");
     public static final KT SpawnWeightLabel = new KT(PrefixLabel + "spawn_weight", "Spawn Weight: ");
-    //public static final KT FlagsLabel = new KT(PrefixLabel + "flags", "Flags: ");
     // 状态/数值及其回退值
     public static final KT UnknownGenderValue = new KT(PrefixValue + "unknown_gender", "Unknown");
     public static final KT ChildValue = new KT(PrefixValue + "child", "Child");
     public static final KT AdultValue = new KT(PrefixValue + "adult", "Adult");
-    public static final KT HpValue_D = new KT(PrefixValue + "hp_d", "%d HP");
-    public static final KT CoinsValue_D = new KT(PrefixValue + "coins_d", "%d Coins");
+    public static final KT HpValue_D = new KT(PrefixValue + "hp_d", "%s HP");
+    public static final KT CoinsValue_D = new KT(PrefixValue + "coins_d", "%s Coins");
     public static final KT UnhirableValue = new KT(PrefixValue + "unhirable", "Unhirable");
     public static final KT RaiderValue = new KT(PrefixValue + "raider", "[Raider] ");
     public static final KT HostileValue = new KT(PrefixValue + "hostile", "[Hostile] ");
@@ -176,4 +176,9 @@ public final class MillenaireJeimmKeys {
     public static final KT BringBackHomeBoxLink = new KT(PrefixLink + "bring_back_home_box", "Bring Back Home Goods");
     public static final KT CollectBoxLink = new KT(PrefixLink + "collect_box", "Collect Goods");
     public static final KT RequiredBoxLink = new KT(PrefixLink + "required_box", "Required Goods");
+
+    // 通用 LinkBox 动态词条
+    public static final KT ViewAllTooltip_S = new KT(PrefixLink + "view_all_tooltip", "View All (Total %s items) - Click to open overview");
+    public static final KT CountAll_S = new KT(PrefixLink + "count_all", "(%s)");
+    public static final KT CountNone = new KT(PrefixLink + "count_none", "(None)");
 }

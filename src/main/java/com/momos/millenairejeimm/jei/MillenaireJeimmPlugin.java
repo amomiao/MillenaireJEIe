@@ -144,7 +144,6 @@ public class MillenaireJeimmPlugin implements IModPlugin {
     @Override
     public ResourceLocation getPluginUid() {return PLUGIN_ID;}
 
-    // 接入 {@link MMLog} 三语控制台日志，对每个 Ingredient 注册阶段实施异常捕获与数量监控
     /**
      * 注册自定义 JEI 成分类型 {@link IModIngredientRegistration}。
      * 采用异常隔离机制，防止单一 Ingredient 注册抛错中断整个 JEI 初始化。
@@ -218,21 +217,20 @@ public class MillenaireJeimmPlugin implements IModPlugin {
     public void registerCategories(IRecipeCategoryRegistration registration) {
         IGuiHelper guiHelper = registration.getJeiHelpers().getGuiHelper();
         IIngredientManager ingredientManager = registration.getJeiHelpers().getIngredientManager();
-        // [醒目新注释] 注册 VillageCategory 分类页面
         registration.addRecipeCategories(
                 new CultureCategory(guiHelper, ingredientManager),
-                new BuildingCategory(guiHelper,ingredientManager),
-                new VillageCategory(guiHelper,ingredientManager),
+                new BuildingCategory(guiHelper, ingredientManager),
+                new VillageCategory(guiHelper, ingredientManager),
                 new VillagerCategory(guiHelper, ingredientManager),
                 // 文化及其详细信息
-                new CultureVillagesCategory(guiHelper,ingredientManager),
+                new CultureVillagesCategory(guiHelper, ingredientManager),
                 // 建筑及其详细信息
-                new BuildingVillageCategory(guiHelper,ingredientManager),
-                new BuildingVillagerCategory(guiHelper,ingredientManager),
-                new BuildingLevelCostCategory(guiHelper,ingredientManager),
+                new BuildingVillageCategory(guiHelper, ingredientManager),
+                new BuildingVillagerCategory(guiHelper, ingredientManager),
+                new BuildingLevelCostCategory(guiHelper, ingredientManager),
                 // 村庄及其详细信息
-                new VillageBuildingsCategory(guiHelper,ingredientManager),
-                new VillageVillagersCategory(guiHelper,ingredientManager),
+                new VillageBuildingsCategory(guiHelper, ingredientManager),
+                new VillageVillagersCategory(guiHelper, ingredientManager),
                 // 村民及其详细信息
                 new VillagerVillageCategory(guiHelper, ingredientManager),
                 new VillagerBuildingCategory(guiHelper, ingredientManager),
@@ -240,11 +238,9 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                 new VillagerCollectCategory(guiHelper, ingredientManager),
                 new VillagerRequiredCategory(guiHelper, ingredientManager)
         );
-        // [醒目新注释] 使用 {@link MMLog} 确认页签 Class 注册完成
         MMLog.info(LOG_CATEGORIES_SUCCESS_ZH, LOG_CATEGORIES_SUCCESS_EN, LOG_CATEGORIES_SUCCESS_FR);
     }
 
-    // [醒目新注释] 引入 {@link MMLog} 三语埋点，并增加对配方集合的非空判断，避免向 JEI 注入空配方导致页签被自动隐藏
     /** 声明有配方的对象
      * @param registration JEI 配方注册器
      */
@@ -282,31 +278,18 @@ public class MillenaireJeimmPlugin implements IModPlugin {
 
         // 3. 建筑配方注册
         try {
-            ArrayList<BuildingPlanSet> buildings =  new ArrayList<>(MillenaireAPIHelper.getAllBuildingPlanSets().values());
+            ArrayList<BuildingPlanSet> buildings = new ArrayList<>(MillenaireAPIHelper.getAllBuildingPlanSets().values());
             if (!buildings.isEmpty()) {
                 registration.addRecipes(BuildingCategory.RECIPE_TYPE, buildings);
                 registration.addRecipes(BuildingVillageCategory.RECIPE_TYPE, buildings);
                 registration.addRecipes(BuildingVillagerCategory.RECIPE_TYPE, buildings);
-                List<BuildingPlanSet> buildingsA = buildings.stream()
-                        .filter(b -> b.variants() != null && b.variants().size() > 0)
-                        .toList();
-                List<BuildingPlanSet> buildingsB = buildingsA.stream()
-                        .filter(b -> b.variants().size() > 1)
-                        .toList();
-                List<BuildingPlanSet> buildingsC = buildingsB.stream()
-                        .filter(b -> b.variants().size() > 2)
-                        .toList();
                 MMLog.info(LOG_BUILDING_RECIPE_SUCCESS_ZH, LOG_BUILDING_RECIPE_SUCCESS_EN, LOG_BUILDING_RECIPE_SUCCESS_FR, buildings.size());
 
-                // BuildingPlans页面
+                // BuildingPlans 页面：注册含 a_All 汇总页的全变体等级配方列表
                 List<BuildingPlanSet.LevelDef> allLevelDefs = new ArrayList<>();
                 for (BuildingPlanSet planSet : MillenaireAPIHelper.getAllBuildings()) {
-                    if (planSet != null && planSet.variants() != null) {
-                        for (List<BuildingPlanSet.LevelDef> levelList : planSet.variants().values()) {
-                            if (levelList != null) {
-                                allLevelDefs.addAll(levelList);
-                            }
-                        }
+                    if (planSet != null) {
+                        allLevelDefs.addAll(BuildingUpgradeCostHelper.getFullVariantLevelsForBuilding(planSet));
                     }
                 }
                 registration.addRecipes(BuildingLevelCostCategory.RECIPE_TYPE, allLevelDefs);
@@ -327,8 +310,9 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                 registration.addRecipes(VillagerBuildingCategory.RECIPE_TYPE, villagers);
                 registration.addRecipes(VillagerBringBackHomeCategory.RECIPE_TYPE, villagers);
                 registration.addRecipes(VillagerCollectCategory.RECIPE_TYPE, villagers);
-                //registration.addRecipes(VillagerRequiredCategory.RECIPE_TYPE, villagers);
-                List<VillagerType> requiredVillagers = villagers.stream().filter(v -> v.requiredGoods() != null && !v.requiredGoods().isEmpty()).toList();
+                List<VillagerType> requiredVillagers = villagers.stream()
+                        .filter(v -> v.requiredGoods() != null && !v.requiredGoods().isEmpty())
+                        .toList();
                 registration.addRecipes(VillagerRequiredCategory.RECIPE_TYPE, requiredVillagers);
                 MMLog.info(LOG_VILLAGER_RECIPE_SUCCESS_ZH, LOG_VILLAGER_RECIPE_SUCCESS_EN, LOG_VILLAGER_RECIPE_SUCCESS_FR, villagers.size());
             } else {

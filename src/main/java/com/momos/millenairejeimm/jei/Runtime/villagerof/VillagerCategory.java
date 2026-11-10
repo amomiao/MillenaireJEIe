@@ -2,8 +2,8 @@ package com.momos.millenairejeimm.jei.Runtime.villagerof;
 
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;
-import com.momos.millenairejeimm.jei.MillenaireJeimmKeys;
 import com.momos.millenairejeimm.jei.MillIngredientTypes;
+import com.momos.millenairejeimm.jei.MillenaireJeimmKeys;
 import com.momos.millenairejeimm.jei.Runtime.BaseMillCategory;
 import com.momos.millenairejeimm.jei.Runtime.JeiLinkBox;
 import com.momos.millenairejeimm.jei.Runtime.JeiLinkLayout;
@@ -23,7 +23,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -38,22 +37,19 @@ import java.util.List;
  * 村民 {@link VillagerType} JEI 详情主分类面板。
  */
 public class VillagerCategory extends BaseMillCategory<VillagerType> {
-
-    // region 静态字段与调试输出辅助方法
-
-    public static final RecipeType<VillagerType> RECIPE_TYPE = RecipeType.create(MillIngredientTypes.MOD_ID, MillIngredientTypes.VillagerCategoryPath, VillagerType.class);
+    public static final RecipeType<VillagerType> RECIPE_TYPE = RecipeType.create(
+            MillIngredientTypes.MOD_ID,
+            MillIngredientTypes.VillagerCategoryPath,
+            VillagerType.class
+    );
 
     private static final MillIconOnlyRenderer<VillagerType> ICON_RENDERER = new MillIconOnlyRenderer<>(recipe -> {
-        if (recipe != null && recipe.icon() != null && !recipe.icon().isEmpty()) {
-            Item item = ItemHelper.resolve(recipe.icon());
-            if (item != null) return new ItemStack(item);
+        if (recipe != null) {
+            ItemStack stack = new ItemStack(Items.PLAYER_HEAD);
+            return stack;
         }
         return ItemStack.EMPTY;
     });
-
-    // endregion 静态字段与调试输出辅助方法
-
-    // region 成员变量与构造函数
 
     private final JeiLinkLayout villagerLayout;
 
@@ -62,21 +58,26 @@ public class VillagerCategory extends BaseMillCategory<VillagerType> {
         super(guiHelper, guiHelper.createDrawableItemStack(
                 new ItemStack(ItemHelper.resolve("millenaire:travel_book") != null ? ItemHelper.resolve("millenaire:travel_book") : Items.BOOK)));
 
-        // [醒目新注释] 必须与 BuildingCategory 保持一致，后三个 ItemStack 框必须绑定 VanillaTypes.ITEM_STACK
+        // 绑定全景跳转至 5 大二级全景分类
         JeiLinkBox<VillageType> villageBox = new JeiLinkBox<VillageType>(MillenaireJeimmKeys.VillageBoxLink.asComponent())
-                .useJeiMode(ingredientManager, (IIngredientType) MillIngredientTypes.VILLAGE);
+                .useJeiMode(ingredientManager, (IIngredientType) MillIngredientTypes.VILLAGE)
+                .setTargetCategory(VillagerVillageCategory.RECIPE_TYPE);
 
         JeiLinkBox<BuildingPlanSet> buildingBox = new JeiLinkBox<BuildingPlanSet>(MillenaireJeimmKeys.BuildingBoxLink.asComponent())
-                .useJeiMode(ingredientManager, (IIngredientType) MillIngredientTypes.BUILDING);
+                .useJeiMode(ingredientManager, (IIngredientType) MillIngredientTypes.BUILDING)
+                .setTargetCategory(VillagerBuildingCategory.RECIPE_TYPE);
 
         JeiLinkBox<ItemStack> bringBackHomeBox = new JeiLinkBox<ItemStack>(MillenaireJeimmKeys.BringBackHomeBoxLink.asComponent())
-                .useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK);
+                .useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK)
+                .setTargetCategory(VillagerBringBackHomeCategory.RECIPE_TYPE);
 
         JeiLinkBox<ItemStack> collectBox = new JeiLinkBox<ItemStack>(MillenaireJeimmKeys.CollectBoxLink.asComponent())
-                .useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK);
+                .useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK)
+                .setTargetCategory(VillagerCollectCategory.RECIPE_TYPE);
 
         JeiLinkBox<ItemStack> requiredBox = new JeiLinkBox<ItemStack>(MillenaireJeimmKeys.RequiredBoxLink.asComponent())
-                .useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK);
+                .useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK)
+                .setTargetCategory(VillagerRequiredCategory.RECIPE_TYPE);
 
         this.villagerLayout = new JeiLinkLayout(2, 105, 172, 4)
                 .addBox(villageBox)
@@ -92,18 +93,10 @@ public class VillagerCategory extends BaseMillCategory<VillagerType> {
     }
 
     @Override
-    public Component getTitle() { return MillenaireJeimmKeys.VillagerCategory.asComponent(); }
+    public Component getTitle() {
+        return MillenaireJeimmKeys.VillagerCategory.asComponent();
+    }
 
-    // endregion 成员变量与构造函数
-
-    // region 数据转换与安全提取辅助方法
-
-    /**
-     * 安全提取村民带回家中的物品清单并转换为 {@link ItemStack} 列表。
-     *
-     * @param recipe 村民配方 {@link VillagerType}
-     * @return 转换后的 {@link ItemStack} 列表，非空
-     */
     private List<ItemStack> extractBringBackHomeItems(VillagerType recipe) {
         if (recipe == null || recipe.resolvedBringBackHomeGoods() == null) {
             return List.of();
@@ -114,12 +107,6 @@ public class VillagerCategory extends BaseMillCategory<VillagerType> {
                 .toList();
     }
 
-    /**
-     * 安全提取村民收集的物品清单并转换为 {@link ItemStack} 列表。
-     *
-     * @param recipe 村民配方 {@link VillagerType}
-     * @return 转换后的 {@link ItemStack} 列表，非空
-     */
     private List<ItemStack> extractCollectItems(VillagerType recipe) {
         if (recipe == null || recipe.resolvedCollectGoods() == null) {
             return List.of();
@@ -137,12 +124,6 @@ public class VillagerCategory extends BaseMillCategory<VillagerType> {
                 .toList();
     }
 
-    /**
-     * 安全提取村民生存/建房所需物品清单并转换为包含数量的 {@link ItemStack} 列表。
-     *
-     * @param recipe 村民配方 {@link VillagerType}
-     * @return 转换后的 {@link ItemStack} 列表，包含具体堆叠数量
-     */
     private List<ItemStack> extractRequiredItems(VillagerType recipe) {
         if (recipe == null || recipe.requiredGoods() == null || recipe.requiredGoods().isEmpty() || recipe.resolvedRequiredGoods() == null) {
             return List.of();
@@ -152,10 +133,6 @@ public class VillagerCategory extends BaseMillCategory<VillagerType> {
                 .map(entry -> new ItemStack(entry.getKey(), entry.getValue() != null ? entry.getValue() : 1))
                 .toList();
     }
-
-    // endregion 数据转换与安全提取辅助方法
-
-    // region JEI 布局与 Recipe 注册逻辑
 
     private void updateLayoutData(VillagerType recipe) {
         if (villagerLayout == null || recipe == null) return;
@@ -211,10 +188,6 @@ public class VillagerCategory extends BaseMillCategory<VillagerType> {
         }
     }
 
-    // endregion JEI 布局与 Recipe 注册逻辑
-
-    // region 页面渲染方法
-
     @Override
     public void draw(VillagerType recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
         if (recipe == null) return;
@@ -255,6 +228,4 @@ public class VillagerCategory extends BaseMillCategory<VillagerType> {
             villagerLayout.render(guiGraphics, font, mouseX, mouseY);
         }
     }
-
-    // endregion 页面渲染方法
 }

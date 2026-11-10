@@ -35,6 +35,11 @@ import java.util.*;
 
 /**
  * 建筑 {@link BuildingPlanSet} JEI 详情主分类面板。
+ * <p>
+ * 经过治理升级：收敛 3 个独立的变体建材 Box 为单一自适应变体建材 Box，
+ * 标题动态标注变体总数（例如“变体建材 (共 3 个变体)”），总高 221px <= 225px，彻底消灭 76px 画布溢出；
+ * 点击 “...” 按钮可一次性展开该建筑全量变体（含汇总页 a_All 与各等级细项），支持 JEI 原生无缝翻页。
+ * </p>
  */
 public class BuildingCategory extends BaseMillCategory<BuildingPlanSet> {
     private static final String FALLBACK_ITEM_GLASS_BOTTLE = "minecraft:glass_bottle";
@@ -43,7 +48,11 @@ public class BuildingCategory extends BaseMillCategory<BuildingPlanSet> {
     private static final String COLOR_BLUE = "§1";
     private static final String COLOR_PURPLE = "§d";
 
-    public static final RecipeType<BuildingPlanSet> RECIPE_TYPE = RecipeType.create(MillIngredientTypes.MOD_ID, MillIngredientTypes.BuildingCategoryPath, BuildingPlanSet.class);
+    public static final RecipeType<BuildingPlanSet> RECIPE_TYPE = RecipeType.create(
+            MillIngredientTypes.MOD_ID,
+            MillIngredientTypes.BuildingCategoryPath,
+            BuildingPlanSet.class
+    );
 
     private static final MillIconOnlyRenderer<BuildingPlanSet> ICON_RENDERER = new MillIconOnlyRenderer<>(recipe -> {
         if (recipe != null && recipe.icon() != null && !recipe.icon().isEmpty()) {
@@ -56,41 +65,40 @@ public class BuildingCategory extends BaseMillCategory<BuildingPlanSet> {
     private final JeiLinkLayout buildingLayout;
     private final JeiLinkBox<VillageType> villageBox;
     private final JeiLinkBox<VillagerType> villagerBox;
-    private final JeiLinkBox<ItemStack> resourceBox0;
-    private final JeiLinkBox<ItemStack> resourceBox1;
-    private final JeiLinkBox<ItemStack> resourceBox2;
+    private final JeiLinkBox<ItemStack> variantCostBox;
 
-    // [醒目新注释] 构造函数中所有 Box 标题统一改用首字母大写驼峰格式的 {@link MillenaireJeimmKeys} 常量并配合 .asComponent()，替换旧版 translatableWithFallback 字符串
+    private int currentVariantCount = 0;
+
     public BuildingCategory(IGuiHelper guiHelper, IIngredientManager ingredientManager) {
         super(guiHelper, guiHelper.createDrawableItemStack(
                 new ItemStack(ItemHelper.resolve(FALLBACK_ITEM_GLASS_BOTTLE) != null ? ItemHelper.resolve(FALLBACK_ITEM_GLASS_BOTTLE) : Items.GLASS_BOTTLE)));
 
+        // 1. 关联村庄 Box
         this.villageBox = new JeiLinkBox<VillageType>(
                 MillenaireJeimmKeys.VillagesBoxLink.asComponent()
-        ).useJeiMode(ingredientManager, MillIngredientTypes.VILLAGE);
+        ).useJeiMode(ingredientManager, MillIngredientTypes.VILLAGE)
+         .setTargetCategory(BuildingVillageCategory.RECIPE_TYPE);
 
+        // 2. 相关村民 Box
         this.villagerBox = new JeiLinkBox<VillagerType>(
                 MillenaireJeimmKeys.VillagersBoxLink.asComponent()
-        ).useJeiMode(ingredientManager, MillIngredientTypes.VILLAGER);
+        ).useJeiMode(ingredientManager, MillIngredientTypes.VILLAGER)
+         .setTargetCategory(BuildingVillagerCategory.RECIPE_TYPE);
 
-        this.resourceBox0 = new JeiLinkBox<ItemStack>(
-                MillenaireJeimmKeys.VariantCostBoxLink_S.asComponent("A")
-        ).useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK);
+        // 3. 变体建材消耗 Box：动态显示变体数量，定向跳转送入全变体配方列表（[A_All, a_0, a_1, B_All, ...]）
+        this.variantCostBox = new JeiLinkBox<ItemStack>(
+                () -> MillenaireJeimmKeys.VariantCostBoxWithCount_S.asComponent(currentVariantCount)
+        ).useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK)
+         .setTargetRecipeList(
+                 BuildingLevelCostCategory.RECIPE_TYPE,
+                 b -> (b instanceof BuildingPlanSet bps) ? BuildingUpgradeCostHelper.getFullVariantLevelsForBuilding(bps) : null
+         );
 
-        this.resourceBox1 = new JeiLinkBox<ItemStack>(
-                MillenaireJeimmKeys.VariantCostBoxLink_S.asComponent("B")
-        ).useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK);
-
-        this.resourceBox2 = new JeiLinkBox<ItemStack>(
-                MillenaireJeimmKeys.VariantCostBoxLink_S.asComponent("C")
-        ).useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK);
-
+        // 3 个 Box：总高度 105 + 3 * 40 - 4 = 221px <= 225px，彻底消除 76px 溢出
         this.buildingLayout = new JeiLinkLayout(2, 105, 172, 4)
                 .addBox(villageBox)
                 .addBox(villagerBox)
-                .addBox(resourceBox0)
-                .addBox(resourceBox1)
-                .addBox(resourceBox2);
+                .addBox(variantCostBox);
     }
 
     @Override
@@ -111,13 +119,11 @@ public class BuildingCategory extends BaseMillCategory<BuildingPlanSet> {
     private void updateLayoutData(BuildingPlanSet recipe) {
         if (buildingLayout == null || recipe == null) return;
 
+        this.currentVariantCount = (recipe.variants() != null) ? recipe.variants().size() : 0;
+
         buildingLayout.setBoxData(0, MillenaireAPIHelper.getVillageFormBuilding(recipe));
         buildingLayout.setBoxData(1, MillenaireAPIHelper.getVillagerFormBuilding(recipe));
-
-        List<List<ItemStack>> upgradeCosts = getBuildingCosts(recipe);
-        buildingLayout.setBoxData(2, upgradeCosts.size() > 0 ? upgradeCosts.get(0) : List.of());
-        buildingLayout.setBoxData(3, upgradeCosts.size() > 1 ? upgradeCosts.get(1) : List.of());
-        buildingLayout.setBoxData(4, upgradeCosts.size() > 2 ? upgradeCosts.get(2) : List.of());
+        buildingLayout.setBoxData(2, getPrimaryVariantCosts(recipe));
     }
 
     @Override
@@ -133,17 +139,7 @@ public class BuildingCategory extends BaseMillCategory<BuildingPlanSet> {
 
             buildingLayout.setRecipeForBox(0, builder, MillenaireAPIHelper.getVillageFormBuilding(recipe));
             buildingLayout.setRecipeForBox(1, builder, MillenaireAPIHelper.getVillagerFormBuilding(recipe));
-
-            List<List<ItemStack>> upgradeCosts = getBuildingCosts(recipe);
-            if (upgradeCosts.size() > 0) {
-                buildingLayout.setRecipeForBox(2, builder, upgradeCosts.get(0));
-            }
-            if (upgradeCosts.size() > 1) {
-                buildingLayout.setRecipeForBox(3, builder, upgradeCosts.get(1));
-            }
-            if (upgradeCosts.size() > 2) {
-                buildingLayout.setRecipeForBox(4, builder, upgradeCosts.get(2));
-            }
+            buildingLayout.setRecipeForBox(2, builder, getPrimaryVariantCosts(recipe));
         }
     }
 
@@ -156,7 +152,6 @@ public class BuildingCategory extends BaseMillCategory<BuildingPlanSet> {
         }
     }
 
-    // [醒目新注释] 重构 draw 内本地化逻辑：全面对标 CultureCategory 风格，使用大驼峰命名（如 PriceLabel, MaxCountValue, FlagsLabel 等）配合 .asComponent() / .getString()
     @Override
     public void draw(BuildingPlanSet recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
         if (recipe == null) return;
@@ -203,20 +198,24 @@ public class BuildingCategory extends BaseMillCategory<BuildingPlanSet> {
         }
     }
 
-    public static List<List<ItemStack>> getBuildingCosts(BuildingPlanSet building) {
+    /**
+     * 提取当前建筑的首选变体（通常为变体 A）升满所需的材料列表供卡片预览。
+     *
+     * @param building 建筑计划集
+     * @return 首选变体的满级材料用量列表
+     */
+    public static List<ItemStack> getPrimaryVariantCosts(BuildingPlanSet building) {
         Map<String, List<ItemStack>> map = BuildingUpgradeCostHelper.getBuildingUpgradeCosts(building);
         if (map != null && !map.isEmpty()) {
-            List<List<ItemStack>> result = new ArrayList<>();
             for (List<ItemStack> list : map.values()) {
-                if (list != null) {
+                if (list != null && !list.isEmpty()) {
                     List<ItemStack> cleaned = new ArrayList<>(list);
                     cleaned.removeIf(stack -> stack == null || stack.isEmpty());
                     if (!cleaned.isEmpty()) {
-                        result.add(cleaned);
+                        return cleaned;
                     }
                 }
             }
-            return result;
         }
         return Collections.emptyList();
     }

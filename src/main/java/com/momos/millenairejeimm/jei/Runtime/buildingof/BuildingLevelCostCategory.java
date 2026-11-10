@@ -25,23 +25,23 @@ import net.minecraft.world.item.Items;
 import org.millenaire.building.BuildingPlanSet;
 import org.millenaire.item.ItemHelper;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 针对单个 {@link BuildingPlanSet.LevelDef} 变体等级独立资源消耗的 JEI 分类窗口。
+ * <p>
+ * 支持 {@code level = -1} 的变体聚合汇总总览页（{@code a_All}），
+ * 彻底解除 40 格硬编码限制，根据槽位数量自适应高光边框渲染，消灭空置幽灵槽。
+ * </p>
  */
 public class BuildingLevelCostCategory extends BaseMillCategory<BuildingPlanSet.LevelDef> {
 
-    // [醒目新注释] 8x5 网格布局参数
     private static final int SLOT_SIZE = 18;
     private static final int COLUMNS = 8;
     private static final int ROWS = 5;
-    private static final int PAGE_SIZE = COLUMNS * ROWS;
+    public static final int PAGE_SIZE = COLUMNS * ROWS;
 
-    // [醒目新注释] 配方泛型类型调整为 BuildingPlanSet.LevelDef
     public static final RecipeType<BuildingPlanSet.LevelDef> RECIPE_TYPE = RecipeType.create(
             MillIngredientTypes.MOD_ID,
             MillIngredientTypes.BuildingCostCategoryPath,
@@ -49,13 +49,17 @@ public class BuildingLevelCostCategory extends BaseMillCategory<BuildingPlanSet.
     );
 
     /**
-     * [醒目新注释] 缓存上一次绘制的 {@link BuildingPlanSet.LevelDef} 配方对象。
+     * 合成聚合总和 LevelDef 与父级 BuildingPlanSet 的并发映射缓存。
      */
-    private BuildingPlanSet.LevelDef lastRecipe;
+    private static final Map<BuildingPlanSet.LevelDef, BuildingPlanSet> SYNTHETIC_PARENTS = new ConcurrentHashMap<>();
 
-    /**
-     * [醒目新注释] 缓存的分类标题渲染文本组件 {@link Component}。
-     */
+    public static void registerSyntheticParent(BuildingPlanSet.LevelDef levelDef, BuildingPlanSet parent) {
+        if (levelDef != null && parent != null) {
+            SYNTHETIC_PARENTS.put(levelDef, parent);
+        }
+    }
+
+    private BuildingPlanSet.LevelDef lastRecipe;
     private Component cachedDisplayNameComponent;
 
     public BuildingLevelCostCategory(IGuiHelper guiHelper, IIngredientManager ingredientManager) {
@@ -73,7 +77,7 @@ public class BuildingLevelCostCategory extends BaseMillCategory<BuildingPlanSet.
     }
 
     /**
-     * [醒目新注释] 从 ResourceLocation 的 Path 中提取从倒数第二个 '_' 开始截断的变体与等级标识（如从 xx_a_0 截取 a_0）。
+     * 从 ResourceLocation 的 Path 中提取从倒数第二个 '_' 开始截断的变体与等级标识（如从 xx_a_0 截取 a_0）。
      *
      * @param planId 建筑等级配方标识符 {@link ResourceLocation}
      * @return 截取后的变体与等级后缀（例如 "a_0"）
@@ -92,10 +96,29 @@ public class BuildingLevelCostCategory extends BaseMillCategory<BuildingPlanSet.
     }
 
     /**
-     * [醒目新注释] 提取当前 {@link BuildingPlanSet.LevelDef} 自身的独立资源消耗映射（不再计算前面等级的累加）。
+     * 从汇总 planId 中提取变体字母标识（例如从 "norman_maison_a_all" 提取 "A"）。
+     *
+     * @param planId 汇总配方标识符 {@link ResourceLocation}
+     * @return 大写的变体字母（例如 "A"）
+     */
+    public static String extractVariantLetter(ResourceLocation planId) {
+        if (planId == null) return "A";
+        String path = planId.getPath();
+        int lastUnderscore = path.lastIndexOf('_');
+        if (lastUnderscore > 0) {
+            int secondLastUnderscore = path.lastIndexOf('_', lastUnderscore - 1);
+            if (secondLastUnderscore >= 0) {
+                return path.substring(secondLastUnderscore + 1, lastUnderscore).toUpperCase(Locale.ROOT);
+            }
+        }
+        return "A";
+    }
+
+    /**
+     * 提取当前 {@link BuildingPlanSet.LevelDef} 自身的独立资源消耗映射。
      *
      * @param levelDef 当前目标建筑等级定义对象 {@link BuildingPlanSet.LevelDef}
-     * @return 物品资源标识符 {@link ResourceLocation} 到当前等级所需数量 {@link Integer} 的映射表
+     * @return 物品资源标识符 {@link ResourceLocation} 到所需数量 {@link Integer} 的映射表
      */
     public static Map<ResourceLocation, Integer> getAggregatedResources(BuildingPlanSet.LevelDef levelDef) {
         Map<ResourceLocation, Integer> totalResources = new LinkedHashMap<>();
@@ -103,7 +126,6 @@ public class BuildingLevelCostCategory extends BaseMillCategory<BuildingPlanSet.
             return totalResources;
         }
 
-        // [醒目新注释] 仅提取当前 LevelDef 自身的 requiredResources
         levelDef.requiredResources().forEach((resLoc, count) -> {
             if (resLoc != null && count != null && count > 0) {
                 totalResources.merge(resLoc, count, Integer::sum);
@@ -114,13 +136,16 @@ public class BuildingLevelCostCategory extends BaseMillCategory<BuildingPlanSet.
     }
 
     /**
-     * [醒目新注释] 根据 {@link BuildingPlanSet.LevelDef} 实例反查其所属的父级 {@link BuildingPlanSet}。
+     * 根据 {@link BuildingPlanSet.LevelDef} 实例反查其所属的父级 {@link BuildingPlanSet}。
      *
      * @param levelDef 等级定义对象 {@link BuildingPlanSet.LevelDef}
      * @return 所属的 {@link BuildingPlanSet} 实例，若未匹配成功则返回 null
      */
     private static BuildingPlanSet getParentBuildingPlanSet(BuildingPlanSet.LevelDef levelDef) {
         if (levelDef == null) return null;
+        BuildingPlanSet cached = SYNTHETIC_PARENTS.get(levelDef);
+        if (cached != null) return cached;
+
         for (BuildingPlanSet set : MillenaireAPIHelper.getAllBuildings()) {
             if (set != null && set.variants() != null) {
                 for (List<BuildingPlanSet.LevelDef> levelList : set.variants().values()) {
@@ -173,7 +198,8 @@ public class BuildingLevelCostCategory extends BaseMillCategory<BuildingPlanSet.
         int startX = 14;
         int startY = 24;
 
-        for (int i = 0; i < Math.min(allCosts.size(), PAGE_SIZE); i++) {
+        // 解除 40 格上限限制：有多少建材画多少
+        for (int i = 0; i < allCosts.size(); i++) {
             ItemStack stack = allCosts.get(i);
             int row = i / COLUMNS;
             int col = i % COLUMNS;
@@ -194,9 +220,16 @@ public class BuildingLevelCostCategory extends BaseMillCategory<BuildingPlanSet.
             this.lastRecipe = recipe;
 
             BuildingPlanSet parentSet = getParentBuildingPlanSet(recipe);
-            String suffix = extractVariantAndLevelSuffix(recipe.planId());
-            String titleStr = MillenaireLocalizeHelper.getBuildingName(parentSet).getString() + ":" + suffix;
+            String suffix;
+            if (recipe.level() == -1) {
+                String varLetter = extractVariantLetter(recipe.planId());
+                suffix = MillenaireJeimmKeys.VariantCostSummarySuffix_S.asComponent(varLetter).getString();
+            } else {
+                suffix = extractVariantAndLevelSuffix(recipe.planId());
+            }
 
+            String bName = parentSet != null ? MillenaireLocalizeHelper.getBuildingName(parentSet).getString() : "";
+            String titleStr = bName + ":" + suffix;
             this.cachedDisplayNameComponent = Component.literal(titleStr);
         }
 
@@ -208,19 +241,18 @@ public class BuildingLevelCostCategory extends BaseMillCategory<BuildingPlanSet.
         int startX = 14;
         int startY = 24;
 
-        for (int i = 0; i < PAGE_SIZE; i++) {
+        // 仅根据真实有效槽位绘制边框，消灭空白幽灵槽
+        for (int i = 0; i < total; i++) {
             int row = i / COLUMNS;
             int col = i % COLUMNS;
             int slotX = startX + (col * SLOT_SIZE);
             int slotY = startY + (row * SLOT_SIZE);
 
-            if (i < total) {
-                guiGraphics.fill(slotX, slotY, slotX + 18, slotY + 18, 0x20000000);
-                guiGraphics.fill(slotX, slotY, slotX + 18, slotY + 1, 0x50000000);
-                guiGraphics.fill(slotX, slotY + 17, slotX + 18, slotY + 18, 0x50000000);
-                guiGraphics.fill(slotX, slotY, slotX + 1, slotY + 18, 0x50000000);
-                guiGraphics.fill(slotX + 17, slotY, slotX + 18, slotY + 18, 0x50000000);
-            }
+            guiGraphics.fill(slotX, slotY, slotX + 18, slotY + 18, 0x20000000);
+            guiGraphics.fill(slotX, slotY, slotX + 18, slotY + 1, 0x50000000);
+            guiGraphics.fill(slotX, slotY + 17, slotX + 18, slotY + 18, 0x50000000);
+            guiGraphics.fill(slotX, slotY, slotX + 1, slotY + 18, 0x50000000);
+            guiGraphics.fill(slotX + 17, slotY, slotX + 18, slotY + 18, 0x50000000);
         }
     }
 }
