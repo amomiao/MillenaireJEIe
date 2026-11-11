@@ -79,12 +79,17 @@ public class VillagerCategory extends BaseMillCategory<VillagerType> {
                 .useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK)
                 .setTargetCategory(VillagerRequiredCategory.RECIPE_TYPE);
 
+        JeiLinkBox<ItemStack> merchantStockBox = new JeiLinkBox<ItemStack>(MillenaireJeimmKeys.MerchantStockBoxLink.asComponent())
+                .useJeiMode(ingredientManager, VanillaTypes.ITEM_STACK)
+                .setTargetCategory(VillagerMerchantStockCategory.RECIPE_TYPE);
+
         this.villagerLayout = new JeiLinkLayout(2, 105, 172, 4)
                 .addBox(villageBox)
                 .addBox(buildingBox)
                 .addBox(bringBackHomeBox)
                 .addBox(collectBox)
-                .addBox(requiredBox);
+                .addBox(requiredBox)
+                .addBox(merchantStockBox);
     }
 
     @Override
@@ -144,11 +149,14 @@ public class VillagerCategory extends BaseMillCategory<VillagerType> {
         List<ItemStack> collectItems = extractCollectItems(recipe);
         List<ItemStack> requiredItems = extractRequiredItems(recipe);
 
+
         villagerLayout.setBoxData(0, villages);
         villagerLayout.setBoxData(1, buildings);
         villagerLayout.setBoxData(2, bringBackHomeItems);
         villagerLayout.setBoxData(3, collectItems);
         villagerLayout.setBoxData(4, requiredItems);
+        List<ItemStack> merchantStockItems = VillagerMerchantStockCategory.extractMerchantStockItems(recipe);
+        villagerLayout.setBoxData(5, merchantStockItems);
     }
 
     @Override
@@ -168,13 +176,19 @@ public class VillagerCategory extends BaseMillCategory<VillagerType> {
             List<ItemStack> bringBackHomeItems = extractBringBackHomeItems(recipe);
             List<ItemStack> collectItems = extractCollectItems(recipe);
             List<ItemStack> requiredItems = extractRequiredItems(recipe);
+    
 
+
+            List<ItemStack> merchantStockItems = VillagerMerchantStockCategory.extractMerchantStockItems(recipe);
             villagerLayout.setRecipeForBox(0, builder, villages);
             villagerLayout.setRecipeForBox(1, builder, buildings);
             villagerLayout.setRecipeForBox(2, builder, bringBackHomeItems);
             villagerLayout.setRecipeForBox(3, builder, collectItems);
             if (!requiredItems.isEmpty()) {
                 villagerLayout.setRecipeForBox(4, builder, requiredItems);
+            }
+            if (!merchantStockItems.isEmpty()) {
+                villagerLayout.setRecipeForBox(5, builder, merchantStockItems);
             }
         }
     }

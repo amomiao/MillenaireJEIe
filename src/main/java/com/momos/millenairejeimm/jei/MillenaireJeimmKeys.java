@@ -66,6 +66,7 @@ public final class MillenaireJeimmKeys {
     public static final KT VillagerBringBackHomeCategory = new KT(PrefixCategory + "villager_bring_back_home", "Villager Bring Back Home");
     public static final KT VillagerCollectCategory = new KT(PrefixCategory + "villager_collect", "Villager Collect Items");
     public static final KT VillagerRequiredCategory = new KT(PrefixCategory + "villager_required", "Villager Required Items");
+    public static final KT VillagerMerchantStockCategory = new KT(PrefixCategory + "villager_merchant_stock", "Foreign Merchant Stock");
 
     /* 二级页签的第二标题 */
     public static final String PrefixSecTitle = Prefix + "sec_title.";
@@ -85,6 +86,7 @@ public final class MillenaireJeimmKeys {
     public static final KT VillagerBringBackHomeCategoryTitle_S = new KT(PrefixSecTitle + "villager_bring_back_home", "Belong %s");
     public static final KT VillagerCollectCategoryTitle_S = new KT(PrefixSecTitle + "villager_collect", "Belong %s");
     public static final KT VillagerRequiredCategoryTitle_S = new KT(PrefixSecTitle + "villager_required", "Belong %s");
+    public static final KT VillagerMerchantStockCategoryTitle_S = new KT(PrefixSecTitle + "villager_merchant_stock", "Belong %s");
 
     /* 一级页面的具体文本 */
     public static final String PrefixLabel = Prefix + "label.";
@@ -176,6 +178,7 @@ public final class MillenaireJeimmKeys {
     public static final KT BringBackHomeBoxLink = new KT(PrefixLink + "bring_back_home_box", "Bring Back Home Goods");
     public static final KT CollectBoxLink = new KT(PrefixLink + "collect_box", "Collect Goods");
     public static final KT RequiredBoxLink = new KT(PrefixLink + "required_box", "Required Goods");
+    public static final KT MerchantStockBoxLink = new KT(PrefixLink + "merchant_stock_box", "Merchant Stock Crate");
 
     // 通用 LinkBox 动态词条
     public static final KT ViewAllTooltip_S = new KT(PrefixLink + "view_all_tooltip", "View All (Total %s items) - Click to open overview");

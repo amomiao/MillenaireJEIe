@@ -38,6 +38,7 @@ public final class MillIngredientTypes {
     public static final String VillagerBringBackHomeCategoryPath = "dd_villager_bring_back_home_category";
     public static final String VillagerCollectCategoryPath = "de_villager_collect_category";
     public static final String VillagerRequiredCategoryPath = "df_villager_required_category";
+    public static final String VillagerMerchantStockCategoryPath = "dg_villager_merchant_stock_category";
     // endregion 槽位与分类 ID 常量声明
 
 

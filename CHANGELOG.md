@@ -2,6 +2,30 @@
 
 ---
 
+## [v1.3.3] - 2026-11-11
+
+### 🧳 外来商人货箱展示 (`VillagerMerchantStockCategory`)
+- 新增全景二级分类 **外来商人货箱**（`dg_villager_merchant_stock_category`），读取 `VillagerType#foreignMerchantStock()` 展示所有配置行商货箱的村民携带货物与数量。
+- 在村民详情主页（`VillagerCategory`）集成 **外来商人货箱** 联动 `JeiLinkBox`（空盒自动隐藏，保持 `225px` 画布零溢出），并支持从货箱物品/村民精准跳转。
+
+### 🛡️ 反射安全加固
+- 全面改造 `MillenaireJeimmEncyclopediaHelper`（含 `CalculatorProbe`、`MAPPING_CLASS` 及字段/方法读取）与 `DebugGuiUtils` 接入前置 `SafeReflectionHelper` / `MMLog.warn` 防护，确保未来前置或附属模组字段/方法变更时清晰告警且不崩溃、不中断游戏运行。
+
+---
+
+## [v1.3.2] - 2026-11-11
+
+### 📦 依赖与版本对齐
+- **前置编译依赖升级**：将 `build.gradle` 中的 Millénaire 编译依赖切换为 `millenaire-9.1.0.jar`（保持 `neoforge.mods.toml` 中的适用版本范围不变）。
+- **版本递进**：按解耦规范（Q19）从 `1.3.1` 升级至 `1.3.2`。
+
+### 🤖 百科导出命令扩展 (`/milljeimm export encyclopedia` / `/milljeimm dump`)
+- **硬编码定点采集目标 (`# HARDCODED SPOT GATHERING GOALS`)**：导出 `SpotGatheringGoal`（`gather_silk`、`gather_snails`、`gather_brick`、`dry_brick`、`harvest_sugar_cane`、`plant_sugar_cane`）的标记方块/土壤、产生物品、匹配建筑及执行村民。
+- **隐式掉落、行商与初始箱库存 (`# IMPLICIT LOOT, MERCHANTS & RESTOCK`)**：导出 `SlaughterHandler`（`bonusItems` 与 `pickupNearbyItems`）、`FishingInuitHandler`、`InuitHuntingDropHandler`、各文化 `foreignMerchantStock` 与 `GoodsRestockHelper` 建筑/独立建筑初始箱补货清单。
+- **建材折算规则与运行时替代审计 (`# COST RULES & ACTIVE SUBSTITUTIONS`)**：反射导出 `BuildingCostCalculator` 免费/折算/折叠常量与 `BlockCostRegistry`，并在存在 `millenairecostombuildingblockmapping` 时导出在线全局/分文化替代规则及配置文件中解析为 `Items.AIR` 或被前序折叠吞并的死规则诊断。
+
+---
+
 ## [v1.3.1] - 2026-11-10
 
 ### 🎨 界面与排版优化

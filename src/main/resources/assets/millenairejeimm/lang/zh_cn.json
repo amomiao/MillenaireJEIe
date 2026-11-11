@@ -23,6 +23,7 @@
   "gui.millenairejeimm.category.villager_bring_back_home": "村民带回物资",
   "gui.millenairejeimm.category.villager_collect": "村民上交物资",
   "gui.millenairejeimm.category.villager_required": "村民职业需求",
+  "gui.millenairejeimm.category.villager_merchant_stock": "外来商人货箱",
 
   "gui.millenairejeimm.sec_title.culture_villages": "所属 %s",
   "gui.millenairejeimm.sec_title.village_buildings": "所属 %s",
@@ -36,6 +37,7 @@
   "gui.millenairejeimm.sec_title.villager_bring_back_home": "所属 %s",
   "gui.millenairejeimm.sec_title.villager_collect": "所属 %s",
   "gui.millenairejeimm.sec_title.villager_required": "所属 %s",
+  "gui.millenairejeimm.sec_title.villager_merchant_stock": "所属 %s",
 
   "gui.millenairejeimm.label.native_language": "本土语言",
   "gui.millenairejeimm.label.known_crops": "已知作物",
@@ -113,6 +115,7 @@
   "gui.millenairejeimm.link.bring_back_home_box": "带回建筑物资",
   "gui.millenairejeimm.link.collect_box": "上交中心白名单",
   "gui.millenairejeimm.link.required_box": "职业专属需求",
+  "gui.millenairejeimm.link.merchant_stock_box": "外来商人货箱",
   "gui.millenairejeimm.link.view_all_tooltip": "查看全部 (共 %s 项) - 点击打开全景页",
   "gui.millenairejeimm.link.count_all": "(%s)",
   "gui.millenairejeimm.link.count_none": "(无)"

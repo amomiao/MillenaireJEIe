@@ -276,6 +276,16 @@ public class MillenaireJeimmCommands {
                 lines.add(clean(String.format("[VILLAGER:%s|%s] BelongingVillages: %s", villId, villName, vStr)));
             }
         }
+        lines.add("");
+
+        // ----------------- 4. HARDCODED SPOT GATHERING GOALS -----------------
+        MillenaireJeimmEncyclopediaHelper.appendHardcodedSpotGoals(lines);
+
+        // ----------------- 5. IMPLICIT LOOT, MERCHANTS & RESTOCK -----------------
+        MillenaireJeimmEncyclopediaHelper.appendImplicitLootMerchantsAndRestock(lines);
+
+        // ----------------- 6. COST RULES & ACTIVE SUBSTITUTIONS -----------------
+        MillenaireJeimmEncyclopediaHelper.appendCostRulesAndSubstitutions(lines);
 
         // 写入独立排查文件
         Path logFile = Paths.get("logs", "millenairejeimm", "encyclopedia_dump.txt");
@@ -288,14 +298,14 @@ public class MillenaireJeimmCommands {
         return lines.size();
     }
 
-    private static String formatItemCost(ResourceLocation itemRl, int count) {
+    static String formatItemCost(ResourceLocation itemRl, int count) {
         if (itemRl == null) return "";
         Item item = BuiltInRegistries.ITEM.get(itemRl);
         String locName = (item != null && item != Items.AIR) ? item.getDescription().getString() : itemRl.getPath();
         return count + "x " + itemRl + "(" + locName + ")";
     }
 
-    private static String clean(String text) {
+    static String clean(String text) {
         if (text == null) return "";
         return text.replace("\r", " ").replace("\n", " ").trim();
     }

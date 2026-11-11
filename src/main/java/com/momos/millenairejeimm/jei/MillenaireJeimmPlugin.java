@@ -236,7 +236,8 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                 new VillagerBuildingCategory(guiHelper, ingredientManager),
                 new VillagerBringBackHomeCategory(guiHelper, ingredientManager),
                 new VillagerCollectCategory(guiHelper, ingredientManager),
-                new VillagerRequiredCategory(guiHelper, ingredientManager)
+                new VillagerRequiredCategory(guiHelper, ingredientManager),
+                new VillagerMerchantStockCategory(guiHelper, ingredientManager)
         );
         MMLog.info(LOG_CATEGORIES_SUCCESS_ZH, LOG_CATEGORIES_SUCCESS_EN, LOG_CATEGORIES_SUCCESS_FR);
     }
@@ -314,6 +315,10 @@ public class MillenaireJeimmPlugin implements IModPlugin {
                         .filter(v -> v.requiredGoods() != null && !v.requiredGoods().isEmpty())
                         .toList();
                 registration.addRecipes(VillagerRequiredCategory.RECIPE_TYPE, requiredVillagers);
+                List<VillagerType> merchantStockVillagers = villagers.stream()
+                        .filter(v -> v.foreignMerchantStock() != null && !v.foreignMerchantStock().isEmpty())
+                        .toList();
+                registration.addRecipes(VillagerMerchantStockCategory.RECIPE_TYPE, merchantStockVillagers);
                 MMLog.info(LOG_VILLAGER_RECIPE_SUCCESS_ZH, LOG_VILLAGER_RECIPE_SUCCESS_EN, LOG_VILLAGER_RECIPE_SUCCESS_FR, villagers.size());
             } else {
                 MMLog.warn(LOG_VILLAGER_RECIPE_EMPTY_ZH, LOG_VILLAGER_RECIPE_EMPTY_EN, LOG_VILLAGER_RECIPE_EMPTY_FR);
