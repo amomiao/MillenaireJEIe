@@ -6,12 +6,15 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.momos.millenairejeim.helper.MillenaireAPIHelper;
 import com.momos.millenairejeim.helper.SafeReflectionHelper;
+import com.momos.millenairejeim.jei.crafting.MillCraftingRecipeMaker;
+import com.momos.millenairejeim.jei.crafting.type.base.IMillCraftingRecipe;
 import com.momos.millenairejeim.util.MMLog;
 import com.momos.millenairejeim.helper.MillenaireLocalizeHelper;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLPaths;
@@ -646,14 +649,164 @@ final class MillenaireJeimmEncyclopediaHelper {
             }
         }
     }
+
+    private record RecipeBindingRow(
+            String primaryOutputKey,
+            String category,
+            String goalId,
+            String handlerId,
+            String line
+    ) {}
+
+    /**
+     * 导出全部工艺/定点采集/外部配置目标的运行时绑定（含 tag 约束、解析建筑与执行村民，按主产物与 ID 确定性排序）。
+     */
+    static void appendRecipeAndGoalBindings(List<String> lines) {
+        lines.add("# ----------------- RECIPE & GOAL RUNTIME BINDINGS -----------------");
+        GoalRegistry goalRegistry = MillenaireAPIHelper.getGoalRegistry();
+        List<RecipeBindingRow> rows = new ArrayList<>();
+
+        if (goalRegistry != null) {
+            for (IMillCraftingRecipe recipe : MillCraftingRecipeMaker.initStandardCraftingRecipes(goalRegistry)) {
+                addRecipeBindingRow(rows, "crafting", recipe);
+            }
+            for (IMillCraftingRecipe recipe : MillCraftingRecipeMaker.getSpotGatheringRecipes(goalRegistry)) {
+                addRecipeBindingRow(rows, "spot_gathering", recipe);
+            }
+        }
+        for (IMillCraftingRecipe recipe : MillCraftingRecipeMaker.getCustomGoalRecipes(goalRegistry)) {
+            addRecipeBindingRow(rows, "custom", recipe);
+        }
+
+        if (rows.isEmpty()) {
+            lines.add(goalRegistry == null
+                    ? "[RECIPE:NONE|Unavailable] Reason: GoalRegistry not initialized"
+                    : "[RECIPE:NONE|Empty] Reason: No resolved crafting, spot_gathering, or custom recipes");
+            lines.add("");
+            return;
+        }
+
+        rows.sort(Comparator.comparing(RecipeBindingRow::primaryOutputKey)
+                .thenComparing(RecipeBindingRow::category)
+                .thenComparing(RecipeBindingRow::goalId)
+                .thenComparing(RecipeBindingRow::handlerId));
+
+        for (RecipeBindingRow row : rows) {
+            lines.add(row.line());
+        }
+        lines.add("");
+    }
+
+    private static void addRecipeBindingRow(List<RecipeBindingRow> rows, String category, IMillCraftingRecipe recipe) {
+        if (recipe == null) return;
+        String goalId = recipe.getId() != null
+                ? recipe.getId().toString()
+                : ("millenaire:" + (recipe.getGoalKey() != null ? recipe.getGoalKey() : "unknown"));
+        String handlerId = recipe.getHandlerId() != null && !recipe.getHandlerId().isBlank()
+                ? recipe.getHandlerId()
+                : "unknown";
+        String buildingTag = recipe.getBuildingTag() != null && !recipe.getBuildingTag().isBlank()
+                ? recipe.getBuildingTag()
+                : "None";
+        String requiredTag = recipe.getRequiredTag() != null && !recipe.getRequiredTag().isBlank()
+                ? recipe.getRequiredTag()
+                : "None";
+
+        String inputsStr = formatRecipeInputs(recipe.getInputs());
+
+        List<ItemStack> sortedOutputs = recipe.getOutputs() != null
+                ? recipe.getOutputs().stream()
+                        .filter(s -> s != null && !s.isEmpty())
+                        .sorted(Comparator.comparing(s -> String.valueOf(BuiltInRegistries.ITEM.getKey(s.getItem()))))
+                        .toList()
+                : List.of();
+        String primaryOutputKey = sortedOutputs.isEmpty()
+                ? "~"
+                : String.valueOf(BuiltInRegistries.ITEM.getKey(sortedOutputs.get(0).getItem()));
+        String outputsStr = sortedOutputs.isEmpty()
+                ? "None"
+                : sortedOutputs.stream()
+                        .map(s -> s.getCount() + "x " + BuiltInRegistries.ITEM.getKey(s.getItem())
+                                + "(" + s.getItem().getDescription().getString() + ")")
+                        .collect(Collectors.joining(", "));
+
+        String resolvedBuildingsStr = recipe.getAssociatedBuildingIds() != null && !recipe.getAssociatedBuildingIds().isEmpty()
+                ? recipe.getAssociatedBuildingIds().stream()
+                        .filter(Objects::nonNull)
+                        .distinct()
+                        .sorted(Comparator.comparing(b -> b.id() != null ? b.id().toString() : String.valueOf(b.buildingId())))
+                        .map(b -> b.id() + "(" + MillenaireLocalizeHelper.getBuildingName(b).getString() + ")")
+                        .collect(Collectors.joining(", "))
+                : "None";
+        if (resolvedBuildingsStr.isEmpty()) {
+            resolvedBuildingsStr = "None";
+        }
+
+        String performingVillagersStr = recipe.getVillagerTypes() != null && !recipe.getVillagerTypes().isEmpty()
+                ? recipe.getVillagerTypes().stream()
+                        .filter(Objects::nonNull)
+                        .distinct()
+                        .sorted(Comparator.comparing(v -> v.id() != null ? v.id().toString() : ""))
+                        .map(v -> v.id() + "(" + MillenaireLocalizeHelper.getVillagerName(v).getString() + ")")
+                        .collect(Collectors.joining(", "))
+                : "None";
+        if (performingVillagersStr.isEmpty()) {
+            performingVillagersStr = "None";
+        }
+
+        String line = MillenaireJeimmCommands.clean(String.format(
+                "[RECIPE:%s|%s] Category: %s | BuildingTag: %s | RequiredTag: %s | Inputs: %s | Outputs: %s | ResolvedBuildings: %s | PerformingVillagers: %s",
+                goalId, handlerId, category, buildingTag, requiredTag,
+                inputsStr, outputsStr, resolvedBuildingsStr, performingVillagersStr
+        ));
+        rows.add(new RecipeBindingRow(primaryOutputKey, category, goalId, handlerId, line));
+    }
+
+    private static String formatRecipeInputs(List<IMillCraftingRecipe.IngredientWithCount> inputs) {
+        if (inputs == null || inputs.isEmpty()) {
+            return "None";
+        }
+        List<String> formatted = new ArrayList<>();
+        for (IMillCraftingRecipe.IngredientWithCount iwc : inputs) {
+            if (iwc == null || iwc.ingredient() == null) continue;
+            int count = Math.max(1, iwc.count());
+            ItemStack[] matches;
+            try {
+                matches = iwc.ingredient().getItems();
+            } catch (Throwable t) {
+                matches = new ItemStack[0];
+            }
+            Map<String, String> optMap = new TreeMap<>();
+            if (matches != null) {
+                for (ItemStack s : matches) {
+                    if (s != null && !s.isEmpty()) {
+                        ResourceLocation rl = BuiltInRegistries.ITEM.getKey(s.getItem());
+                        String id = rl != null ? rl.toString() : "unknown";
+                        optMap.putIfAbsent(id, id + "(" + s.getItem().getDescription().getString() + ")");
+                    }
+                }
+            }
+            if (optMap.isEmpty()) {
+                formatted.add(count + "x empty");
+            } else if (optMap.size() == 1) {
+                formatted.add(count + "x " + optMap.values().iterator().next());
+            } else {
+                formatted.add(count + "x [" + String.join(", ", optMap.values()) + "]");
+            }
+        }
+        if (formatted.isEmpty()) {
+            return "None";
+        }
+        formatted.sort(String::compareTo);
+        return String.join(", ", formatted);
+    }
     // endregion
 
     // region Shared lookup and reflection helpers
     private static String findBuildingsByTag(Collection<BuildingPlanSet> allBuildings, String buildingTag) {
         if (allBuildings == null || buildingTag == null || buildingTag.isBlank()) return "None";
         String res = allBuildings.stream()
-                .filter(b -> b != null && b.tags() != null
-                        && b.tags().stream().anyMatch(t -> buildingTag.equalsIgnoreCase(t)))
+                .filter(b -> b != null && MillenaireAPIHelper.buildingHasTag(b, buildingTag))
                 .sorted(Comparator.comparing(b -> b.id() != null ? b.id().toString() : b.buildingId()))
                 .map(b -> b.id() + "(" + MillenaireLocalizeHelper.getBuildingName(b).getString() + ")")
                 .collect(Collectors.joining(", "));

@@ -82,7 +82,10 @@ public class MillenaireJeimmCommands {
 
         // ----------------- 1. BUILDINGS & VARIANT COSTS -----------------
         lines.add("# ----------------- BUILDINGS & VARIANT COSTS -----------------");
-        Collection<BuildingPlanSet> allBuildings = MillenaireAPIHelper.getAllBuildings();
+        List<BuildingPlanSet> allBuildings = MillenaireAPIHelper.getAllBuildings().stream()
+                .filter(Objects::nonNull)
+                .sorted(Comparator.comparing(b -> b.id() != null ? b.id().toString() : String.valueOf(b.buildingId())))
+                .toList();
         for (BuildingPlanSet building : allBuildings) {
             if (building == null) continue;
 
@@ -99,10 +102,32 @@ public class MillenaireJeimmCommands {
                     building.isTownHall(), building.isResidential()
             )));
 
+            // 完整运行时标签（含顶层 + 变体/等级 + 子建筑授予 parentTags）
+            List<String> buildingTags = MillenaireAPIHelper.getBuildingAllTags(building);
+            String tagListStr = buildingTags.isEmpty() ? "None" : String.join(", ", buildingTags);
+            lines.add(clean(String.format("[BUILDING:%s|%s] Tags: %s", bId, bName, tagListStr)));
+
+            // 关联子建筑结构
+            List<BuildingPlanSet> subBuildings = MillenaireAPIHelper.getBuildingSubBuildings(building);
+            if (!subBuildings.isEmpty()) {
+                String subStr = subBuildings.stream()
+                        .map(sub -> {
+                            String subId = sub.id() != null ? sub.id().toString() : String.valueOf(sub.buildingId());
+                            String subName = MillenaireLocalizeHelper.getBuildingName(sub).getString();
+                            List<String> subTags = MillenaireAPIHelper.getBuildingAllTags(sub);
+                            String subTagPart = subTags.isEmpty() ? "None" : String.join(", ", subTags);
+                            return subId + "(" + subName + ")[tags: " + subTagPart + "]";
+                        })
+                        .collect(Collectors.joining(", "));
+                lines.add(clean(String.format("[BUILDING:%s|%s] SubBuildings: %s", bId, bName, subStr)));
+            }
+
             // 允许生成的村庄
             List<VillageType> allowedVillages = MillenaireAPIHelper.getVillageFormBuilding(building);
             if (allowedVillages != null && !allowedVillages.isEmpty()) {
                 String vStr = allowedVillages.stream()
+                        .filter(Objects::nonNull)
+                        .sorted(Comparator.comparing(v -> v.id() != null ? v.id().toString() : ""))
                         .map(v -> v.id() + "(" + (v.name() != null ? v.name() : v.id().getPath()) + ")")
                         .collect(Collectors.joining(", "));
                 lines.add(clean(String.format("[BUILDING:%s|%s] AllowedVillages: %s", bId, bName, vStr)));
@@ -112,6 +137,8 @@ public class MillenaireJeimmCommands {
             List<VillagerType> villagers = MillenaireAPIHelper.getVillagerFormBuilding(building);
             if (villagers != null && !villagers.isEmpty()) {
                 String villStr = villagers.stream()
+                        .filter(Objects::nonNull)
+                        .sorted(Comparator.comparing(v -> v.id() != null ? v.id().toString() : ""))
                         .map(v -> v.id() + "(" + MillenaireLocalizeHelper.getVillagerName(v).getString() + ")")
                         .collect(Collectors.joining(", "));
                 lines.add(clean(String.format("[BUILDING:%s|%s] InhabitingVillagers: %s", bId, bName, villStr)));
@@ -119,7 +146,10 @@ public class MillenaireJeimmCommands {
 
             // 变体材料消耗行
             if (building.variants() != null) {
-                for (Map.Entry<String, List<BuildingPlanSet.LevelDef>> varEntry : building.variants().entrySet()) {
+                List<Map.Entry<String, List<BuildingPlanSet.LevelDef>>> sortedVariants = building.variants().entrySet().stream()
+                        .sorted(Map.Entry.comparingByKey())
+                        .toList();
+                for (Map.Entry<String, List<BuildingPlanSet.LevelDef>> varEntry : sortedVariants) {
                     String variantKey = varEntry.getKey();
                     List<BuildingPlanSet.LevelDef> levelDefs = varEntry.getValue();
                     if (levelDefs == null || levelDefs.isEmpty()) continue;
@@ -127,6 +157,7 @@ public class MillenaireJeimmCommands {
                     // 变体满级总消耗
                     Map<ResourceLocation, Integer> totalCosts = BuildingUpgradeCostHelper.calculateVariantTotalResources(levelDefs);
                     String totalCostStr = totalCosts.entrySet().stream()
+                            .sorted(Comparator.comparing(e -> String.valueOf(e.getKey())))
                             .map(e -> formatItemCost(e.getKey(), e.getValue()))
                             .collect(Collectors.joining(", "));
                     lines.add(clean(String.format("[BUILDING:%s|%s] Variant: %s | TOTAL | Cost: %s", bId, bName, variantKey, totalCostStr)));
@@ -136,6 +167,7 @@ public class MillenaireJeimmCommands {
                         if (levelDef == null) continue;
                         Map<ResourceLocation, Integer> levelCosts = BuildingLevelCostCategory.getAggregatedResources(levelDef);
                         String levelCostStr = levelCosts.entrySet().stream()
+                                .sorted(Comparator.comparing(e -> String.valueOf(e.getKey())))
                                 .map(e -> formatItemCost(e.getKey(), e.getValue()))
                                 .collect(Collectors.joining(", "));
                         lines.add(clean(String.format("[BUILDING:%s|%s] Variant: %s | Level: %d | Cost: %s", bId, bName, variantKey, levelDef.level(), levelCostStr)));
@@ -147,7 +179,10 @@ public class MillenaireJeimmCommands {
 
         // ----------------- 2. VILLAGES & COMPOSITION -----------------
         lines.add("# ----------------- VILLAGES & COMPOSITION -----------------");
-        Collection<VillageType> allVillages = MillenaireAPIHelper.getAllVillages();
+        List<VillageType> allVillages = MillenaireAPIHelper.getAllVillages().stream()
+                .filter(Objects::nonNull)
+                .sorted(Comparator.comparing(v -> v.id() != null ? v.id().toString() : ""))
+                .toList();
         for (VillageType village : allVillages) {
             if (village == null) continue;
 
@@ -174,6 +209,8 @@ public class MillenaireJeimmCommands {
             List<BuildingPlanSet> buildings = MillenaireAPIHelper.getBuildingFormVillage(village);
             if (buildings != null && !buildings.isEmpty()) {
                 String bStr = buildings.stream()
+                        .filter(Objects::nonNull)
+                        .sorted(Comparator.comparing(b -> b.id() != null ? b.id().toString() : String.valueOf(b.buildingId())))
                         .map(b -> b.id() + "(" + MillenaireLocalizeHelper.getBuildingName(b).getString() + ")")
                         .collect(Collectors.joining(", "));
                 lines.add(clean(String.format("[VILLAGE:%s|%s] Buildings: %s", vId, vName, bStr)));
@@ -183,6 +220,8 @@ public class MillenaireJeimmCommands {
             List<VillagerType> villagers = MillenaireAPIHelper.getVillagerFormVillage(village);
             if (villagers != null && !villagers.isEmpty()) {
                 String villStr = villagers.stream()
+                        .filter(Objects::nonNull)
+                        .sorted(Comparator.comparing(v -> v.id() != null ? v.id().toString() : ""))
                         .map(v -> v.id() + "(" + MillenaireLocalizeHelper.getVillagerName(v).getString() + ")")
                         .collect(Collectors.joining(", "));
                 lines.add(clean(String.format("[VILLAGE:%s|%s] Villagers: %s", vId, vName, villStr)));
@@ -192,7 +231,10 @@ public class MillenaireJeimmCommands {
 
         // ----------------- 3. VILLAGERS & GOODS FLOW -----------------
         lines.add("# ----------------- VILLAGERS & GOODS FLOW -----------------");
-        Collection<VillagerType> allVillagers = MillenaireAPIHelper.getAllVillagers();
+        List<VillagerType> allVillagers = MillenaireAPIHelper.getAllVillagers().stream()
+                .filter(Objects::nonNull)
+                .sorted(Comparator.comparing(v -> v.id() != null ? v.id().toString() : ""))
+                .toList();
         for (VillagerType villager : allVillagers) {
             if (villager == null) continue;
 
@@ -221,10 +263,24 @@ public class MillenaireJeimmCommands {
                     villager.baseAttackStrength(), villager.hiringCost(), tags
             )));
 
+            // 村民目标 (Goals)
+            if (villager.goals() != null && !villager.goals().isEmpty()) {
+                String goalsStr = villager.goals().stream()
+                        .filter(Objects::nonNull)
+                        .map(ResourceLocation::toString)
+                        .distinct()
+                        .sorted()
+                        .collect(Collectors.joining(", "));
+                lines.add(clean(String.format("[VILLAGER:%s|%s] Goals: %s", villId, villName, goalsStr.isEmpty() ? "None" : goalsStr)));
+            } else {
+                lines.add(clean(String.format("[VILLAGER:%s|%s] Goals: None", villId, villName)));
+            }
+
             // 带回物资
             if (villager.resolvedBringBackHomeGoods() != null && !villager.resolvedBringBackHomeGoods().isEmpty()) {
                 String items = villager.resolvedBringBackHomeGoods().stream()
                         .filter(i -> i != null && i != Items.AIR)
+                        .sorted(Comparator.comparing(i -> BuiltInRegistries.ITEM.getKey(i).toString()))
                         .map(i -> BuiltInRegistries.ITEM.getKey(i) + "(" + i.getDescription().getString() + ")")
                         .collect(Collectors.joining(", "));
                 if (!items.isEmpty()) {
@@ -236,6 +292,7 @@ public class MillenaireJeimmCommands {
             if (villager.resolvedCollectGoods() != null && !villager.resolvedCollectGoods().isEmpty()) {
                 String items = villager.resolvedCollectGoods().stream()
                         .filter(Objects::nonNull)
+                        .sorted(Comparator.comparing(ResourceLocation::toString))
                         .map(rl -> {
                             Item item = BuiltInRegistries.ITEM.get(rl);
                             String name = (item != null && item != Items.AIR) ? item.getDescription().getString() : rl.getPath();
@@ -251,6 +308,7 @@ public class MillenaireJeimmCommands {
             if (villager.resolvedRequiredGoods() != null && !villager.resolvedRequiredGoods().isEmpty()) {
                 String items = villager.resolvedRequiredGoods().entrySet().stream()
                         .filter(e -> e.getKey() != null && e.getKey() != Items.AIR)
+                        .sorted(Comparator.comparing(e -> BuiltInRegistries.ITEM.getKey(e.getKey()).toString()))
                         .map(e -> (e.getValue() != null ? e.getValue() : 1) + "x " + BuiltInRegistries.ITEM.getKey(e.getKey()) + "(" + e.getKey().getDescription().getString() + ")")
                         .collect(Collectors.joining(", "));
                 if (!items.isEmpty()) {
@@ -262,6 +320,8 @@ public class MillenaireJeimmCommands {
             List<BuildingPlanSet> resBuildings = MillenaireAPIHelper.getBuildingFormVillager(villager);
             if (resBuildings != null && !resBuildings.isEmpty()) {
                 String bStr = resBuildings.stream()
+                        .filter(Objects::nonNull)
+                        .sorted(Comparator.comparing(b -> b.id() != null ? b.id().toString() : String.valueOf(b.buildingId())))
                         .map(b -> b.id() + "(" + MillenaireLocalizeHelper.getBuildingName(b).getString() + ")")
                         .collect(Collectors.joining(", "));
                 lines.add(clean(String.format("[VILLAGER:%s|%s] ResidingBuildings: %s", villId, villName, bStr)));
@@ -271,6 +331,8 @@ public class MillenaireJeimmCommands {
             List<VillageType> belVillages = MillenaireAPIHelper.getVillageFormVillager(villager);
             if (belVillages != null && !belVillages.isEmpty()) {
                 String vStr = belVillages.stream()
+                        .filter(Objects::nonNull)
+                        .sorted(Comparator.comparing(v -> v.id() != null ? v.id().toString() : ""))
                         .map(v -> v.id() + "(" + (v.name() != null ? v.name() : v.id().getPath()) + ")")
                         .collect(Collectors.joining(", "));
                 lines.add(clean(String.format("[VILLAGER:%s|%s] BelongingVillages: %s", villId, villName, vStr)));
@@ -286,6 +348,9 @@ public class MillenaireJeimmCommands {
 
         // ----------------- 6. COST RULES & ACTIVE SUBSTITUTIONS -----------------
         MillenaireJeimmEncyclopediaHelper.appendCostRulesAndSubstitutions(lines);
+
+        // ----------------- 7. RECIPE & GOAL RUNTIME BINDINGS -----------------
+        MillenaireJeimmEncyclopediaHelper.appendRecipeAndGoalBindings(lines);
 
         // 写入独立排查文件
         Path logFile = Paths.get("logs", "millenairejeimm", "encyclopedia_dump.txt");

@@ -2,6 +2,20 @@
 
 ---
 
+## [v1.3.4] - 2026-11-11
+
+### 📜 百科导出扩展：建筑标签、村民 Goals 与工艺运行时绑定 (ISSUE-005)
+- **建筑完整标签与子建筑结构导出 (`MillenaireJeimmCommands`)**：
+  - 在 `# BUILDINGS & VARIANT COSTS` 下为每座建筑新增 `[BUILDING:id|name] Tags: ...`（涵盖顶层、变体/等级及子建筑授予 `parentTags`），对含子建筑的计划新增 `[BUILDING:id|name] SubBuildings: ...` 展示层级关系与各自标签。
+- **村民 Goal 列表与全量确定性排序 (`MillenaireJeimmCommands`)**：
+  - 在 `# VILLAGERS & GOODS FLOW` 下新增 `[VILLAGER:id|name] Goals: ...`（去重排序后的 `villager.goals()`）；
+  - 对建筑、村庄、村民、变体键/物资列表及 `[SPOT_GOAL:...]` 标签查询统一启用 `ID` 确定性排序并接入 `MillenaireAPIHelper.buildingHasTag`。
+- **新增工艺与目标运行时绑定章节 (`# RECIPE & GOAL RUNTIME BINDINGS`)**：
+  - 在 `MillenaireJeimmEncyclopediaHelper#appendRecipeAndGoalBindings` 中直接读取 `MillCraftingRecipeMaker`（`crafting` / `spot_gathering` / `custom`）运行时解析结果，单行导出 `[RECIPE:goalId|handler] Category: ... | BuildingTag: ... | RequiredTag: ... | Inputs: ... | Outputs: ... | ResolvedBuildings: ... | PerformingVillagers: ...`，并按主产物 `itemId` → `category` → `goalId` 排序以稳定输出同一物品的多源配方。
+- **依赖同步**：同步集成 `millenairejeim-1.3.7.jar` 至 `libs/millenairejeim.jar` 并通过编译打包验证。
+
+---
+
 ## [v1.3.3] - 2026-11-11
 
 ### 🧳 外来商人货箱展示 (`VillagerMerchantStockCategory`)
